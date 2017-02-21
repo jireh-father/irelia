@@ -143,20 +143,21 @@ class KoreanJanggi(Environment):
         if val == 0:
           converted_line.append('--')
         elif val == KoreanJanggi.SOLDIER:
-          converted_line.append('SD')
+          converted_line.append('졸')
         elif val == KoreanJanggi.SANG:
-          converted_line.append('SG')
+          converted_line.append('상')
         elif val == KoreanJanggi.GUARDIUN:
-          converted_line.append('GD')
+          converted_line.append('사')
         elif val == KoreanJanggi.HORSE:
-          converted_line.append('HS')
+          converted_line.append('마')
         elif val == KoreanJanggi.CANNON:
-          converted_line.append('CN')
+          converted_line.append('포')
         elif val == KoreanJanggi.CAR:
-          converted_line.append('CR')
+          converted_line.append('차')
         elif val == KoreanJanggi.KING:
-          converted_line.append('KG')
+          converted_line.append('궁')
       print(converted_line)
+    print('======================================================')
 
   def step(self, action, state):
     self.print_map(state)
@@ -202,38 +203,38 @@ IrelGym.register('KoreanJanggi', {'position_type': 'random'})
 
 env = IrelGym.make('KoreanJanggi')
 # load q table if existed.
-Q_green = {}
+Q_blud = {}
 Q_red = {}
 
 dis = .99
 num_episodes = 2000
 
-green_reward_list = []
+blud_reward_list = []
 red_reward_list = []
 
 for i in range(num_episodes):
-  green_state = env.reset()
-  green_reward_all = 0
+  blud_state = env.reset()
+  blud_reward_all = 0
   red_reward_all = 0
-  green_done = False
+  blud_done = False
   red_done = False
 
-  while not green_done and not red_done:
-    green_action = env.get_action(Q_green, green_state, i)
-    red_state, green_reward, green_done = env.step(green_action, green_state)
+  while not blud_done and not red_done:
+    blud_action = env.get_action(Q_blud, blud_state, i)
+    red_state, blud_reward, blud_done = env.step(blud_action, blud_state)
 
     if old_red_state:
-      Q_red[old_red_state, red_action] = (red_reward - green_reward) + dis * np.max(Q_red[red_state])
-      red_reward_all += (red_reward - green_reward)
+      Q_red[old_red_state, red_action] = (red_reward - blud_reward) + dis * np.max(Q_red[red_state])
+      red_reward_all += (red_reward - blud_reward)
 
     red_action = env.get_action(Q_red, red_state, i)
-    next_green_state, red_reward, red_done, _ = env.step(red_action, red_state)
+    next_blud_state, red_reward, red_done, _ = env.step(red_action, red_state)
 
-    Q_green[green_state, green_action] = (green_reward - red_reward) + dis * np.max(Q_green[next_green_state])
-    green_reward_all += (green_reward - red_reward)
+    Q_blud[blud_state, blud_action] = (blud_reward - red_reward) + dis * np.max(Q_blud[next_blud_state])
+    blud_reward_all += (blud_reward - red_reward)
 
-    green_state = next_green_state
+    blud_state = next_blud_state
     old_red_state = red_state
 
-  green_reward_list.append(green_reward_all)
+  blud_reward_list.append(blud_reward_all)
   red_reward_list.append(red_reward_all)
