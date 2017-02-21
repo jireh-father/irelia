@@ -1,6 +1,7 @@
 import numpy as np
 import random
 import copy
+import sys
 
 
 class ActionSpace(object):
@@ -28,11 +29,19 @@ class Environment(object):
   def reset(self):
     return 2
 
-  def step(self):
+  def step(self, action):
     return 2
 
 
 class KoreanJanggi(Environment):
+  KING = 46
+  SOLDIER = 1
+  SANG = 2
+  GUARDIUN = 3
+  HORSE = 4
+  CANNON = 5
+  CAR = 6
+
   state_list = {}
   rand_position_list = ['masangmasang', 'masangsangma', 'sangmasangma', 'sangmamasang']
   default_state_map = [
@@ -58,10 +67,10 @@ class KoreanJanggi(Environment):
 
   @staticmethod
   def get_available_actions(state_map):
-    return 1
+    return [0] * 50
 
   def reset(self):
-    if self.properties['position_type'] == 'random':
+    if not self.properties['position_type'] or self.properties['position_type'] == 'random':
       before_rand_position = random.randint(0, 3)
       after_rand_position = random.randint(0, 3)
       position_type_list = [KoreanJanggi.rand_position_list[before_rand_position],
@@ -119,10 +128,49 @@ class KoreanJanggi(Environment):
       else:
         raise Exception('position_type is invalid : ' + position_type)
     state_key = KoreanJanggi.convert_state_key(default_map)
-    if self.state_list and state_key not in self.state_list:
+    if state_key not in self.state_list:
       self.state_list[state_key] = \
         {'state_map': default_map, 'action_list': KoreanJanggi.get_available_actions(default_map)}
+
+    self.print_map(state_key)
+
     return state_key
+
+  def print_map(self, state):
+    for line in self.state_list[state]['state_map']:
+      converted_line = []
+      for val in line:
+        if val == 0:
+          converted_line.append('--')
+        elif val == KoreanJanggi.SOLDIER:
+          converted_line.append('SD')
+        elif val == KoreanJanggi.SANG:
+          converted_line.append('SG')
+        elif val == KoreanJanggi.GUARDIUN:
+          converted_line.append('GD')
+        elif val == KoreanJanggi.HORSE:
+          converted_line.append('HS')
+        elif val == KoreanJanggi.CANNON:
+          converted_line.append('CN')
+        elif val == KoreanJanggi.CAR:
+          converted_line.append('CR')
+        elif val == KoreanJanggi.KING:
+          converted_line.append('KG')
+      print(converted_line)
+
+  def step(self, action, state):
+    self.print_map(state)
+    return 2
+
+  def get_action(self, Q, state, i, is_red=False):
+    if is_red:
+      # reverse state
+      state
+    if not Q or state not in Q:
+      # if state is not in the Q, create state map and actions by state hash key
+      Q[state] = np.zeros([len(self.state_list[state]['action_list'])])
+    action_cnt = len(Q[state])
+    return np.argmax(Q[state] + np.random.randn(1, action_cnt) / (i + 1))
 
 
 class IrelGym(object):
@@ -154,37 +202,38 @@ IrelGym.register('KoreanJanggi', {'position_type': 'random'})
 
 env = IrelGym.make('KoreanJanggi')
 # load q table if existed.
-Q1 = {}
-Q2 = {}
+Q_green = {}
+Q_red = {}
 
 dis = .99
 num_episodes = 2000
 
-beforeRewardList = []
-afterRewardList = []
+green_reward_list = []
+red_reward_list = []
 
 for i in range(num_episodes):
-  after_state = env.reset()
-  beforeRewardAll = 0
-  afterRewardAll = 0
-  before_done = False
-  after_done = False
+  green_state = env.reset()
+  green_reward_all = 0
+  red_reward_all = 0
+  green_done = False
+  red_done = False
 
-  while not before_done and not after_done:
-    before_action = get_action(Q1, after_state, env.action_space.n)
+  while not green_done and not red_done:
+    green_action = env.get_action(Q_green, green_state, i)
+    red_state, green_reward, green_done = env.step(green_action, green_state)
 
-    before_state, before_reward, before_done, _ = env.step(before_action)
+    if old_red_state:
+      Q_red[old_red_state, red_action] = (red_reward - green_reward) + dis * np.max(Q_red[red_state])
+      red_reward_all += (red_reward - green_reward)
 
-    if after_action:
-      afterRewardAll += (after_reward - before_reward)
-      Q2[after_state, after_action] = (after_reward - before_reward) + dis * np.max(Q2[before_state, :])
+    red_action = env.get_action(Q_red, red_state, i)
+    next_green_state, red_reward, red_done, _ = env.step(red_action, red_state)
 
-    after_action = np.argmax(Q2[before_state, :] + np.random.randn(1, env.action_space.n) / (i + 1))
+    Q_green[green_state, green_action] = (green_reward - red_reward) + dis * np.max(Q_green[next_green_state])
+    green_reward_all += (green_reward - red_reward)
 
-    after_state, after_reward, after_done, _ = env.step(after_action)
-    before_reward = before_reward - after_reward
-    beforeRewardAll += before_reward
-    Q1[before_state, before_action] = before_reward + dis * np.max(Q1[after_state, :])
+    green_state = next_green_state
+    old_red_state = red_state
 
-  beforeRewardList.append(beforeRewardAll)
-  afterRewardList.append(afterRewardAll)
+  green_reward_list.append(green_reward_all)
+  red_reward_list.append(red_reward_all)
