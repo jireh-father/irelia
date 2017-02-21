@@ -72,7 +72,12 @@ class KoreanJanggi(Environment):
         return str(state_map).replace('[', '').replace(', ', ',').replace(']', '').replace("'", '') + '_' + turn
 
     @staticmethod
-    def get_available_actions(state_map):
+    def get_available_actions(state_map, turn):
+        for x, line in enumerate(state_map):
+            for y, piece in enumerate(line):
+                if piece == 0 or piece[0] != turn:
+                    continue
+                piece_num = int(piece[1:])
         return [0] * 50
 
     def reset(self):
@@ -136,7 +141,7 @@ class KoreanJanggi(Environment):
         state_key = KoreanJanggi.convert_state_key(default_map, 'b')
         if state_key not in self.state_list:
             self.state_list[state_key] = \
-                {'state_map': default_map, 'action_list': KoreanJanggi.get_available_actions(default_map), 'turn': 'b'}
+                {'state_map': default_map, 'action_list': KoreanJanggi.get_available_actions(default_map, 'b'), 'turn': 'b'}
 
         self.print_map(state_key)
 
