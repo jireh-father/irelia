@@ -203,38 +203,38 @@ IrelGym.register('KoreanJanggi', {'position_type': 'random'})
 
 env = IrelGym.make('KoreanJanggi')
 # load q table if existed.
-Q_blud = {}
+Q_blue = {}
 Q_red = {}
 
 dis = .99
 num_episodes = 2000
 
-blud_reward_list = []
+blue_reward_list = []
 red_reward_list = []
 
 for i in range(num_episodes):
-  blud_state = env.reset()
-  blud_reward_all = 0
+  blue_state = env.reset()
+  blue_reward_all = 0
   red_reward_all = 0
-  blud_done = False
+  blue_done = False
   red_done = False
 
-  while not blud_done and not red_done:
-    blud_action = env.get_action(Q_blud, blud_state, i)
-    red_state, blud_reward, blud_done = env.step(blud_action, blud_state)
+  while not blue_done and not red_done:
+    blue_action = env.get_action(Q_blue, blue_state, i)
+    red_state, blue_reward, blue_done = env.step(blue_action, blue_state)
 
     if old_red_state:
-      Q_red[old_red_state, red_action] = (red_reward - blud_reward) + dis * np.max(Q_red[red_state])
-      red_reward_all += (red_reward - blud_reward)
+      Q_red[old_red_state, red_action] = (red_reward - blue_reward) + dis * np.max(Q_red[red_state])
+      red_reward_all += (red_reward - blue_reward)
 
     red_action = env.get_action(Q_red, red_state, i)
-    next_blud_state, red_reward, red_done, _ = env.step(red_action, red_state)
+    next_blue_state, red_reward, red_done, _ = env.step(red_action, red_state)
 
-    Q_blud[blud_state, blud_action] = (blud_reward - red_reward) + dis * np.max(Q_blud[next_blud_state])
-    blud_reward_all += (blud_reward - red_reward)
+    Q_blue[blue_state, blue_action] = (blue_reward - red_reward) + dis * np.max(Q_blue[next_blue_state])
+    blue_reward_all += (blue_reward - red_reward)
 
-    blud_state = next_blud_state
+    blue_state = next_blue_state
     old_red_state = red_state
 
-  blud_reward_list.append(blud_reward_all)
+  blue_reward_list.append(blue_reward_all)
   red_reward_list.append(red_reward_all)
