@@ -1,5 +1,10 @@
 # coding=utf8
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
 
+
+from environment.environment import Environment
 import numpy as np
 import random
 import copy
@@ -22,36 +27,6 @@ DIAGONAL_BACKWARD_RIGHT1 = 8
 DIAGONAL_BACKWARD_RIGHT2 = 9
 DIAGONAL_BACKWARD_LEFT1 = 10
 DIAGONAL_BACKWARD_LEFT2 = 11
-
-
-class ActionSpace(object):
-    n = None
-
-    def __init__(self, n):
-        self.n = n
-
-
-class KoreanChessActionSpace(ActionSpace):
-    default_action_space_n = 40
-
-    def __init__(self):
-        ActionSpace.__init__(self, KoreanChessActionSpace.default_action_space_n)
-
-
-class Environment(object):
-    properties = None
-    action_space = None
-
-    def __init__(self, properties):
-        self.properties = properties
-        self.action_space = KoreanChessActionSpace()
-
-    def reset(self):
-        return 2
-
-    def step(self, action):
-        return 2
-
 
 class KoreanChess(Environment):
     KING = 46
@@ -103,7 +78,7 @@ class KoreanChess(Environment):
     def get_piece_actions(state_map, x, y):
         piece_num = int(state_map[y][x][1:])
         if piece_num == KoreanChess.KING:
-            return KoreanChess.get_soldier_actions(state_map, x, y)
+            return KoreanChess.get_king_actions(state_map, x, y)
         elif piece_num == KoreanChess.SOLDIER:
             return KoreanChess.get_soldier_actions(state_map, x, y)
         elif piece_num == KoreanChess.SANG:
@@ -488,69 +463,3 @@ class KoreanChess(Environment):
             Q[state] = np.zeros([len(self.state_list[state]['action_list'])])
         action_cnt = len(Q[state])
         return np.argmax(Q[state] + np.random.randn(1, action_cnt) / (i + 1))
-
-
-class IrelGym(object):
-    env_class_map = {'KoreanChess': KoreanChess}
-
-    properties = {}
-
-    @staticmethod
-    def register(id, properties):
-        IrelGym.properties[id] = properties
-
-    @staticmethod
-    def make(game_id):
-        if not game_id:
-            raise Exception('game id is not exist.')
-        if game_id not in IrelGym.env_class_map:
-            raise Exception('Unknown game_id.')
-        return IrelGym.env_class_map[game_id](IrelGym.properties[game_id])
-
-    def reset(self):
-        return 2
-
-
-def get_action(Q, state, action_space_cnt):
-    return np.argmax(Q[state, :] + np.random.randn(1, action_space_cnt) / (i + 1))
-
-
-IrelGym.register('KoreanChess', {'position_type': 'random'})
-
-env = IrelGym.make('KoreanChess')
-# load q table if existed.
-Q_blue = {}
-Q_red = {}
-
-dis = .99
-num_episodes = 2000
-
-blue_reward_list = []
-red_reward_list = []
-
-for i in range(num_episodes):
-    blue_state = env.reset()
-    blue_reward_all = 0
-    red_reward_all = 0
-    blue_done = False
-    red_done = False
-
-    while not blue_done and not red_done:
-        blue_action = env.get_action(Q_blue, blue_state, i)
-        red_state, blue_reward, blue_done = env.step(blue_action, blue_state)
-
-        if old_red_state:
-            Q_red[old_red_state][red_action] = (red_reward - blue_reward) + dis * np.max(Q_red[red_state])
-            red_reward_all += (red_reward - blue_reward)
-
-        red_action = env.get_action(Q_red, red_state, i, True)
-        next_blue_state, red_reward, red_done, _ = env.step(red_action, red_state)
-
-        Q_blue[blue_state][blue_action] = (blue_reward - red_reward) + dis * np.max(Q_blue[next_blue_state])
-        blue_reward_all += (blue_reward - red_reward)
-
-        blue_state = next_blue_state
-        old_red_state = red_state
-
-    blue_reward_list.append(blue_reward_all)
-    red_reward_list.append(red_reward_all)
