@@ -7,6 +7,22 @@ import sys
 import os
 import time
 
+BLUE = 'b'
+RED = 'r'
+
+FORWARD = 0
+RIGHT = 1
+LEFT = 2
+BACKWARD = 3
+DIAGONAL_FORWARD_RIGHT1 = 4
+DIAGONAL_FORWARD_RIGHT2 = 5
+DIAGONAL_FORWARD_LEFT1 = 6
+DIAGONAL_FORWARD_LEFT2 = 7
+DIAGONAL_BACKWARD_RIGHT1 = 8
+DIAGONAL_BACKWARD_RIGHT2 = 9
+DIAGONAL_BACKWARD_LEFT1 = 10
+DIAGONAL_BACKWARD_LEFT2 = 11
+
 
 class ActionSpace(object):
     n = None
@@ -41,12 +57,13 @@ class KoreanJanggi(Environment):
     KING = 46
     SOLDIER = 1
     SANG = 2
-    GUARDIUN = 3
+    GUARDIAN = 3
     HORSE = 4
     CANNON = 5
     CAR = 6
     PIECE_LIST = {'r1': '졸(홍)', 'r2': '상(홍)', 'r3': '사(홍)', 'r4': '마(홍)', 'r5': '포(홍)', 'r6': '차(홍)', 'r46': '궁(홍)',
-                  'b1': '졸(청)', 'b2': '상(청)', 'b3': '사(청)', 'b4': '마(청)', 'b5': '포(청)', 'b6': '차(청)', 'b46': '궁(청)', 0: '-----'}
+                  'b1': '졸(청)', 'b2': '상(청)', 'b3': '사(청)', 'b4': '마(청)', 'b5': '포(청)', 'b6': '차(청)', 'b46': '궁(청)',
+                  0: '------'}
 
     state_list = {}
     rand_position_list = ['masangmasang', 'masangsangma', 'sangmasangma', 'sangmamasang']
@@ -68,17 +85,302 @@ class KoreanJanggi(Environment):
         self.state_list = state_list
 
     @staticmethod
-    def convert_state_key(state_map, turn):
-        return str(state_map).replace('[', '').replace(', ', ',').replace(']', '').replace("'", '') + '_' + turn
+    def convert_state_key(state_map, side):
+        return str(state_map).replace('[', '').replace(', ', ',').replace(']', '').replace("'", '') + '_' + side
 
     @staticmethod
-    def get_available_actions(state_map, turn):
-        for x, line in enumerate(state_map):
-            for y, piece in enumerate(line):
-                if piece == 0 or piece[0] != turn:
+    def get_available_actions(state_map, side):
+        action_list = []
+        for y, line in enumerate(state_map):
+            for x, piece in enumerate(line):
+                if piece == 0 or piece[0] != side:
                     continue
-                piece_num = int(piece[1:])
-        return [0] * 50
+                action_list += KoreanJanggi.get_piece_actions(state_map, x, y)
+
+        return action_list
+
+    @staticmethod
+    def get_piece_actions(state_map, x, y):
+        piece_num = int(state_map[y][x][1:])
+        if piece_num == KoreanJanggi.KING:
+            return KoreanJanggi.get_soldier_actions(state_map, x, y)
+        elif piece_num == KoreanJanggi.SOLDIER:
+            return KoreanJanggi.get_soldier_actions(state_map, x, y)
+        elif piece_num == KoreanJanggi.SANG:
+            return KoreanJanggi.get_sang_actions(state_map, x, y)
+        elif piece_num == KoreanJanggi.GUARDIAN:
+            return KoreanJanggi.get_guardian_actions(state_map, x, y)
+        elif piece_num == KoreanJanggi.HORSE:
+            return KoreanJanggi.get_horse_actions(state_map, x, y)
+        elif piece_num == KoreanJanggi.CANNON:
+            return KoreanJanggi.get_cannon_actions(state_map, x, y)
+        elif piece_num == KoreanJanggi.CAR:
+            return KoreanJanggi.get_car_actions(state_map, x, y)
+
+    @staticmethod
+    def is_my_piece(state_map, x, y, side):
+        return state_map[y][x] != 0 and state_map[y][x][0] == side
+
+    @staticmethod
+    def will_be_lose(state_map, x, y, to_x, to_y, side):
+        return False
+
+    @staticmethod
+    def get_soldier_actions(state_map, x, y):
+        piece = state_map[y][x]
+        side = piece[0]
+
+        action_list = []
+
+        # 대각선 오른쪽 길 체크
+        if ((y == 1 and x == 4) or (y == 2 and x == 3)) and \
+          not KoreanJanggi.is_my_piece(state_map, x + 1, y - 1, side) and \
+          not KoreanJanggi.will_be_lose(state_map, x, y, x + 1, y - 1, side):
+            action_list.append({'x': x, 'y': y, 'way': DIAGONAL_FORWARD_RIGHT1, 'step': 1})
+
+        # 대각선 왼쪽 길 체크
+        if ((y == 1 and x == 4) or (y == 2 and x == 5)) and \
+          not KoreanJanggi.is_my_piece(state_map, x - 1, y - 1, side) and \
+          not KoreanJanggi.will_be_lose(state_map, x, y, x - 1, y - 1, side):
+            action_list.append({'x': x, 'y': y, 'way': DIAGONAL_FORWARD_LEFT1, 'step': 1})
+
+        # 전진 길 체크
+        if y != 0 and not KoreanJanggi.is_my_piece(state_map, x, y - 1, side) and \
+          not KoreanJanggi.will_be_lose(state_map, x, y, x, y - 1, side):
+            action_list.append({'x': x, 'y': y, 'way': FORWARD, 'step': 1})
+
+        # 오른쪽 길 체크
+        if x != 8 and not KoreanJanggi.is_my_piece(state_map, x + 1, y, side) and \
+          not KoreanJanggi.will_be_lose(state_map, x, y, x + 1, y, side):
+            action_list.append({'x': x, 'y': y, 'way': RIGHT, 'step': 1})
+
+        # 왼쪽 길 체크
+        if x != 0 and not KoreanJanggi.is_my_piece(state_map, x - 1, y, side) and \
+          not KoreanJanggi.will_be_lose(state_map, x, y, x - 1, y, side):
+            action_list.append({'x': x, 'y': y, 'way': LEFT, 'step': 1})
+
+        return action_list
+
+    @staticmethod
+    def get_sang_actions(state_map, x, y):
+        piece = state_map[y][x]
+
+        side = piece[0]
+
+        action_list = []
+
+        # 대각선 오른쪽 전진 1 길 체크
+
+
+        # 대각선 오른쪽 전진 2 길 체크
+
+        # 대각선 왼쪽 전진 1 길 체크
+
+        # 대각선 왼쪽 전진 2 길 체크
+
+        # 대각선 오른쪽 후진 1 길 체크
+
+        # 대각선 오른쪽 후진 2 길 체크
+
+        # 대각선 왼쪽 후진 1 길 체크
+
+        # 대각선 왼쪽 후진 2 길 체크
+
+        # [공통]
+        # 우리편있는지 체크
+        # 장군 검증
+
+        return action_list
+
+    @staticmethod
+    def get_guardian_actions(state_map, x, y):
+        piece = state_map[y][x]
+
+        side = piece[0]
+
+        action_list = []
+
+        # 대각선 오른쪽 전진 길 체크
+        if ((y == 9 and x == 3) or (y == 8 and x == 4)) and \
+          not KoreanJanggi.is_my_piece(state_map, x + 1, y - 1, side) and \
+          not KoreanJanggi.will_be_lose(state_map, x, y, x + 1, y - 1, side):
+            action_list.append({'x': x, 'y': y, 'way': DIAGONAL_FORWARD_RIGHT1, 'step': 1})
+
+        # 대각선 왼쪽 전진 길 체크
+        if ((y == 9 and x == 5) or (y == 8 and x == 4)) and \
+          not KoreanJanggi.is_my_piece(state_map, x - 1, y - 1, side) and \
+          not KoreanJanggi.will_be_lose(state_map, x, y, x - 1, y - 1, side):
+            action_list.append({'x': x, 'y': y, 'way': DIAGONAL_FORWARD_LEFT1, 'step': 1})
+
+        # 대각선 오른쪽 후진 길 체크
+        if ((y == 7 and x == 3) or (y == 8 and x == 4)) and \
+          not KoreanJanggi.is_my_piece(state_map, x + 1, y + 1, side) and \
+          not KoreanJanggi.will_be_lose(state_map, x, y, x + 1, y + 1, side):
+            action_list.append({'x': x, 'y': y, 'way': DIAGONAL_BACKWARD_RIGHT1, 'step': 1})
+
+        # 대각선 왼쪽 후진 길 체크
+        if ((y == 7 and x == 3) or (y == 8 and x == 4)) and \
+          not KoreanJanggi.is_my_piece(state_map, x - 1, y + 1, side) and \
+          not KoreanJanggi.will_be_lose(state_map, x, y, x - 1, y + 1, side):
+            action_list.append({'x': x, 'y': y, 'way': DIAGONAL_BACKWARD_RIGHT1, 'step': 1})
+
+        # 전진 길 체크
+        if y in (8, 9) and not KoreanJanggi.is_my_piece(state_map, x, y - 1, side) and \
+          not KoreanJanggi.will_be_lose(state_map, x, y, x, y - 1, side):
+            action_list.append({'x': x, 'y': y, 'way': FORWARD, 'step': 1})
+
+        # 오른쪽 길 체크
+        if x in (3, 4) and not KoreanJanggi.is_my_piece(state_map, x + 1, y, side) and \
+          not KoreanJanggi.will_be_lose(state_map, x, y, x + 1, y, side):
+            action_list.append({'x': x, 'y': y, 'way': RIGHT, 'step': 1})
+
+        # 왼쪽 길 체크
+        if x in (4, 5) and not KoreanJanggi.is_my_piece(state_map, x - 1, y, side) and \
+          not KoreanJanggi.will_be_lose(state_map, x, y, x - 1, y, side):
+            action_list.append({'x': x, 'y': y, 'way': LEFT, 'step': 1})
+
+        # 후진 길 체크
+        if y in (7, 8) and not KoreanJanggi.is_my_piece(state_map, x, y + 1, side) and \
+          not KoreanJanggi.will_be_lose(state_map, x, y, x, y + 1, side):
+            action_list.append({'x': x, 'y': y, 'way': BACKWARD, 'step': 1})
+
+        return action_list
+
+    @staticmethod
+    def get_horse_actions(state_map, x, y):
+        # 대각선 오른쪽 전진 1 길 체크
+
+        # 대각선 오른쪽 전진 2 길 체크
+
+        # 대각선 왼쪽 전진 1 길 체크
+
+        # 대각선 왼쪽 전진 2 길 체크
+
+        # 대각선 오른쪽 후진 1 길 체크
+
+        # 대각선 오른쪽 후진 2 길 체크
+
+        # 대각선 왼쪽 후진 1 길 체크
+
+        # 대각선 왼쪽 후진 2 길 체크
+
+        # [공통]
+        # 우리편있는지 체크
+        # 장군 검증
+
+        return []
+
+    @staticmethod
+    def get_cannon_actions(state_map, x, y):
+        piece = state_map[y][x]
+
+        side = piece[0]
+
+        action_list = []
+
+        # 대각선 오른쪽 전진 길 체크
+
+        # 대각선 왼쪽 전진 길 체크
+
+        # 대각선 오른쪽 후진 길 체크
+
+        # 대각선 왼쪽 후진 길 체크
+
+        # 전진 길 체크
+
+        # 오른쪽 길 체크
+
+        # 왼쪽 길 체크
+
+        # 후진 길 체크
+
+        return action_list
+
+    @staticmethod
+    def get_car_actions(state_map, x, y):
+        piece = state_map[y][x]
+
+        side = piece[0]
+
+        action_list = []
+
+        # 대각선 오른쪽 전진 길 체크
+        if (y == 9 and x == 3) or (y == 2 and x == 3):
+            moving_y = y - 1
+            moving_x = x + 1
+            step = 1
+            while moving_y is not -1:
+                if not KoreanJanggi.is_my_piece(state_map, x, moving_y, side) and \
+                  not KoreanJanggi.will_be_lose(state_map, x, y, x, moving_y, side):
+                    action_list.append({'x': x, 'y': y, 'way': DIAGONAL_FORWARD_RIGHT1, 'step': step})
+                moving_y = y - 1
+                step += 1
+        if (y == 8 and x == 4) or (y == 1 and x == 4):
+            1
+
+        # 대각선 왼쪽 전진 길 체크
+        if ((y == 9 and x == 5) or (y == 8 and x == 4)) and \
+          not KoreanJanggi.is_my_piece(state_map, x - 1, y - 1, side) and \
+          not KoreanJanggi.will_be_lose(state_map, x, y, x - 1, y - 1, side):
+            action_list.append({'x': x, 'y': y, 'way': DIAGONAL_FORWARD_LEFT1, 'step': 1})
+
+        # 대각선 오른쪽 후진 길 체크
+        if ((y == 7 and x == 3) or (y == 8 and x == 4)) and \
+          not KoreanJanggi.is_my_piece(state_map, x + 1, y + 1, side) and \
+          not KoreanJanggi.will_be_lose(state_map, x, y, x + 1, y + 1, side):
+            action_list.append({'x': x, 'y': y, 'way': DIAGONAL_BACKWARD_RIGHT1, 'step': 1})
+
+        # 대각선 왼쪽 후진 길 체크
+        if ((y == 7 and x == 3) or (y == 8 and x == 4)) and \
+          not KoreanJanggi.is_my_piece(state_map, x + 1, y + 1, side) and \
+          not KoreanJanggi.will_be_lose(state_map, x, y, x + 1, y + 1, side):
+            action_list.append({'x': x, 'y': y, 'way': DIAGONAL_BACKWARD_RIGHT1, 'step': 1})
+
+        # 전진 길 체크
+        if y is not 0:
+            moving_y = y - 1
+            step = 1
+            while moving_y is not -1:
+                if not KoreanJanggi.is_my_piece(state_map, x, moving_y, side) and \
+                  not KoreanJanggi.will_be_lose(state_map, x, y, x, moving_y, side):
+                    action_list.append({'x': x, 'y': y, 'way': FORWARD, 'step': step})
+                moving_y = y - 1
+                step += 1
+
+        # 오른쪽 길 체크
+        if x is not 8:
+            moving_x = x + 1
+            step = 1
+            while moving_x is not 9:
+                if not KoreanJanggi.is_my_piece(state_map, moving_x, y, side) and \
+                  not KoreanJanggi.will_be_lose(state_map, x, y, moving_x, y, side):
+                    action_list.append({'x': x, 'y': y, 'way': RIGHT, 'step': step})
+                moving_x = x + 1
+                step += 1
+
+        # 왼쪽 길 체크
+        if x is not 0:
+            moving_x = x - 1
+            step = 1
+            while moving_x is not -1:
+                if not KoreanJanggi.is_my_piece(state_map, moving_x, y, side) and \
+                  not KoreanJanggi.will_be_lose(state_map, x, y, moving_x, y, side):
+                    action_list.append({'x': x, 'y': y, 'way': LEFT, 'step': step})
+                moving_x = x - 1
+                step += 1
+
+        # 후진 길 체크
+        if y < 9:
+            moving_y = y + 1
+            step = 1
+            while moving_y < 10:
+                if not KoreanJanggi.is_my_piece(state_map, x, moving_y, side) and \
+                  not KoreanJanggi.will_be_lose(state_map, x, y, x, moving_y, side):
+                    action_list.append({'x': x, 'y': y, 'way': BACKWARD, 'step': step})
+                moving_y = y + 1
+                step += 1
+
+        return action_list
 
     def reset(self):
         if not self.properties['position_type'] or self.properties['position_type'] == 'random':
@@ -141,7 +443,8 @@ class KoreanJanggi(Environment):
         state_key = KoreanJanggi.convert_state_key(default_map, 'b')
         if state_key not in self.state_list:
             self.state_list[state_key] = \
-                {'state_map': default_map, 'action_list': KoreanJanggi.get_available_actions(default_map, 'b'), 'turn': 'b'}
+                {'state_map': default_map, 'action_list': KoreanJanggi.get_available_actions(default_map, 'b'),
+                 'side': 'b'}
 
         self.print_map(state_key)
 
@@ -149,14 +452,16 @@ class KoreanJanggi(Environment):
 
     def print_map(self, state):
         time.sleep(1)
-        os.system('clear')
+        if os.name == 'nt':
+            os.system('cls')
+        else:
+            os.system('clear')
+        # sys.stdout.flush()
         for line in self.state_list[state]['state_map']:
             converted_line = [KoreanJanggi.PIECE_LIST[val] for val in line]
             # sys.stdout.write('\r' + ' '.join(converted_line))
             print(' '.join(converted_line))
-        # print('======================================================')
-        # sys.stdout.flush()
-
+            # print('======================================================')
 
     def step(self, action, state):
         # action
@@ -164,11 +469,14 @@ class KoreanJanggi(Environment):
         # create new_state and append it
         #  to state_list, if new_state is not in state_list.
 
+        # 상태 새로 만들었는데 action이 없으면 끝
+
         # print next state
         self.print_map(state)
         sys.exit()
 
         # return new_state, reward, is_done
+        # 다음 상태에 액션이 없으면 is_done
         return 2
 
     def get_action(self, Q, state, i, is_red=False):
