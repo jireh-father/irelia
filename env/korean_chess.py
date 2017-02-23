@@ -96,7 +96,37 @@ class KoreanChess(Env):
         else:
             state = self.state_list[state_key]
 
-        return piece_factory.action(state['state_map'], state['action_list'][action_key])
+        action = state['action_list'][action_key]
+        state_map = copy.deepcopy(state['state_map'])
+        to_x = action['to_x']
+        to_y = action['to_y']
+        x = action['x']
+        y = action['y']
+
+        # reward 계산
+        to_value = state_map[to_y][to_x]
+        if to_value is 0:
+            reward = 0
+        else:
+            reward = KoreanChess.REWARD_LIST[int(to_value[1])]
+
+        # 이동 지점에 기존지점 말 저장
+        state_map[to_y][to_x] = state_map[y][x]
+
+        # 기존 지점 0으로 세팅
+        state_map[y][x] = 0
+
+        is_done = reward == KoreanChess.REWARD_LIST[kcu.KING] or KoreanChess.is_draw(state_map)
+
+        # state_map 결과는 무조건 reverse해서 보내라
+        return self.reverse_state_map(state_map), reward, is_done, KoreanChess.is_draw(state_map)
+
+    def reverse_state_map(self, state_map):
+        reversed_map = np.array(list(reversed(np.array(state_map).flatten()))).reshape([-1, 9]).tolist()
+        result_map = []
+        for line in reversed_map:
+            result_map.append([int(val) if val is '0' else val for val in line])
+        return result_map
 
     def reset(self):
         if self.properties['init_state']:
@@ -124,10 +154,10 @@ class KoreanChess(Env):
 
         state_key = self.create_state(default_map, side)
 
-        self.print_map(state_key, side)
+        # self.print_map(state_key, side)
 
-        for action in self.state_list[state_key]['action_list']:
-            print(action)
+        # for action in self.state_list[state_key]['action_list']:
+        #     print(action)
 
         return state_key
 
@@ -143,36 +173,92 @@ class KoreanChess(Env):
         else:
             return state_key
 
-    def print_map(self, state, side):
-        time.sleep(0.5)
-        # if os.name == 'nt':
-        #     os.system('cls')
-        # else:
-        #     os.system('clear')
+    def print_map(self, state, side, episode=0, turn=0, blue_reward_episode=0, red_reward_episode=0, done_side=False,
+                  is_draw=False, blue_win_cnt=0, red_win_cnt=0):
+        # time.sleep(0.1)
+        if os.name == 'nt':
+            os.system('cls')
+        else:
+            os.system('clear')
         # sys.stdout.flush()
         if side is kcu.RED:
             state = self.reverse_state_key(state)
-        for line in self.state_list[state]['state_map']:
+            map = self.reverse_state_map(self.state_list[state]['state_map'])
+        else:
+            map = self.state_list[state]['state_map']
+        print(
+            'EPISODE {:d}, TURN {:d}, BLUE REWARD {:d}, RED REWARD {:d}'.format(episode, turn, blue_reward_episode,
+                                                                                red_reward_episode))
+        print('TOTAL BLUE WIN {:d}, TOTAL RED WIN {:d}, TOTAL STATE COUNT {:d}'.format(blue_win_cnt, red_win_cnt,
+                                                                                       len(self.state_list)))
+
+        if is_draw:
+            print('draw')
+        elif done_side:
+            print('WiNNER {:s}'.format(done_side))
+        else:
+            print('running')
+
+        for line in map:
             converted_line = [KoreanChess.PIECE_LIST[val] for val in line]
             # sys.stdout.write('\r' + ' '.join(converted_line))
             print(' '.join(converted_line))
             # print('======================================================')
 
+    def init_q_state(self, Q, state, is_red=False):
+        if not Q or state not in Q:
+            # if state is not in the Q, create state map and actions by state hash key
+            if is_red:
+                # reverse state
+                action_cnt = len(self.state_list[self.reverse_state_key(state)]['action_list'])
+            else:
+                action_cnt = len(self.state_list[state]['action_list'])
+            Q[state] = np.zeros(action_cnt)
+
+    @staticmethod
+    def convert_state_map(state_key):
+        state_map = np.array(state_key.split(',')).reshape([-1, 9]).tolist()
+        result_map = []
+        for line in state_map:
+            result_map.append([int(val) if val is '0' else val for val in line])
+        return result_map
+
+    @staticmethod
+    def is_draw(state_map):
+        for line in state_map:
+            for piece in line:
+                if piece is 0:
+                    continue
+                # todo: 상하고 마하고 구현해면 빼
+                if piece[1] is not kcu.KING and piece[1] is not kcu.GUARDIAN and piece[1] is not kcu.HORSE and piece[
+                    1] is not kcu.SANG:
+                    return False
+                    # todo: 포만 남았을경우 못넘는경우면 비긴걸로 계산
+        return True
+
     def step(self, action, state_key, is_red=False):
         opposite_side = kcu.BLUE if is_red else kcu.RED
+
+        if action is False:
+            if is_red is False:
+                state_key = self.reverse_state_key(state_key)
+            self.create_state(self.convert_state_map(state_key), opposite_side)
+            # state_list 에 새로 생성해서 추가
+            return state_key, 0, False, False
+
         # action
         # new_state_map 은 현재 state_map 대비 뒤집어진 상태로 나온다.
-        new_state_map, reward, is_done = self.action(state_key, action, is_red)
+        new_state_map, reward, is_done, is_draw = self.action(state_key, action, is_red)
 
         # create new_state and append it
         #  to state_list, if new_state is not in state_list.
         new_state_key = self.create_state(new_state_map, opposite_side)
 
         # print next state
-        self.print_map(new_state_key, opposite_side)
+        # self.print_map(new_state_key, opposite_side)
 
         # return new_state, reward, is_done
-        return new_state_key, reward, is_done
+        return new_state_key, reward, is_done, is_draw
 
     def reverse_state_key(self, state):
         return self.convert_state_key(list(reversed(state.split(','))))
@@ -185,8 +271,7 @@ class KoreanChess(Env):
                 action_cnt = len(self.state_list[self.reverse_state_key(state)]['action_list'])
             else:
                 action_cnt = len(self.state_list[state]['action_list'])
-            if action_cnt > 0:
-                Q[state] = np.zeros(action_cnt)
+            Q[state] = np.zeros(action_cnt)
 
         action_cnt = len(Q[state])
         if action_cnt < 1:
