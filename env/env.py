@@ -3,16 +3,14 @@ from __future__ import division
 from __future__ import print_function
 
 
-class Environment(object):
+class Env(object):
     properties = None
-    action_space = None
 
     def __init__(self, properties):
         self.properties = properties
-        self.action_space = KoreanChessActionSpace()
 
     def reset(self):
-        return 2
+        pass
 
     def step(self, action):
-        return 2
+        pass

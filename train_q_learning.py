@@ -2,11 +2,14 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from environment.gym import Gym
+from game.game import Game
+import numpy as np
 
-Gym.register('KoreanChess', {'position_type': 'random'})
+# you can restore state_list
+Game.register('KoreanChess', {'position_type': 'random', 'state_list': None, 'init_state': None})
 
-env = Gym.make('KoreanChess')
+env = Game.make('KoreanChess')
+
 # load q table if existed.
 Q_blue = {}
 Q_red = {}
