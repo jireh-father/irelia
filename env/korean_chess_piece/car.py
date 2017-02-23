@@ -143,7 +143,7 @@ def get_actions(state_map, x, y):
                 # if not kcu.is_losing_way(state_map, x, y, moving_x, y, side):
                 action_list.append({'x': x, 'y': y, 'direction': kcu.RIGHT, 'step': step,
                                     'piece_type': piece_type})
-                if kcu.is_enemy(moving_x, y, side):
+                if kcu.is_enemy(state_map, moving_x, y, side):
                     break
             else:
                 break
@@ -159,7 +159,7 @@ def get_actions(state_map, x, y):
                 # if not kcu.is_losing_way(state_map, x, y, moving_x, y, side):
                 action_list.append({'x': x, 'y': y, 'direction': kcu.LEFT, 'step': step,
                                     'piece_type': piece_type})
-                if kcu.is_enemy(moving_x, y, side):
+                if kcu.is_enemy(state_map, moving_x, y, side):
                     break
             else:
                 break

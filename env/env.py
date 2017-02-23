@@ -12,5 +12,5 @@ class Env(object):
     def reset(self):
         pass
 
-    def step(self, action):
+    def step(self, action, state_key, is_red=False):
         pass

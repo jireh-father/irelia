@@ -5,6 +5,15 @@ from __future__ import print_function
 from env import korean_chess_util as kcu
 
 
+def action(state_map, action):
+    # 맵 변경
+
+
+    # reward 계산
+
+    return new_state_map, reward, False
+
+
 def get_actions(state_map, x, y):
     piece = state_map[y][x]
 

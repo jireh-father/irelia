@@ -90,73 +90,106 @@ class KoreanChess(Env):
     def get_piece_actions(state_map, x, y):
         return piece_factory.get_actions(state_map, x, y)
 
-    def reset(self):
-        if not self.properties['position_type'] or self.properties['position_type'] == 'random':
-            before_rand_position = random.randint(0, 3)
-            after_rand_position = random.randint(0, 3)
-            position_type_list = [KoreanChess.rand_position_list[before_rand_position],
-                                  KoreanChess.rand_position_list[after_rand_position]]
+    def action(self, state_key, action_key, is_red=False):
+        if is_red:
+            state = self.state_list[self.reverse_state_key(state_key)]
         else:
-            position_type_list = self.properties['position_type']
+            state = self.state_list[state_key]
 
-        default_map = copy.deepcopy(KoreanChess.default_state_map)
+        return piece_factory.action(state['state_map'], state['action_list'][action_key])
 
-        for i, position_type in enumerate(position_type_list):
-            if position_type not in KoreanChess.POSITION_TYPE_LIST:
-                raise Exception('position_type is invalid : ' + position_type)
+    def reset(self):
+        if self.properties['init_state']:
+            default_map = self.properties['init_state']
+            side = self.properties['init_side'] if self.properties['init_side'] else 'b'
+        else:
+            side = kcu.BLUE
+            if not self.properties['position_type'] or self.properties['position_type'] == 'random':
+                before_rand_position = random.randint(0, 3)
+                after_rand_position = random.randint(0, 3)
+                position_type_list = [KoreanChess.rand_position_list[before_rand_position],
+                                      KoreanChess.rand_position_list[after_rand_position]]
+            else:
+                position_type_list = self.properties['position_type']
 
-            line_idx = -1 if i == 0 else 0
+            default_map = copy.deepcopy(KoreanChess.default_state_map)
 
-            default_map[line_idx] = KoreanChess.POSITION_TYPE_LIST[position_type][i]
+            for i, position_type in enumerate(position_type_list):
+                if position_type not in KoreanChess.POSITION_TYPE_LIST:
+                    raise Exception('position_type is invalid : ' + position_type)
 
-        state_key = KoreanChess.convert_state_key(default_map)
+                line_idx = -1 if i == 0 else 0
 
-        if state_key not in self.state_list:
-            self.state_list[state_key] = \
-                {'state_map': default_map, 'action_list': KoreanChess.get_actions(default_map, kcu.BLUE),
-                 'side': kcu.BLUE}
-        self.print_map(state_key)
+                default_map[line_idx] = KoreanChess.POSITION_TYPE_LIST[position_type][i]
+
+        state_key = self.create_state(default_map, side)
+
+        self.print_map(state_key, side)
 
         for action in self.state_list[state_key]['action_list']:
             print(action)
 
         return state_key
 
-    def print_map(self, state):
+    def create_state(self, state_map, side):
+        state_key = KoreanChess.convert_state_key(state_map)
+
+        if state_key not in self.state_list:
+            self.state_list[state_key] = {'state_map': state_map,
+                                          'action_list': KoreanChess.get_actions(state_map, side), 'side': side}
+
+        if side is kcu.RED:
+            return self.reverse_state_key(state_key)
+        else:
+            return state_key
+
+    def print_map(self, state, side):
         time.sleep(0.5)
         # if os.name == 'nt':
         #     os.system('cls')
         # else:
         #     os.system('clear')
         # sys.stdout.flush()
+        if side is kcu.RED:
+            state = self.reverse_state_key(state)
         for line in self.state_list[state]['state_map']:
             converted_line = [KoreanChess.PIECE_LIST[val] for val in line]
             # sys.stdout.write('\r' + ' '.join(converted_line))
             print(' '.join(converted_line))
             # print('======================================================')
 
-    def step(self, action, state):
+    def step(self, action, state_key, is_red=False):
+        opposite_side = kcu.BLUE if is_red else kcu.RED
         # action
+        # new_state_map 은 현재 state_map 대비 뒤집어진 상태로 나온다.
+        new_state_map, reward, is_done = self.action(state_key, action, is_red)
 
         # create new_state and append it
         #  to state_list, if new_state is not in state_list.
-
-        # 상태 새로 만들었는데 action이 없으면 끝
+        new_state_key = self.create_state(new_state_map, opposite_side)
 
         # print next state
-        self.print_map(state)
-        sys.exit()
+        self.print_map(new_state_key, opposite_side)
 
         # return new_state, reward, is_done
-        # 다음 상태에 액션이 없으면 is_done
-        return 2
+        return new_state_key, reward, is_done
+
+    def reverse_state_key(self, state):
+        return self.convert_state_key(list(reversed(state.split(','))))
 
     def get_action(self, Q, state, i, is_red=False):
-        if is_red:
-            # reverse state
-            state
         if not Q or state not in Q:
             # if state is not in the Q, create state map and actions by state hash key
-            Q[state] = np.zeros([len(self.state_list[state]['action_list'])])
+            if is_red:
+                # reverse state
+                action_cnt = len(self.state_list[self.reverse_state_key(state)]['action_list'])
+            else:
+                action_cnt = len(self.state_list[state]['action_list'])
+            if action_cnt > 0:
+                Q[state] = np.zeros(action_cnt)
+
         action_cnt = len(Q[state])
-        return np.argmax(Q[state] + np.random.randn(1, action_cnt) / (i + 1))
+        if action_cnt < 1:
+            return False
+        else:
+            return np.argmax(Q[state] + np.random.randn(1, action_cnt) / (i + 1))
