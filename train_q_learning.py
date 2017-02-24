@@ -86,7 +86,7 @@ for i in range(num_episodes):
             else:
                 cur_q_value = cur_reward
             Q_red[old_red_state][red_action] = cur_q_value
-            red_reward_all += red_reward
+            red_reward_all += (red_reward - blue_reward)
 
         if blue_done and not is_draw:
             blue_win_cnt += 1
@@ -108,7 +108,7 @@ for i in range(num_episodes):
         else:
             cur_q_value = cur_reward
         Q_blue[blue_state][blue_action] = cur_q_value
-        blue_reward_all += blue_reward
+        blue_reward_all += (blue_reward - red_reward)
 
         if red_done and not is_draw:
             red_win_cnt += 1
@@ -122,7 +122,7 @@ for i in range(num_episodes):
     red_reward_list.append(red_reward_all)
     # time.sleep(1)
 
-    if i % 200 is 0 and i is not 0:
+    if i % 2000 is 0 and i is not 0:
         if os.path.isfile('./q_blue.txt'):
             shutil.move('./q_blue.txt', './q_blue_bak.txt')
         if os.path.isfile('./q_red.txt'):
