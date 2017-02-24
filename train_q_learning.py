@@ -122,7 +122,7 @@ for i in range(num_episodes):
     red_reward_list.append(red_reward_all)
     # time.sleep(1)
 
-    if i % 2000 is 0 and i is not 0:
+    if i % 10000 is 0 and i is not 0:
         if os.path.isfile('./q_blue.txt'):
             shutil.move('./q_blue.txt', './q_blue_bak.txt')
         if os.path.isfile('./q_red.txt'):
@@ -136,4 +136,5 @@ for i in range(num_episodes):
                 outfile.write(key + "\n" + json.dumps(Q_red[key].tolist()) + "\n")
             outfile.close()
 
+    if i % 100 is 0 and i is not 0:
         env.state_list = {}
