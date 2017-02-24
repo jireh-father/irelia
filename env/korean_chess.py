@@ -177,11 +177,11 @@ class KoreanChess(Env):
                   is_draw=False, blue_win_cnt=0, red_win_cnt=0, Q1=None, Q2=None):
         if turn % 20 is not 0:
             return
-        # time.sleep(2)
-        # if os.name == 'nt':
-        #     os.system('cls')
-        # else:
-        #     os.system('clear')
+        time.sleep(1)
+        if os.name == 'nt':
+            os.system('cls')
+        else:
+            os.system('clear')
         # sys.stdout.flush()
         if side is kcu.RED:
             state = self.reverse_state_key(state)
@@ -193,20 +193,20 @@ class KoreanChess(Env):
                                                                                    red_reward_episode))
         if Q1 and Q2:
             print('Q1 COUNT {:d}, Q2 COUNT {:d}'.format(len(Q1), len(Q2)))
-        # print('TOTAL BLUE WIN {:d}, TOTAL RED WIN {:d}, TOTAL STATE COUNT {:d}'.format(blue_win_cnt, red_win_cnt,
-        #                                                                                len(self.state_list)))
-        #
-        # if is_draw:
-        #     print('draw')
-        # elif done_side:
-        #     print('WiNNER {:s}'.format(done_side))
-        # else:
-        #     print('running')
-        #
-        # for line in map:
-        #     converted_line = [KoreanChess.PIECE_LIST[val] for val in line]
-        #     # sys.stdout.write('\r' + ' '.join(converted_line))
-        #     print(' '.join(converted_line))
+        print('TOTAL BLUE WIN {:d}, TOTAL RED WIN {:d}, TOTAL STATE COUNT {:d}'.format(blue_win_cnt, red_win_cnt,
+                                                                                       len(self.state_list)))
+
+        if is_draw:
+            print('draw')
+        elif done_side:
+            print('WiNNER {:s}'.format(done_side))
+        else:
+            print('running')
+
+        for line in map:
+            converted_line = [KoreanChess.PIECE_LIST[val] for val in line]
+            # sys.stdout.write('\r' + ' '.join(converted_line))
+            print(' '.join(converted_line))
         #     # print('======================================================')
 
     def init_q_state(self, Q, state, is_red=False):
