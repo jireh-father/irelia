@@ -9,6 +9,32 @@ import json
 from env import korean_chess_util as kcu
 import os
 import shutil
+import codecs
+import re
+
+def parse_record(record_list):
+    return ''
+
+q_file = codecs.open('/Users/softlemon/Downloads/163.gib', encoding='euckr')
+i = 0
+tmp_record_list = []
+record_list = []
+for line in q_file:
+    if not line[0].isdigit():
+        if len(tmp_record_list) > 0:
+            record_list.append(parse_record(tmp_record_list))
+            tmp_record_list = []
+
+        continue
+    line = line.strip()
+    tmp_record_list.append(line)
+
+
+    print(line)
+    if i > 30:
+        break
+    i+=1
+sys.exit()
 
 # you can restore state_list
 state_list_file = None  # open('./state_list.json') if os.path.isfile('./state_list.json') else None
@@ -136,5 +162,5 @@ for i in range(num_episodes):
                 outfile.write(key + "\n" + json.dumps(Q_red[key].tolist()) + "\n")
             outfile.close()
 
-    if i % 10000 is 0 and i is not 0:
+    if i % 100 is 0 and i is not 0:
         env.state_list = {}
