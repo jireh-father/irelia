@@ -56,10 +56,10 @@ blue_win_cnt = 0
 red_win_cnt = 0
 
 records_path = 'records.txt'
-records_file = open(records_path)
-
 for i in range(num_episodes):
     k = 0
+
+    records_file = open(records_path)
     for line in records_file:
         line = line.strip()
         records = json.loads(line)
@@ -145,6 +145,7 @@ for i in range(num_episodes):
 
     if i % 100 is 0 and i is not 0:
         env.state_list = {}
+    records_file.close()
 
 if os.path.isfile('./q_blue_with_data.txt'):
     shutil.move('./q_blue_with_data.txt', './q_blue_with_data_bak.txt')
