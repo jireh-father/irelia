@@ -83,9 +83,12 @@ for i in range(num_episodes):
             # blue action
             if j < record_count:
                 blue_action = env.get_action_with_record(Q_blue, blue_state, records[j])
-                red_state, blue_reward, blue_done, is_draw = env.step(blue_action, blue_state)
-                if record_count - 2 <= j and winner is kcu.BLUE:
-                    blue_reward = KoreanChess.REWARD_LIST[kcu.KING]
+                if blue_action is not False:
+                    red_state, blue_reward, blue_done, is_draw = env.step(blue_action, blue_state)
+                    if record_count - 2 <= j and winner is kcu.BLUE:
+                        blue_reward = KoreanChess.REWARD_LIST[kcu.KING]
+                else:
+                    break
                 env.print_map(red_state, kcu.RED, str(i) + ':' + str(k), j, blue_reward_all, red_reward_all,
                               kcu.BLUE if blue_done else False,
                               is_draw, blue_win_cnt, red_win_cnt, Q1=Q_blue, Q2=Q_red)
@@ -109,9 +112,12 @@ for i in range(num_episodes):
             j += 1
             if j < record_count:
                 red_action = env.get_action_with_record(Q_red, red_state, records[j], True)
-                next_blue_state, red_reward, red_done, is_draw = env.step(red_action, red_state, True)
-                if record_count - 2 <= j and winner is kcu.RED:
-                    red_reward = KoreanChess.REWARD_LIST[kcu.KING]
+                if red_action is not False:
+                    next_blue_state, red_reward, red_done, is_draw = env.step(red_action, red_state, True)
+                    if record_count - 2 <= j and winner is kcu.RED:
+                        red_reward = KoreanChess.REWARD_LIST[kcu.KING]
+                else:
+                    break
                 env.print_map(next_blue_state, kcu.BLUE, str(i) + ':' + str(k), j, blue_reward_all, red_reward_all,
                               kcu.RED if red_done else False,
                               is_draw, blue_win_cnt, red_win_cnt, Q1=Q_blue, Q2=Q_red)
