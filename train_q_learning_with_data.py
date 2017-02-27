@@ -105,6 +105,9 @@ for i in range(num_episodes):
                     cur_q_value = cur_reward + dis * np.max(Q_red[red_state])
                 else:
                     cur_q_value = cur_reward
+                action_cnt = len(env.state_list[env.reverse_state_key(old_red_state)]['action_list'])
+                if action_cnt != len(Q_red[old_red_state]):
+                    Q_red[old_red_state] = np.zeros(action_cnt)
                 Q_red[old_red_state][red_action] = cur_q_value
                 red_reward_all += (red_reward - blue_reward)
 
@@ -134,6 +137,9 @@ for i in range(num_episodes):
                 cur_q_value = cur_reward + dis * np.max(Q_blue[next_blue_state])
             else:
                 cur_q_value = cur_reward
+            action_cnt = len(env.state_list[blue_state]['action_list'])
+            if action_cnt != len(Q_blue[blue_state]):
+                Q_blue[blue_state] = np.zeros(action_cnt)
             Q_blue[blue_state][blue_action] = cur_q_value
             blue_reward_all += (blue_reward - red_reward)
 
