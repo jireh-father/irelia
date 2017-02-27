@@ -7,10 +7,13 @@ import re
 import json
 
 record_dir = 'D:/data/korean_chess/records'
-output_path = 'D:/data/korean_chess/records.txt'
+output_path = 'records.txt'
 
 position_type_map = {u'마상상마': 'masangsangma', u'마상마상': 'masangmasang', u'상마마상': 'sangmamasang',
                      u'상마상마': 'sangmasangma'}
+
+red_position_type_map = {u'마상상마': 'masangsangma', u'마상마상': 'sangmasangma', u'상마마상': 'sangmamasang',
+                         u'상마상마': 'masangmasang'}
 
 
 def parse_record(tmp_records):
@@ -92,7 +95,7 @@ for record_file_path in record_files:
             blue_position_type = position_type_map[line[6:10]]
             continue
         if line[1:4] == u'한차림':
-            red_position_type = position_type_map[line[6:10]]
+            red_position_type = red_position_type_map[line[6:10]]
             continue
         if line[1:4] == u'대국결':
             if re.findall('접속 끊김|시간승|무승부', line, re.UNICODE):

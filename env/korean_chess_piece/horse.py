@@ -66,10 +66,10 @@ def get_actions(state_map, x, y):
                  'piece_type': piece_type})
 
     # 대각선 왼쪽 후진 2 길 체크
-    if x > kcu.LEFT_WALL and y < kcu.BOTTOM_WALL - 1:
+    if x > kcu.LEFT_WALL + 1 and y < kcu.BOTTOM_WALL:
         if kcu.is_empty_space(state_map, x - 1, y) and not kcu.is_our_side(state_map, x - 2, y + 1, side):
             action_list.append(
-                {'x': x, 'y': y, 'to_x': x - 2, 'to_y': y + 1, 'direction': kcu.DIAGONAL_BACKWARD_LEFT1, 'step': 1,
+                {'x': x, 'y': y, 'to_x': x - 2, 'to_y': y + 1, 'direction': kcu.DIAGONAL_BACKWARD_LEFT2, 'step': 1,
                  'piece_type': piece_type})
 
     return action_list

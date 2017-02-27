@@ -181,38 +181,38 @@ class KoreanChess(Env):
         # if turn % 20 is not 0:
         #     return
         # time.sleep(0.1)
-        if os.name == 'nt':
-            os.system('cls')
-        else:
-            os.system('clear')
-        sys.stdout.flush()
-        if side is kcu.RED:
-            state = self.reverse_state_key(state)
-            map = self.reverse_state_map(self.state_list[state]['state_map'])
-        else:
-            map = self.state_list[state]['state_map']
+        # if os.name == 'nt':
+        #     os.system('cls')
+        # else:
+        #     os.system('clear')
+        # sys.stdout.flush()
+        # if side is kcu.RED:
+        #     state = self.reverse_state_key(state)
+        #     map = self.reverse_state_map(self.state_list[state]['state_map'])
+        # else:
+        #     map = self.state_list[state]['state_map']
         print(
             'EPISODE {:s}, TURN {:d}, BLUE REWARD {:d}, RED REWARD {:d}'.format(str(episode), turn, blue_reward_episode,
                                                                                 red_reward_episode))
-        if Q1 and Q2:
-            print('Q1 COUNT {:d}, Q2 COUNT {:d}'.format(len(Q1), len(Q2)))
-            print('TOTAL BLUE WIN {:d}, TOTAL RED WIN {:d}, TOTAL STATE COUNT {:d}'.format(blue_win_cnt, red_win_cnt,
-                                                                                           len(self.state_list)))
-
-            if is_draw:
-                print('draw')
-            elif done_side:
-                print('WiNNER {:s}'.format(done_side))
-            else:
-                print('running : ' + side)
-            if file and line:
-                print(file, line)
-
-            for line in map:
-                converted_line = [KoreanChess.PIECE_LIST[val] for val in line]
-                # sys.stdout.write('\r' + ' '.join(converted_line))
-                print(' '.join(converted_line))
-                #     # print('======================================================')
+        # if Q1 and Q2:
+        #     print('Q1 COUNT {:d}, Q2 COUNT {:d}'.format(len(Q1), len(Q2)))
+        #     print('TOTAL BLUE WIN {:d}, TOTAL RED WIN {:d}, TOTAL STATE COUNT {:d}'.format(blue_win_cnt, red_win_cnt,
+        #                                                                                    len(self.state_list)))
+        #
+        # if is_draw:
+        #     print('draw')
+        # elif done_side:
+        #     print('WiNNER {:s}'.format(done_side))
+        # else:
+        #     print('running : ' + side)
+        # if file and line:
+        #     print(file, line)
+        #
+        # for line in map:
+        #     converted_line = [KoreanChess.PIECE_LIST[val] for val in line]
+        #     # sys.stdout.write('\r' + ' '.join(converted_line))
+        #     print(' '.join(converted_line))
+        #     # print('======================================================')
 
     def print_map_for_test(self, state, side, episode=0, turn=0, blue_reward_episode=0, red_reward_episode=0,
                            done_side=False,
@@ -343,6 +343,7 @@ class KoreanChess(Env):
                 return i
 
         import json
+
         # return False
         # return np.argmax(Q[state] + np.random.randn(1, len(action_list)) / (i + 1))
         raise Exception("coudn't find record action\n" + json.dumps(action_list) + "\n" + json.dumps(record))
@@ -361,4 +362,4 @@ class KoreanChess(Env):
         if action_cnt < 1:
             return False
         else:
-            return np.argmax(Q[state] + np.random.randn(1, action_cnt) / (i + 50))
+            return np.argmax(Q[state] + np.random.randn(1, action_cnt) / (i + action_cnt))
