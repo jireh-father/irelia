@@ -55,7 +55,7 @@ red_reward_list = []
 blue_win_cnt = 0
 red_win_cnt = 0
 
-records_path = 'D:/data/korean_chess/records.txt'
+records_path = 'records.txt'
 records_file = open(records_path)
 
 for i in range(num_episodes):
