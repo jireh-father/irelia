@@ -22,12 +22,12 @@ def get_actions(state_map, x, y):
         step_stone_x = x + 1
         step_stone_y = y - 1
         if kcu.is_piece(state_map, step_stone_x, step_stone_y) \
-                and not kcu.is_cannon(state_map, step_stone_x, step_stone_y):
+          and not kcu.is_cannon(state_map, step_stone_x, step_stone_y):
             # 디딤돌 다음 자리에 상대편이나(포가 아니면서) 빈자리가 있는지 체크
             next_of_step_stone_x = step_stone_x + 1
             next_of_step_stone_y = step_stone_y - 1
             if kcu.is_empty_space(state_map, next_of_step_stone_x, next_of_step_stone_y) \
-                    or kcu.is_enemy(state_map, next_of_step_stone_x, next_of_step_stone_y, side):
+              or kcu.is_enemy(state_map, next_of_step_stone_x, next_of_step_stone_y, side):
                 action_list.append(
                     {'x': x, 'y': y, 'to_x': next_of_step_stone_x, 'to_y': next_of_step_stone_y,
                      'direction': kcu.DIAGONAL_FORWARD_RIGHT1, 'step': 2,
@@ -39,12 +39,12 @@ def get_actions(state_map, x, y):
         step_stone_x = x - 1
         step_stone_y = y - 1
         if kcu.is_piece(state_map, step_stone_x, step_stone_y) \
-                and not kcu.is_cannon(state_map, step_stone_x, step_stone_y):
+          and not kcu.is_cannon(state_map, step_stone_x, step_stone_y):
             # 디딤돌 다음 자리에 상대편이나(포가 아니면서) 빈자리가 있는지 체크
             next_of_step_stone_x = step_stone_x - 1
             next_of_step_stone_y = step_stone_y - 1
             if kcu.is_empty_space(state_map, next_of_step_stone_x, next_of_step_stone_y) \
-                    or kcu.is_enemy(state_map, next_of_step_stone_x, next_of_step_stone_y, side):
+              or kcu.is_enemy(state_map, next_of_step_stone_x, next_of_step_stone_y, side):
                 action_list.append(
                     {'x': x, 'y': y, 'to_x': next_of_step_stone_x, 'to_y': next_of_step_stone_y,
                      'direction': kcu.DIAGONAL_FORWARD_LEFT1, 'step': 2,
@@ -56,12 +56,12 @@ def get_actions(state_map, x, y):
         step_stone_x = x + 1
         step_stone_y = y + 1
         if kcu.is_piece(state_map, step_stone_x, step_stone_y) \
-                and not kcu.is_cannon(state_map, step_stone_x, step_stone_y):
+          and not kcu.is_cannon(state_map, step_stone_x, step_stone_y):
             # 디딤돌 다음 자리에 상대편이나(포가 아니면서) 빈자리가 있는지 체크
             next_of_step_stone_x = step_stone_x + 1
             next_of_step_stone_y = step_stone_y + 1
             if kcu.is_empty_space(state_map, next_of_step_stone_x, next_of_step_stone_y) \
-                    or kcu.is_enemy(state_map, next_of_step_stone_x, next_of_step_stone_y, side):
+              or kcu.is_enemy(state_map, next_of_step_stone_x, next_of_step_stone_y, side):
                 action_list.append(
                     {'x': x, 'y': y, 'to_x': next_of_step_stone_x, 'to_y': next_of_step_stone_y,
                      'direction': kcu.DIAGONAL_BACKWARD_RIGHT1, 'step': 2,
@@ -73,12 +73,12 @@ def get_actions(state_map, x, y):
         step_stone_x = x - 1
         step_stone_y = y + 1
         if kcu.is_piece(state_map, step_stone_x, step_stone_y) \
-                and not kcu.is_cannon(state_map, step_stone_x, step_stone_y):
+          and not kcu.is_cannon(state_map, step_stone_x, step_stone_y):
             # 디딤돌 다음 자리에 상대편이나(포가 아니면서) 빈자리가 있는지 체크
             next_of_step_stone_x = step_stone_x - 1
             next_of_step_stone_y = step_stone_y + 1
             if kcu.is_empty_space(state_map, next_of_step_stone_x, next_of_step_stone_y) \
-                    or kcu.is_enemy(state_map, next_of_step_stone_x, next_of_step_stone_y, side):
+              or kcu.is_enemy(state_map, next_of_step_stone_x, next_of_step_stone_y, side):
                 action_list.append(
                     {'x': x, 'y': y, 'to_x': next_of_step_stone_x, 'to_y': next_of_step_stone_y,
                      'direction': kcu.DIAGONAL_BACKWARD_LEFT1, 'step': 2,
@@ -107,7 +107,7 @@ def get_actions(state_map, x, y):
             while next_of_step_stone_y >= kcu.TOP_WALL:
                 # 포이거나 우리편이면 정지
                 if kcu.is_cannon(state_map, x, next_of_step_stone_y) or \
-                        kcu.is_our_side(state_map, x, next_of_step_stone_y, side):
+                  kcu.is_our_side(state_map, x, next_of_step_stone_y, side):
                     break
 
                 action_list.append(
@@ -143,7 +143,7 @@ def get_actions(state_map, x, y):
             while next_of_step_stone_x <= kcu.RIGHT_WALL:
                 # 포이거나 우리편이면 정지
                 if kcu.is_cannon(state_map, next_of_step_stone_x, y) or \
-                        kcu.is_our_side(state_map, next_of_step_stone_x, y, side):
+                  kcu.is_our_side(state_map, next_of_step_stone_x, y, side):
                     break
 
                 action_list.append(
@@ -179,7 +179,7 @@ def get_actions(state_map, x, y):
             while next_of_step_stone_x >= kcu.LEFT_WALL:
                 # 포이거나 우리편이면 정지
                 if kcu.is_cannon(state_map, next_of_step_stone_x, y) or \
-                        kcu.is_our_side(state_map, next_of_step_stone_x, y, side):
+                  kcu.is_our_side(state_map, next_of_step_stone_x, y, side):
                     break
 
                 action_list.append(
@@ -209,13 +209,13 @@ def get_actions(state_map, x, y):
 
         # 포가아닌 말의 한칸후부터 포이거나 우리편말이나오기 전칸까지 액션 추가
         if step_stone_y < kcu.BOTTOM_WALL and step_stone_y > y:
-            next_of_step_stone_y = step_stone_y - 1
+            next_of_step_stone_y = step_stone_y + 1
             step = 1
             add_step = step_stone_y - y
             while next_of_step_stone_y <= kcu.BOTTOM_WALL:
                 # 포이거나 우리편이면 정지
                 if kcu.is_cannon(state_map, x, next_of_step_stone_y) or \
-                        kcu.is_our_side(state_map, x, next_of_step_stone_y, side):
+                  kcu.is_our_side(state_map, x, next_of_step_stone_y, side):
                     break
 
                 action_list.append(

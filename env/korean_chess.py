@@ -71,6 +71,9 @@ class KoreanChess(Env):
         if not self.state_list:
             self.state_list = {}
 
+    def set_property(self, key, properties):
+        self.properties[key] = properties
+
     @staticmethod
     def convert_state_key(state_map):
         return str(state_map).replace('[', '').replace(', ', ',').replace(']', '').replace("'", '')
@@ -175,9 +178,9 @@ class KoreanChess(Env):
 
     def print_map(self, state, side, episode=0, turn=0, blue_reward_episode=0, red_reward_episode=0, done_side=False,
                   is_draw=False, blue_win_cnt=0, red_win_cnt=0, Q1=None, Q2=None):
-        if turn % 20 is not 0:
-            return
-        time.sleep(1)
+        # if turn % 20 is not 0:
+        #     return
+        # time.sleep(1)
         if os.name == 'nt':
             os.system('cls')
         else:
@@ -189,8 +192,8 @@ class KoreanChess(Env):
         else:
             map = self.state_list[state]['state_map']
         print(
-            'EPISODE {:d}, TURN {:d}, BLUE REWARD {:d}, RED REWARD {:d}'.format(episode, turn, blue_reward_episode,
-                                                                                   red_reward_episode))
+            'EPISODE {:s}, TURN {:d}, BLUE REWARD {:d}, RED REWARD {:d}'.format(str(episode), turn, blue_reward_episode,
+                                                                                red_reward_episode))
         if Q1 and Q2:
             print('Q1 COUNT {:d}, Q2 COUNT {:d}'.format(len(Q1), len(Q2)))
         print('TOTAL BLUE WIN {:d}, TOTAL RED WIN {:d}, TOTAL STATE COUNT {:d}'.format(blue_win_cnt, red_win_cnt,
@@ -207,7 +210,7 @@ class KoreanChess(Env):
             converted_line = [KoreanChess.PIECE_LIST[val] for val in line]
             # sys.stdout.write('\r' + ' '.join(converted_line))
             print(' '.join(converted_line))
-        #     # print('======================================================')
+            #     # print('======================================================')
 
     def init_q_state(self, Q, state, is_red=False):
         if not Q or state not in Q:
@@ -282,3 +285,24 @@ class KoreanChess(Env):
             return False
         else:
             return np.argmax(Q[state] + np.random.randn(1, action_cnt) / (i + 1))
+
+    def get_action_with_record(self, Q, state, record, is_red=False):
+        if is_red:
+            # reverse state
+            action_list = self.state_list[self.reverse_state_key(state)]['action_list']
+        else:
+            action_list = self.state_list[state]['action_list']
+
+        if not Q or state not in Q:
+            Q[state] = np.zeros(len(action_list))
+
+        for i, action in enumerate(action_list):
+            if action['x'] == record['x'] \
+              and action['y'] == record['y'] \
+              and action['to_x'] == record['to_x'] \
+              and action['to_y'] == record['to_y']:
+                return i
+
+        import json
+        return np.argmax(Q[state] + np.random.randn(1, len(action_list)) / (i + 1))
+        # raise Exception("coudn't find record action\n" + json.dumps(action_list) + "\n" + json.dumps(record))

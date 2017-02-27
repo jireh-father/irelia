@@ -7,34 +7,9 @@ import numpy as np
 import time
 import json
 from env import korean_chess_util as kcu
+from env.korean_chess import KoreanChess
 import os
 import shutil
-import codecs
-import re
-
-def parse_record(record_list):
-    return ''
-
-q_file = codecs.open('/Users/softlemon/Downloads/163.gib', encoding='euckr')
-i = 0
-tmp_record_list = []
-record_list = []
-for line in q_file:
-    if not line[0].isdigit():
-        if len(tmp_record_list) > 0:
-            record_list.append(parse_record(tmp_record_list))
-            tmp_record_list = []
-
-        continue
-    line = line.strip()
-    tmp_record_list.append(line)
-
-
-    print(line)
-    if i > 30:
-        break
-    i+=1
-sys.exit()
 
 # you can restore state_list
 state_list_file = None  # open('./state_list.json') if os.path.isfile('./state_list.json') else None
@@ -42,7 +17,6 @@ restore_state_list = json.load(state_list_file) if state_list_file else None
 Game.register('KoreanChess',
               {'position_type': 'random', 'state_list': restore_state_list if restore_state_list else None,
                'init_state': None, 'init_side': 'b'})
-
 env = Game.make('KoreanChess')
 
 # load q table if existed.
@@ -74,93 +48,109 @@ Q_blue = restore_q_blue
 Q_red = restore_q_red
 
 dis = .99
-num_episodes = 1000000
+num_episodes = 10
 
 blue_reward_list = []
 red_reward_list = []
 blue_win_cnt = 0
 red_win_cnt = 0
 
+records_path = 'D:/data/korean_chess/records.txt'
+records_file = open(records_path)
+
 for i in range(num_episodes):
-    blue_state = env.reset()
-    env.print_map(blue_state, kcu.BLUE)
-    blue_reward_all = 0
-    red_reward_all = 0
-    blue_done = False
-    red_done = False
-    old_red_state = None
-    red_action = False
-    is_draw = False
-    j = 0
-    while not blue_done and not red_done:
-        if j >= 300:
-            break
+    k = 0
+    for line in records_file:
+        line = line.strip()
+        records = json.loads(line)
+        record_count = len(records['records'])
+        winner = records['winner']
+        env.set_property('position_type', [records['blue_position_type'], records['red_position_type']])
+        records = records['records']
 
-        blue_action = env.get_action(Q_blue, blue_state, i)
-        red_state, blue_reward, blue_done, is_draw = env.step(blue_action, blue_state)
-        env.print_map(red_state, kcu.RED, i, j, blue_reward_all, red_reward_all, kcu.BLUE if blue_done else False,
-                      is_draw, blue_win_cnt, red_win_cnt, Q1=Q_blue, Q2=Q_red)
-        if blue_action is False and red_action is False:
-            break
+        blue_state = env.reset()
 
-        if old_red_state:
-            env.init_q_state(Q_red, red_state, True)
-            cur_reward = (red_reward - blue_reward)
-            # cur_reward = red_reward
-            if red_state in Q_red and len(Q_red[red_state]) > 0:
-                cur_q_value = cur_reward + dis * np.max(Q_red[red_state])
+        env.print_map(blue_state, kcu.BLUE)
+        blue_reward_all = 0
+        red_reward_all = 0
+        blue_done = False
+        red_done = False
+        old_red_state = None
+        red_action = False
+        is_draw = False
+        j = 0
+        while j <= record_count:
+            # blue action
+            if j < record_count:
+                blue_action = env.get_action_with_record(Q_blue, blue_state, records[j])
+                red_state, blue_reward, blue_done, is_draw = env.step(blue_action, blue_state)
+                if record_count - 2 <= j and winner is kcu.BLUE:
+                    blue_reward = KoreanChess.REWARD_LIST[kcu.KING]
+                env.print_map(red_state, kcu.RED, str(i) + ':' + str(k), j, blue_reward_all, red_reward_all,
+                              kcu.BLUE if blue_done else False,
+                              is_draw, blue_win_cnt, red_win_cnt, Q1=Q_blue, Q2=Q_red)
+
+            # red update
+            if old_red_state:
+                env.init_q_state(Q_red, red_state, True)
+                cur_reward = (red_reward - blue_reward)
+                # cur_reward = red_reward
+                if red_state in Q_red and len(Q_red[red_state]) > 0:
+                    cur_q_value = cur_reward + dis * np.max(Q_red[red_state])
+                else:
+                    cur_q_value = cur_reward
+                Q_red[old_red_state][red_action] = cur_q_value
+                red_reward_all += (red_reward - blue_reward)
+
+            if j >= record_count:
+                break
+
+            # red action
+            j += 1
+            if j < record_count:
+                red_action = env.get_action_with_record(Q_red, red_state, records[j], True)
+                next_blue_state, red_reward, red_done, is_draw = env.step(red_action, red_state, True)
+                if record_count - 2 <= j and winner is kcu.RED:
+                    red_reward = KoreanChess.REWARD_LIST[kcu.KING]
+                env.print_map(next_blue_state, kcu.BLUE, str(i) + ':' + str(k), j, blue_reward_all, red_reward_all,
+                              kcu.RED if red_done else False,
+                              is_draw, blue_win_cnt, red_win_cnt, Q1=Q_blue, Q2=Q_red)
+
+            # blue update
+            env.init_q_state(Q_blue, next_blue_state)
+            cur_reward = (blue_reward - red_reward)
+            # cur_reward = blue_reward
+            if next_blue_state in Q_blue and len(Q_blue[next_blue_state]) > 0:
+                cur_q_value = cur_reward + dis * np.max(Q_blue[next_blue_state])
             else:
                 cur_q_value = cur_reward
-            Q_red[old_red_state][red_action] = cur_q_value
-            red_reward_all += (red_reward - blue_reward)
+            Q_blue[blue_state][blue_action] = cur_q_value
+            blue_reward_all += (blue_reward - red_reward)
 
-        if blue_done and not is_draw:
-            blue_win_cnt += 1
-            break
+            # ready for next
+            blue_state = next_blue_state
+            old_red_state = red_state
+            j += 1
 
-        red_action = env.get_action(Q_red, red_state, i, True)
-        next_blue_state, red_reward, red_done, is_draw = env.step(red_action, red_state, True)
-        env.print_map(next_blue_state, kcu.BLUE, i, j, blue_reward_all, red_reward_all, kcu.RED if red_done else False,
-                      is_draw, blue_win_cnt, red_win_cnt, Q1=Q_blue, Q2=Q_red)
-
-        if blue_action is False and red_action is False:
-            break
-
-        env.init_q_state(Q_blue, next_blue_state)
-        cur_reward = (blue_reward - red_reward)
-        # cur_reward = blue_reward
-        if next_blue_state in Q_blue and len(Q_blue[next_blue_state]) > 0:
-            cur_q_value = cur_reward + dis * np.max(Q_blue[next_blue_state])
-        else:
-            cur_q_value = cur_reward
-        Q_blue[blue_state][blue_action] = cur_q_value
-        blue_reward_all += (blue_reward - red_reward)
-
-        if red_done and not is_draw:
-            red_win_cnt += 1
-            break
-
-        blue_state = next_blue_state
-        old_red_state = red_state
-        j += 1
-
-    blue_reward_list.append(blue_reward_all)
-    red_reward_list.append(red_reward_all)
-    # time.sleep(1)
-
-    if i % 10000 is 0 and i is not 0:
-        if os.path.isfile('./q_blue.txt'):
-            shutil.move('./q_blue.txt', './q_blue_bak.txt')
-        if os.path.isfile('./q_red.txt'):
-            shutil.move('./q_red.txt', './q_red_bak.txt')
-        with open('./q_blue.txt', 'w') as outfile:
-            for key in Q_blue:
-                outfile.write(key + "\n" + json.dumps(Q_blue[key].tolist()) + "\n")
-            outfile.close()
-        with open('./q_red.txt', 'w') as outfile:
-            for key in Q_red:
-                outfile.write(key + "\n" + json.dumps(Q_red[key].tolist()) + "\n")
-            outfile.close()
+        blue_reward_list.append(blue_reward_all)
+        red_reward_list.append(red_reward_all)
+        # time.sleep(1)
+        k += 1
 
     if i % 100 is 0 and i is not 0:
         env.state_list = {}
+
+if os.path.isfile('./q_blue_with_data.txt'):
+    shutil.move('./q_blue_with_data.txt', './q_blue_with_data_bak.txt')
+
+with open('./q_blue_with_data.txt', 'w') as outfile:
+    for key in Q_blue:
+        outfile.write(key + "\n" + json.dumps(Q_blue[key].tolist()) + "\n")
+    outfile.close()
+
+if os.path.isfile('./q_red_with_data.txt'):
+    shutil.move('./q_red.q_red_with_data', './q_red_with_data_bak.txt')
+with open('./q_red.q_red_with_data', 'w') as outfile:
+    for key in Q_red:
+        outfile.write(key + "\n" + json.dumps(Q_red[key].tolist()) + "\n")
+    outfile.close()
