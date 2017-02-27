@@ -177,43 +177,46 @@ class KoreanChess(Env):
             return state_key
 
     def print_map(self, state, side, episode=0, turn=0, blue_reward_episode=0, red_reward_episode=0, done_side=False,
-                  is_draw=False, blue_win_cnt=0, red_win_cnt=0, Q1=None, Q2=None):
+                  is_draw=False, blue_win_cnt=0, red_win_cnt=0, Q1=None, Q2=None, file=None, line=None):
         # if turn % 20 is not 0:
         #     return
-        # time.sleep(2)
-        # if os.name == 'nt':
-        #     os.system('cls')
-        # else:
-        #     os.system('clear')
-        # sys.stdout.flush()
-        # if side is kcu.RED:
-        #     state = self.reverse_state_key(state)
-        #     map = self.reverse_state_map(self.state_list[state]['state_map'])
-        # else:
-        #     map = self.state_list[state]['state_map']
+        # time.sleep(0.1)
+        if os.name == 'nt':
+            os.system('cls')
+        else:
+            os.system('clear')
+        sys.stdout.flush()
+        if side is kcu.RED:
+            state = self.reverse_state_key(state)
+            map = self.reverse_state_map(self.state_list[state]['state_map'])
+        else:
+            map = self.state_list[state]['state_map']
         print(
             'EPISODE {:s}, TURN {:d}, BLUE REWARD {:d}, RED REWARD {:d}'.format(str(episode), turn, blue_reward_episode,
                                                                                 red_reward_episode))
         if Q1 and Q2:
             print('Q1 COUNT {:d}, Q2 COUNT {:d}'.format(len(Q1), len(Q2)))
-        # print('TOTAL BLUE WIN {:d}, TOTAL RED WIN {:d}, TOTAL STATE COUNT {:d}'.format(blue_win_cnt, red_win_cnt,
-        #                                                                                len(self.state_list)))
-        #
-        # if is_draw:
-        #     print('draw')
-        # elif done_side:
-        #     print('WiNNER {:s}'.format(done_side))
-        # else:
-        #     print('running')
-        #
-        # for line in map:
-        #     converted_line = [KoreanChess.PIECE_LIST[val] for val in line]
-        #     # sys.stdout.write('\r' + ' '.join(converted_line))
-        #     print(' '.join(converted_line))
-            #     # print('======================================================')
+            print('TOTAL BLUE WIN {:d}, TOTAL RED WIN {:d}, TOTAL STATE COUNT {:d}'.format(blue_win_cnt, red_win_cnt,
+                                                                                           len(self.state_list)))
 
-    def print_map_for_test(self, state, side, episode=0, turn=0, blue_reward_episode=0, red_reward_episode=0, done_side=False,
-                  is_draw=False, blue_win_cnt=0, red_win_cnt=0, Q1=None, Q2=None):
+            if is_draw:
+                print('draw')
+            elif done_side:
+                print('WiNNER {:s}'.format(done_side))
+            else:
+                print('running : ' + side)
+            if file and line:
+                print(file, line)
+
+            for line in map:
+                converted_line = [KoreanChess.PIECE_LIST[val] for val in line]
+                # sys.stdout.write('\r' + ' '.join(converted_line))
+                print(' '.join(converted_line))
+                #     # print('======================================================')
+
+    def print_map_for_test(self, state, side, episode=0, turn=0, blue_reward_episode=0, red_reward_episode=0,
+                           done_side=False,
+                           is_draw=False, blue_win_cnt=0, red_win_cnt=0, Q1=None, Q2=None):
         # if turn % 20 is not 0:
         #     return
         time.sleep(2)
@@ -340,9 +343,9 @@ class KoreanChess(Env):
                 return i
 
         import json
-        return False
+        # return False
         # return np.argmax(Q[state] + np.random.randn(1, len(action_list)) / (i + 1))
-        # raise Exception("coudn't find record action\n" + json.dumps(action_list) + "\n" + json.dumps(record))
+        raise Exception("coudn't find record action\n" + json.dumps(action_list) + "\n" + json.dumps(record))
 
     def get_action_test(self, Q, state, i, is_red=False):
         if not Q or state not in Q:

@@ -65,6 +65,8 @@ for i in range(num_episodes):
         records = json.loads(line)
         record_count = len(records['records'])
         winner = records['winner']
+        record_file_name = records['file']
+        record_file_line = records['line']
         env.set_property('position_type', [records['blue_position_type'], records['red_position_type']])
         records = records['records']
 
@@ -91,7 +93,8 @@ for i in range(num_episodes):
                     break
                 env.print_map(red_state, kcu.RED, str(i) + ':' + str(k), j, blue_reward_all, red_reward_all,
                               kcu.BLUE if blue_done else False,
-                              is_draw, blue_win_cnt, red_win_cnt, Q1=Q_blue, Q2=Q_red)
+                              is_draw, blue_win_cnt, red_win_cnt, Q1=Q_blue, Q2=Q_red, file=record_file_name,
+                              line=record_file_line)
 
             # red update
             if old_red_state:
@@ -120,7 +123,8 @@ for i in range(num_episodes):
                     break
                 env.print_map(next_blue_state, kcu.BLUE, str(i) + ':' + str(k), j, blue_reward_all, red_reward_all,
                               kcu.RED if red_done else False,
-                              is_draw, blue_win_cnt, red_win_cnt, Q1=Q_blue, Q2=Q_red)
+                              is_draw, blue_win_cnt, red_win_cnt, Q1=Q_blue, Q2=Q_red, file=record_file_name,
+                              line=record_file_line)
 
             # blue update
             env.init_q_state(Q_blue, next_blue_state)

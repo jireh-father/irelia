@@ -57,14 +57,18 @@ for record_file_path in record_files:
         lines = record_file.readlines()
     except UnicodeDecodeError:
         continue
+    i_line = 0
     for line in lines:
+        i_line += 1
         line = line.strip()
         if not line:
             if tmp_records:
                 record_list.append({'blue_position_type': blue_position_type,
                                     'red_position_type': red_position_type,
                                     'winner': result,
-                                    'records': parse_record(tmp_records)})
+                                    'records': parse_record(tmp_records),
+                                    'file': record_file_path,
+                                    'line': i_line})
                 tmp_records = ''
                 blue_position_type = None
                 red_position_type = None
