@@ -178,8 +178,8 @@ class KoreanChess(Env):
 
     def print_map(self, state, side, episode=0, turn=0, blue_reward_episode=0, red_reward_episode=0, done_side=False,
                   is_draw=False, blue_win_cnt=0, red_win_cnt=0, Q1=None, Q2=None, file=None, line=None):
-        # if turn % 20 is not 0:
-        #     return
+        if turn % 20 is not 0:
+            return
         # time.sleep(0.1)
         # if os.name == 'nt':
         #     os.system('cls')
