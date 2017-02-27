@@ -83,20 +83,27 @@ for record_file_path in record_files:
 
             continue
 
-        if line[1:3] == u'초차':
+        if line[1:4] == u'초차림':
+            print(record_file_path)
             blue_position_type = position_type_map[line[6:10]]
             continue
-        if line[1:3] == u'한차':
+        if line[1:4] == u'한차림':
             red_position_type = position_type_map[line[6:10]]
             continue
         if line[1:4] == u'대국결':
-            if re.findall('접속 끊김|시간승', line, re.UNICODE):
+            if re.findall('접속 끊김|시간승|무승부', line, re.UNICODE):
                 blue_position_type = None
                 red_position_type = None
                 result = None
             else:
-                result = re.findall('한|초', line, re.UNICODE)[0]
-                result = 'b' if result == u'한' else 'r'
+                result_list = re.findall('한|초', line, re.UNICODE)
+                if not result_list:
+                    blue_position_type = None
+                    red_position_type = None
+                    result = None
+                else:
+                    result = re.findall('한|초', line, re.UNICODE)[0]
+                    result = 'b' if result == u'한' else 'r'
             continue
 
 
