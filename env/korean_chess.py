@@ -306,3 +306,19 @@ class KoreanChess(Env):
         import json
         return np.argmax(Q[state] + np.random.randn(1, len(action_list)) / (i + 1))
         # raise Exception("coudn't find record action\n" + json.dumps(action_list) + "\n" + json.dumps(record))
+
+    def get_action_test(self, Q, state, i, is_red=False):
+        if not Q or state not in Q:
+            # if state is not in the Q, create state map and actions by state hash key
+            if is_red:
+                # reverse state
+                action_cnt = len(self.state_list[self.reverse_state_key(state)]['action_list'])
+            else:
+                action_cnt = len(self.state_list[state]['action_list'])
+            Q[state] = np.zeros(action_cnt)
+
+        action_cnt = len(Q[state])
+        if action_cnt < 1:
+            return False
+        else:
+            return np.argmax(Q[state] + np.random.randn(1, action_cnt) / (i + 50))

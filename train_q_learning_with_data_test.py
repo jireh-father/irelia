@@ -70,7 +70,7 @@ for i in range(num_episodes):
         if j >= 300:
             break
 
-        blue_action = env.get_action(Q_blue, blue_state, i)
+        blue_action = env.get_action_test(Q_blue, blue_state, i)
         red_state, blue_reward, blue_done, is_draw = env.step(blue_action, blue_state)
         env.print_map(red_state, kcu.RED, i, j, blue_reward_all, red_reward_all, kcu.BLUE if blue_done else False,
                       is_draw, blue_win_cnt, red_win_cnt, Q1=Q_blue, Q2=Q_red)
@@ -92,7 +92,7 @@ for i in range(num_episodes):
             blue_win_cnt += 1
             break
 
-        red_action = env.get_action(Q_red, red_state, i, True)
+        red_action = env.get_action_test(Q_red, red_state, i, True)
         next_blue_state, red_reward, red_done, is_draw = env.step(red_action, red_state, True)
         env.print_map(next_blue_state, kcu.BLUE, i, j, blue_reward_all, red_reward_all, kcu.RED if red_done else False,
                       is_draw, blue_win_cnt, red_win_cnt, Q1=Q_blue, Q2=Q_red)
