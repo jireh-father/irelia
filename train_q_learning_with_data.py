@@ -149,8 +149,8 @@ with open('./q_blue_with_data.txt', 'w') as outfile:
     outfile.close()
 
 if os.path.isfile('./q_red_with_data.txt'):
-    shutil.move('./q_red.q_red_with_data', './q_red_with_data_bak.txt')
-with open('./q_red.q_red_with_data', 'w') as outfile:
+    shutil.move('./q_red_with_data.txt', './q_red_with_data_bak.txt')
+with open('./q_red_with_data.txt', 'w') as outfile:
     for key in Q_red:
         outfile.write(key + "\n" + json.dumps(Q_red[key].tolist()) + "\n")
     outfile.close()
