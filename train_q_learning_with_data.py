@@ -22,8 +22,8 @@ env = Game.make('KoreanChess')
 # load q table if existed.
 restore_q_blue = {}
 restore_q_red = {}
-if os.path.isfile('./q_blue.txt'):
-    q_file = open('./q_blue.txt')
+if os.path.isfile('./q_blue_with_data.txt'):
+    q_file = open('./q_blue_with_data.txt')
     i = 0
     key = None
     for line in q_file:
@@ -33,8 +33,8 @@ if os.path.isfile('./q_blue.txt'):
             restore_q_blue[key] = np.array(json.loads(line.strip()))
         i += 1
 
-if os.path.isfile('./q_red.txt'):
-    q_file = open('./q_red.txt')
+if os.path.isfile('./q_blue_with_data.txt'):
+    q_file = open('./q_blue_with_data.txt')
     i = 0
     key = None
     for line in q_file:
@@ -48,7 +48,7 @@ Q_blue = restore_q_blue
 Q_red = restore_q_red
 
 dis = .99
-num_episodes = 10
+num_episodes = 100
 
 blue_reward_list = []
 red_reward_list = []
