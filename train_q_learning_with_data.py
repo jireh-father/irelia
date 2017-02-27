@@ -61,6 +61,7 @@ for i in range(num_episodes):
 
     records_file = open(records_path)
     for line in records_file:
+        start = time.time()
         line = line.strip()
         records = json.loads(line)
         record_count = len(records['records'])
@@ -152,6 +153,7 @@ for i in range(num_episodes):
         red_reward_list.append(red_reward_all)
         # time.sleep(1)
         k += 1
+        print(time.time() - start)
 
     if i % 100 is 0 and i is not 0:
         env.state_list = {}
