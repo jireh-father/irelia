@@ -155,21 +155,21 @@ for i in range(num_episodes):
         k += 1
         print(time.time() - start)
 
-    if i % 100 is 0 and i is not 0:
-        env.state_list = {}
+    # env.state_list = {}
+    if i % 10 is 0 and i is not 0:
+
+        if os.path.isfile('./q_blue_with_data.txt'):
+            shutil.move('./q_blue_with_data.txt', './q_blue_with_data_bak.txt')
+
+        with open('./q_blue_with_data.txt', 'w') as outfile:
+            for key in Q_blue:
+                outfile.write(key + "\n" + json.dumps(Q_blue[key].tolist()) + "\n")
+            outfile.close()
+
+        if os.path.isfile('./q_red_with_data.txt'):
+            shutil.move('./q_red_with_data.txt', './q_red_with_data_bak.txt')
+        with open('./q_red_with_data.txt', 'w') as outfile:
+            for key in Q_red:
+                outfile.write(key + "\n" + json.dumps(Q_red[key].tolist()) + "\n")
+            outfile.close()
     records_file.close()
-
-if os.path.isfile('./q_blue_with_data.txt'):
-    shutil.move('./q_blue_with_data.txt', './q_blue_with_data_bak.txt')
-
-with open('./q_blue_with_data.txt', 'w') as outfile:
-    for key in Q_blue:
-        outfile.write(key + "\n" + json.dumps(Q_blue[key].tolist()) + "\n")
-    outfile.close()
-
-if os.path.isfile('./q_red_with_data.txt'):
-    shutil.move('./q_red_with_data.txt', './q_red_with_data_bak.txt')
-with open('./q_red_with_data.txt', 'w') as outfile:
-    for key in Q_red:
-        outfile.write(key + "\n" + json.dumps(Q_red[key].tolist()) + "\n")
-    outfile.close()
