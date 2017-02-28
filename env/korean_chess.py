@@ -21,6 +21,7 @@ class KoreanChess(Env):
                   0: '------'}
 
     state_list = {}
+    state_links = {}
     rand_position_list = ['masangmasang', 'masangsangma', 'sangmasangma', 'sangmamasang']
     default_state_map = [
         ['r6', 0, 0, 'r3', 0, 'r3', 0, 0, 'r6'],
@@ -300,11 +301,21 @@ class KoreanChess(Env):
         #  to state_list, if new_state is not in state_list.
         new_state_key = self.create_state(new_state_map, opposite_side)
 
+        # add
+        self.add_state_link(state_key, new_state_key, action)
+
         # print next state
         # self.print_map(new_state_key, opposite_side)
 
         # return new_state, reward, is_done
         return new_state_key, reward, is_done, is_draw
+
+    def add_state_link(self, source_state, target_state, action):
+        if source_state not in self.state_links:
+            self.state_links[source_state] = {}
+
+        if action not in self.state_links[source_state]:
+            self.state_links[source_state][action] = target_state
 
     def reverse_state_key(self, state):
         return self.convert_state_key(list(reversed(state.split(','))))
