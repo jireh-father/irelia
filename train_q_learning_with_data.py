@@ -165,7 +165,7 @@ for i in range(num_episodes):
         red_reward_list.append(red_reward_all)
         # time.sleep(1)
         k += 1
-        print(time.time() - start)
+        # print(time.time() - start)
 
     records_file.close()
 
