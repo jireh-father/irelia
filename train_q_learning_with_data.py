@@ -57,7 +57,7 @@ Q_blue = restore_q_blue
 Q_red = restore_q_red
 
 dis = .99
-num_episodes = 1000
+num_episodes = 100
 
 blue_reward_list = []
 red_reward_list = []
@@ -163,7 +163,6 @@ for i in range(num_episodes):
         # time.sleep(1)
         k += 1
         print(time.time() - start)
-        break
 
     records_file.close()
 
