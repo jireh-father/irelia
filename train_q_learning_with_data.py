@@ -10,6 +10,7 @@ from env import korean_chess_util as kcu
 from env.korean_chess import KoreanChess
 import os
 import shutil
+import random
 
 # you can restore state_list
 state_list_file = None  # open('./state_list.json') if os.path.isfile('./state_list.json') else None
@@ -69,7 +70,9 @@ for i in range(num_episodes):
     k = 0
 
     records_file = open(records_path)
-    for line in records_file:
+    lines = records_file.readlines()
+    random.shuffle(lines)
+    for line in lines:
         start = time.time()
         line = line.strip()
         records = json.loads(line)
