@@ -55,6 +55,7 @@ red_win_cnt = 0
 history = []
 
 blue_state = env.reset()
+history.append(blue_state)
 env.print_map_for_test(blue_state, kcu.BLUE)
 blue_reward_all = 0
 red_reward_all = 0
@@ -67,6 +68,7 @@ j = 0
 while not blue_done and not red_done:
     blue_action = env.get_action_test(Q_blue, blue_state, i)
     red_state, blue_reward, blue_done, is_draw = env.step(blue_action, blue_state)
+    history.append(red_state)
     env.print_map_for_test(red_state, kcu.RED, i, j, blue_reward_all, red_reward_all,
                            kcu.BLUE if blue_done else False,
                            is_draw, blue_win_cnt, red_win_cnt, Q1=Q_blue, Q2=Q_red)
@@ -82,6 +84,7 @@ while not blue_done and not red_done:
 
     red_action = env.get_action_test(Q_red, red_state, i, True)
     next_blue_state, red_reward, red_done, is_draw = env.step(red_action, red_state, True)
+    history.append(next_blue_state)
     env.print_map_for_test(next_blue_state, kcu.BLUE, i, j, blue_reward_all, red_reward_all,
                            kcu.RED if red_done else False,
                            is_draw, blue_win_cnt, red_win_cnt, Q1=Q_blue, Q2=Q_red)
@@ -101,3 +104,9 @@ while not blue_done and not red_done:
 
 blue_reward_list.append(blue_reward_all)
 red_reward_list.append(red_reward_all)
+
+if os.path.isfile('./test_history.txt'):
+    shutil.move('./test_history.txt', './test_history.txt')
+with open('./test_history.txt', 'w') as outfile:
+    outfile.write(json.dumps(history))
+    outfile.close()
