@@ -220,7 +220,7 @@ class KoreanChess(Env):
                            is_draw=False, blue_win_cnt=0, red_win_cnt=0, Q1=None, Q2=None):
         # if turn % 20 is not 0:
         #     return
-        time.sleep(1)
+        time.sleep(0.2)
         if os.name == 'nt':
             os.system('cls')
         else:
