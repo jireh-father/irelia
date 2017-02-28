@@ -45,20 +45,20 @@ if os.path.isfile('./q_red_with_data.txt'):
             restore_q_red[key] = np.array(json.loads(line.strip()))
         i += 1
 
-if os.path.isfile('./q_state_link.txt'):
-    q_state_link = open('./q_state_link.txt')
-    state_links = {}
-    for line in q_state_link:
-        link = json.loads(line.strip())
-        state_links[list(link.keys())[0]] = list(link.values())[0]
-
-    env.state_links = state_links
+# if os.path.isfile('./q_state_link.txt'):
+#     q_state_link = open('./q_state_link.txt')
+#     state_links = {}
+#     for line in q_state_link:
+#         link = json.loads(line.strip())
+#         state_links[list(link.keys())[0]] = list(link.values())[0]
+#
+#     env.state_links = state_links
 
 Q_blue = restore_q_blue
 Q_red = restore_q_red
 
 dis = .99
-num_episodes = 100
+num_episodes = 10000
 
 blue_reward_list = []
 red_reward_list = []
@@ -171,26 +171,26 @@ for i in range(num_episodes):
 
     # if i % 10 is 0 and i is not 0:
     env.state_list = {}
-    # env.state_links = {}
+    env.state_links = {}
+    if i % 50 is 0 and i is not 0:
+        if os.path.isfile('./q_blue_with_data.txt'):
+            shutil.move('./q_blue_with_data.txt', './q_blue_with_data_bak.txt')
 
-if os.path.isfile('./q_blue_with_data.txt'):
-    shutil.move('./q_blue_with_data.txt', './q_blue_with_data_bak.txt')
+        with open('./q_blue_with_data.txt', 'w') as outfile:
+            for key in Q_blue:
+                outfile.write(key + "\n" + json.dumps(Q_blue[key].tolist()) + "\n")
+            outfile.close()
 
-with open('./q_blue_with_data.txt', 'w') as outfile:
-    for key in Q_blue:
-        outfile.write(key + "\n" + json.dumps(Q_blue[key].tolist()) + "\n")
-    outfile.close()
+        if os.path.isfile('./q_red_with_data.txt'):
+            shutil.move('./q_red_with_data.txt', './q_red_with_data_bak.txt')
+        with open('./q_red_with_data.txt', 'w') as outfile:
+            for key in Q_red:
+                outfile.write(key + "\n" + json.dumps(Q_red[key].tolist()) + "\n")
+            outfile.close()
 
-if os.path.isfile('./q_red_with_data.txt'):
-    shutil.move('./q_red_with_data.txt', './q_red_with_data_bak.txt')
-with open('./q_red_with_data.txt', 'w') as outfile:
-    for key in Q_red:
-        outfile.write(key + "\n" + json.dumps(Q_red[key].tolist()) + "\n")
-    outfile.close()
-
-if os.path.isfile('./q_state_link.txt'):
-    shutil.move('./q_state_link.txt', './q_state_link_bak.txt')
-with open('./q_state_link.txt', 'w') as outfile:
-    for key in env.state_links:
-        outfile.write(json.dumps({key: env.state_links[key]}) + "\n")
-    outfile.close()
+# if os.path.isfile('./q_state_link.txt'):
+#     shutil.move('./q_state_link.txt', './q_state_link_bak.txt')
+# with open('./q_state_link.txt', 'w') as outfile:
+#     for key in env.state_links:
+#         outfile.write(json.dumps({key: env.state_links[key]}) + "\n")
+#     outfile.close()
