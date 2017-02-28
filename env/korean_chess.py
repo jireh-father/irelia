@@ -220,7 +220,7 @@ class KoreanChess(Env):
                            is_draw=False, blue_win_cnt=0, red_win_cnt=0, Q1=None, Q2=None):
         # if turn % 20 is not 0:
         #     return
-        time.sleep(2)
+        time.sleep(1)
         if os.name == 'nt':
             os.system('cls')
         else:
@@ -373,4 +373,4 @@ class KoreanChess(Env):
         if action_cnt < 1:
             return False
         else:
-            return np.argmax(Q[state] + np.random.randn(1, action_cnt) / (i + action_cnt))
+            return np.argmax(Q[state] + np.random.randn(1, action_cnt) / (i + action_cnt * 10))
