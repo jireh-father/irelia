@@ -106,7 +106,7 @@ blue_reward_list.append(blue_reward_all)
 red_reward_list.append(red_reward_all)
 
 if os.path.isfile('./test_history.txt'):
-    shutil.move('./test_history.txt', './test_history.txt')
+    shutil.move('./test_history.txt', './test_history_bak.txt')
 with open('./test_history.txt', 'w') as outfile:
     outfile.write(json.dumps(history))
     outfile.close()
