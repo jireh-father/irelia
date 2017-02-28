@@ -13,6 +13,8 @@ import numpy as np
 from env.env import Env
 from env.korean_chess_piece import piece_factory
 from env import korean_chess_util as kcu
+import re
+import operator
 
 
 class KoreanChess(Env):
@@ -271,6 +273,27 @@ class KoreanChess(Env):
         return result_map
 
     @staticmethod
+    def convert_state_list(state_key):
+        state_list = state_key.split(',')
+        converted_state = []
+        for piece in state_list:
+            if piece.isdigit():
+                converted_state.append(int(piece))
+                continue
+            if piece[0] is 'r':
+                converted_state.append(0 - int(piece[1:]))
+            else:
+                converted_state.append(int(piece[1:]))
+
+        return np.array(converted_state)
+
+    @staticmethod
+    def compare_state(state_key1, state_key2):
+        state_list1 = KoreanChess.convert_state_list(state_key1)
+        state_list2 = KoreanChess.convert_state_list(state_key2)
+        return np.sum(np.abs(state_list1 - state_list2))
+
+    @staticmethod
     def is_draw(state_map):
         for line in state_map:
             for piece in line:
@@ -359,18 +382,40 @@ class KoreanChess(Env):
         # return np.argmax(Q[state] + np.random.randn(1, len(action_list)) / (i + 1))
         raise Exception("coudn't find record action\n" + json.dumps(action_list) + "\n" + json.dumps(record))
 
+    def get_action_list(self, state, is_red=False):
+        if is_red:
+            # reverse state
+            action_list = self.state_list[self.reverse_state_key(state)]['action_list']
+        else:
+            action_list = self.state_list[state]['action_list']
+        return action_list
+
     def get_action_test(self, Q, state, i, is_red=False):
+        action_list = self.get_action_list(state, is_red)
+        action_cnt = len(action_list)
+
         if not Q or state not in Q:
-            # if state is not in the Q, create state map and actions by state hash key
-            if is_red:
-                # reverse state
-                action_cnt = len(self.state_list[self.reverse_state_key(state)]['action_list'])
-            else:
-                action_cnt = len(self.state_list[state]['action_list'])
             Q[state] = np.zeros(action_cnt)
 
-        action_cnt = len(Q[state])
-        if action_cnt < 1:
-            return False
+        if action_cnt < 1 or np.sum(Q[state]) == 0:
+            q_state_key_list = {}
+            for q_state_key in Q:
+                diff_score = KoreanChess.compare_state(state, q_state_key)
+                q_state_key_list[q_state_key] = diff_score
+
+            sorted_q_state_list = sorted(q_state_key_list.items(), key=operator.itemgetter(1))
+            for item in sorted_q_state_list:
+                q_state = item[0]
+                if np.sum(Q[q_state]) == 0:
+                    continue
+                q_max_action_no = np.argmax(Q[q_state])
+                q_action_list = self.get_action_list(q_state, is_red)
+                q_action = q_action_list[q_max_action_no]
+                for i, action in enumerate(action_list):
+                    if action['x'] == q_action['x'] \
+                      and action['y'] == q_action['y'] \
+                      and action['to_x'] == q_action['to_x'] \
+                      and action['to_y'] == q_action['to_y']:
+                        return i
         else:
-            return np.argmax(Q[state] + np.random.randn(1, action_cnt) / (i + action_cnt * 10))
+            return np.argmax(Q[state] + np.random.randn(1, action_cnt) / (action_cnt * 10))
