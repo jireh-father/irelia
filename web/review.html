@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Irelia AI Review</title>
+
+</head>
+<body>
+<div style="postion:relative;width:450px;height:450px;">
+
+    <div id="map" style="width:450px; height:450px; background-image: url('http://img.hovits.com/korean_chess/Jang_Gi_Pan_2.jpg');position:absolute;border:1px solid gray;background-size: cover;">
+
+    </div>
+    <!--<img width="450" height="450" src="http://img.hovits.com/korean_chess/Jang_Gi_Pan_2.jpg" style="position:absolute;"/>-->
+</div>
+<div>
+    <textarea id="json">
+        {
+        "map": [[0,0,"r1",0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,"r1"]],
+        "review_history": [{"x":2,"y":0,"to_x":3,"to_y":1},{"x":3,"y":1,"to_x":4,"to_y":2},{"x":4,"y":2,"to_x":5,"to_y":3}]
+        }
+
+    </textarea>
+</div>
+<script>
+    window.piece_map = { r1 : '<img width="45" height="40" src="http://img.hovits.com/korean_chess/Green_King.png" style="position:absolute;margin-left:3px;margin-top:4px;left:0;top:0;transition:all 0.5s linear;"/>',
+     }
+
+    sample_json = JSON.parse(document.getElementById('json').textContent)
+    window.map = sample_json.map
+    window.review_history = sample_json.review_history
+
+    for (var i = 0 ; i < window.map.length ; i++) {
+        var row = window.map[i];
+        for (var j = 0 ; j < row.length ; j++) {
+            if (row[j] == 0){
+                continue;
+            }
+            document.getElementById('map').innerHTML += window.piece_map[row[j]];
+
+            cur_piece = document.getElementById('map').children[document.getElementById('map').children.length-1]
+            cur_piece.style.left = (j * 50) + "px"
+            cur_piece.style.top = (i * 45) + "px"
+            cur_piece.setAttribute("id", "piece_"+i+"_"+j)
+            window.map[i][j] = "piece_"+i+"_"+j
+        }
+    }
+
+
+    window.step_no = 0
+
+    function step() {
+        step_data = window.review_history[window.step_no]
+
+        document.getElementById(window.map[step_data.y][step_data.x]).style.left =  (step_data.x * 50) + "px"
+        document.getElementById(window.map[step_data.y][step_data.x]).style.top =  (step_data.y * 45) + "px"
+        window.map[step_data.to_y][step_data.to_x] = window.map[step_data.y][step_data.x]
+        window.map[step_data.y][step_data.x] = 0
+
+
+        window.step_no += 1
+        if (window.step_no >= window.review_history.length){
+            clearInterval(window.review_interval_id);
+        }
+    }
+    window.review_interval_id = setInterval(step, 1000)
+</script>
+</body>
+</html>
