@@ -66,10 +66,10 @@ red_action = False
 is_draw = False
 j = 0
 while not blue_done and not red_done:
-    blue_action = env.get_action_test(Q_blue, blue_state, i)
+    blue_action = env.get_action_test(Q_blue, blue_state)
     red_state, blue_reward, blue_done, is_draw = env.step(blue_action, blue_state)
     # history.append(red_state)
-    env.print_map_for_test(red_state, kcu.RED, i, j, blue_reward_all, red_reward_all,
+    env.print_map_for_test(red_state, kcu.RED, 0, j, blue_reward_all, red_reward_all,
                            kcu.BLUE if blue_done else False,
                            is_draw, blue_win_cnt, red_win_cnt, Q1=Q_blue, Q2=Q_red)
     if blue_action is False and red_action is False:
@@ -82,10 +82,10 @@ while not blue_done and not red_done:
         blue_win_cnt += 1
         break
 
-    red_action = env.get_action_test(Q_red, red_state, i, True)
+    red_action = env.get_action_test(Q_red, red_state, True)
     next_blue_state, red_reward, red_done, is_draw = env.step(red_action, red_state, True)
     # history.append(next_blue_state)
-    env.print_map_for_test(next_blue_state, kcu.BLUE, i, j, blue_reward_all, red_reward_all,
+    env.print_map_for_test(next_blue_state, kcu.BLUE, 0, j, blue_reward_all, red_reward_all,
                            kcu.RED if red_done else False,
                            is_draw, blue_win_cnt, red_win_cnt, Q1=Q_blue, Q2=Q_red)
 

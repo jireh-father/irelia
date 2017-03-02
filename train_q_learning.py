@@ -79,7 +79,7 @@ for i in range(num_episodes):
 
         if old_red_state:
             env.init_q_state(Q_red, red_state, True)
-            cur_reward = (red_reward - blue_reward)
+            cur_reward = (red_reward - blue_reward * .9)
             # cur_reward = red_reward
             if red_state in Q_red and len(Q_red[red_state]) > 0:
                 cur_q_value = cur_reward + dis * np.max(Q_red[red_state])
@@ -101,7 +101,7 @@ for i in range(num_episodes):
             break
 
         env.init_q_state(Q_blue, next_blue_state)
-        cur_reward = (blue_reward - red_reward)
+        cur_reward = (blue_reward - red_reward * .9)
         # cur_reward = blue_reward
         if next_blue_state in Q_blue and len(Q_blue[next_blue_state]) > 0:
             cur_q_value = cur_reward + dis * np.max(Q_blue[next_blue_state])

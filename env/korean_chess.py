@@ -9,11 +9,11 @@ import random
 import sys
 import time
 import numpy as np
+import numbers
 
 from env.env import Env
 from env.korean_chess_piece import piece_factory
 from env import korean_chess_util as kcu
-import re
 import operator
 
 
@@ -81,7 +81,21 @@ class KoreanChess(Env):
 
     @staticmethod
     def convert_state_key(state_map):
-        return str(state_map).replace('[', '').replace(', ', ',').replace(']', '').replace("'", '')
+        empty_cnt = 0
+        state_key_list = []
+        for row in state_map:
+            for piece in row:
+                if piece == 0:
+                    empty_cnt += 1
+                else:
+                    if empty_cnt > 0:
+                        state_key_list.append(str(empty_cnt))
+                        empty_cnt = 0
+                    state_key_list.append(piece)
+        if empty_cnt > 0:
+            state_key_list.append(str(empty_cnt))
+
+        return ','.join(state_key_list)
 
     @staticmethod
     def get_actions(state_map, side):
@@ -103,7 +117,6 @@ class KoreanChess(Env):
             state = self.state_list[self.reverse_state_key(state_key)]
         else:
             state = self.state_list[state_key]
-
         action = state['action_list'][action_key]
         state_map = copy.deepcopy(state['state_map'])
         to_x = action['to_x']
@@ -172,7 +185,6 @@ class KoreanChess(Env):
 
     def create_state(self, state_map, side):
         state_key = KoreanChess.convert_state_key(state_map)
-
         if state_key not in self.state_list:
             self.state_list[state_key] = {'state_map': state_map,
                                           'action_list': KoreanChess.get_actions(state_map, side), 'side': side}
@@ -186,7 +198,7 @@ class KoreanChess(Env):
                   is_draw=False, blue_win_cnt=0, red_win_cnt=0, Q1=None, Q2=None, file=None, line=None):
         if turn % 60 is not 0:
             return
-        # time.sleep(0.1)
+        # time.sleep(0.5)
         # if os.name == 'nt':
         #     os.system('cls')
         # else:
@@ -218,7 +230,7 @@ class KoreanChess(Env):
         #     converted_line = [KoreanChess.PIECE_LIST[val] for val in line]
         #     # sys.stdout.write('\r' + ' '.join(converted_line))
         #     print(' '.join(converted_line))
-        #     # print('======================================================')
+            #     # print('======================================================')
 
     def print_map_for_test(self, state, side, episode=0, turn=0, blue_reward_episode=0, red_reward_episode=0,
                            done_side=False,
@@ -269,18 +281,30 @@ class KoreanChess(Env):
 
     @staticmethod
     def convert_state_map(state_key):
-        state_map = np.array(state_key.split(',')).reshape([-1, 9]).tolist()
-        result_map = []
-        for line in state_map:
-            result_map.append([int(val) if val is '0' else val for val in line])
-        return result_map
+        state_map = []
+        for piece in state_key.split(','):
+            if piece.isdigit():
+                state_map += [0] * int(piece)
+            else:
+                state_map.append(piece)
+        return np.array(state_map).reshape([-1, 9]).tolist()
+
+    @staticmethod
+    def convert_uncompressed_state_list(state_key):
+        state_map = []
+        for piece in state_key.split(','):
+            if piece.isdigit():
+                state_map += [0] * int(piece)
+            else:
+                state_map.append(piece)
+        return state_map
 
     @staticmethod
     def convert_state_list(state_key):
-        state_list = state_key.split(',')
+        state_list = KoreanChess.convert_uncompressed_state_list(state_key)
         converted_state = []
         for piece in state_list:
-            if piece.isdigit():
+            if isinstance(piece, numbers.Integral):
                 converted_state.append(int(piece))
                 continue
             if piece[0] is 'r':
@@ -288,13 +312,13 @@ class KoreanChess(Env):
             else:
                 converted_state.append(int(piece[1:]))
 
-        return np.array(converted_state)
+        return converted_state
 
     @staticmethod
     def compare_state(state_key1, state_key2):
         state_list1 = KoreanChess.convert_state_list(state_key1)
         state_list2 = KoreanChess.convert_state_list(state_key2)
-        return np.sum(np.abs(state_list1 - state_list2))
+        return np.sum(np.abs(np.array(state_list1) - np.array(state_list2)))
 
     @staticmethod
     def is_draw(state_map):
@@ -344,7 +368,7 @@ class KoreanChess(Env):
             self.state_links[source_state][action] = target_state
 
     def reverse_state_key(self, state):
-        return self.convert_state_key(list(reversed(state.split(','))))
+        return ','.join(list(reversed(state.split(','))))
 
     def get_action(self, Q, state, i, is_red=False):
         if not Q or state not in Q:
@@ -370,9 +394,9 @@ class KoreanChess(Env):
 
         for i, action in enumerate(action_list):
             if action['x'] == record['x'] \
-              and action['y'] == record['y'] \
-              and action['to_x'] == record['to_x'] \
-              and action['to_y'] == record['to_y']:
+                    and action['y'] == record['y'] \
+                    and action['to_x'] == record['to_x'] \
+                    and action['to_y'] == record['to_y']:
                 return i
 
         import json
@@ -392,7 +416,7 @@ class KoreanChess(Env):
         action_list = self.state_list[state_key]['action_list']
         return action_list
 
-    def get_action_test(self, Q, state, i, is_red=False):
+    def get_action_test(self, Q, state, is_red=False):
         action_list = self.get_action_list(state, is_red)
         action_cnt = len(action_list)
 
@@ -415,9 +439,9 @@ class KoreanChess(Env):
                 q_action = q_action_list[q_max_action_no]
                 for i, action in enumerate(action_list):
                     if action['x'] == q_action['x'] \
-                      and action['y'] == q_action['y'] \
-                      and action['to_x'] == q_action['to_x'] \
-                      and action['to_y'] == q_action['to_y']:
+                            and action['y'] == q_action['y'] \
+                            and action['to_x'] == q_action['to_x'] \
+                            and action['to_y'] == q_action['to_y']:
                         return i
-        else:
-            return np.argmax(Q[state] + np.random.randn(1, action_cnt) / (action_cnt * 10))
+
+        return np.argmax(Q[state] + np.random.randn(1, action_cnt) / (action_cnt * 10))
