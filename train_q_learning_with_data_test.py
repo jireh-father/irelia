@@ -102,11 +102,11 @@ while not blue_done and not red_done:
     old_red_state = red_state
     j += 1
 
+    if os.path.isfile('./test_history.txt'):
+        shutil.move('./test_history.txt', './test_history_bak.txt')
+    with open('./test_history.txt', 'w') as outfile:
+        outfile.write(json.dumps({'map': init_map, 'review_history': env.history}))
+        outfile.close()
+
 blue_reward_list.append(blue_reward_all)
 red_reward_list.append(red_reward_all)
-
-if os.path.isfile('./test_history.txt'):
-    shutil.move('./test_history.txt', './test_history_bak.txt')
-with open('./test_history.txt', 'w') as outfile:
-    outfile.write(json.dumps({'map': init_map, 'review_history': env.history}))
-    outfile.close()
