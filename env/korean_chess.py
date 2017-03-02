@@ -24,6 +24,7 @@ class KoreanChess(Env):
 
     state_list = {}
     state_links = {}
+    history = []
     rand_position_list = ['masangmasang', 'masangsangma', 'sangmasangma', 'sangmamasang']
     default_state_map = [
         ['r6', 0, 0, 'r3', 0, 'r3', 0, 0, 'r6'],
@@ -73,6 +74,7 @@ class KoreanChess(Env):
             self.state_list = self.properties['state_list']
         if not self.state_list:
             self.state_list = {}
+        self.history = []
 
     def set_property(self, key, properties):
         self.properties[key] = properties
@@ -108,6 +110,7 @@ class KoreanChess(Env):
         to_y = action['to_y']
         x = action['x']
         y = action['y']
+        self.history.append({'x': x, 'y': y, 'to_x': to_x, 'to_y': to_y})
 
         # reward 계산
         to_value = state_map[to_y][to_x]
