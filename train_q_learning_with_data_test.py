@@ -54,7 +54,7 @@ blue_win_cnt = 0
 red_win_cnt = 0
 
 blue_state = env.reset()
-init_map = env.state_list[blue_state]
+init_map = env.state_list[blue_state]['state_map']
 # history.append(blue_state)
 env.print_map_for_test(blue_state, kcu.BLUE)
 blue_reward_all = 0
