@@ -143,6 +143,10 @@ class KoreanChess(Env):
         # state_map 결과는 무조건 reverse해서 보내라
         return self.reverse_state_map(state_map), reward, is_done, KoreanChess.is_draw(state_map)
 
+    def is_losing_way(state_map, x, y, to_x, to_y, side):
+
+        return False
+
     def reverse_state_map(self, state_map):
         reversed_map = np.array(list(reversed(np.array(state_map).flatten()))).reshape([-1, 9]).tolist()
         result_map = []
@@ -230,7 +234,7 @@ class KoreanChess(Env):
         #     converted_line = [KoreanChess.PIECE_LIST[val] for val in line]
         #     # sys.stdout.write('\r' + ' '.join(converted_line))
         #     print(' '.join(converted_line))
-            #     # print('======================================================')
+        #     # print('======================================================')
 
     def print_map_for_test(self, state, side, episode=0, turn=0, blue_reward_episode=0, red_reward_episode=0,
                            done_side=False,
@@ -394,9 +398,9 @@ class KoreanChess(Env):
 
         for i, action in enumerate(action_list):
             if action['x'] == record['x'] \
-                    and action['y'] == record['y'] \
-                    and action['to_x'] == record['to_x'] \
-                    and action['to_y'] == record['to_y']:
+              and action['y'] == record['y'] \
+              and action['to_x'] == record['to_x'] \
+              and action['to_y'] == record['to_y']:
                 return i
 
         import json
@@ -439,9 +443,9 @@ class KoreanChess(Env):
                 q_action = q_action_list[q_max_action_no]
                 for i, action in enumerate(action_list):
                     if action['x'] == q_action['x'] \
-                            and action['y'] == q_action['y'] \
-                            and action['to_x'] == q_action['to_x'] \
-                            and action['to_y'] == q_action['to_y']:
+                      and action['y'] == q_action['y'] \
+                      and action['to_x'] == q_action['to_x'] \
+                      and action['to_y'] == q_action['to_y']:
                         return i
 
         return np.argmax(Q[state] + np.random.randn(1, action_cnt) / (action_cnt * 10))

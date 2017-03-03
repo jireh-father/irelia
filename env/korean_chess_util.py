@@ -44,7 +44,11 @@ def is_enemy(state_map, x, y, side):
     return state_map[y][x] != 0 and state_map[y][x][0] != side
 
 
-def is_losing_way(state_map, x, y, to_x, to_y, side):
+def is_jang(state_map, to_x, to_y, side):
+    return state_map[to_y][to_x][1] == KING and state_map[to_y][to_x][0] != side
+
+
+def is_dead_end(state_map, x, y, to_x, to_y, side):
     return False
 
 
