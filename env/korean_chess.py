@@ -80,6 +80,23 @@ class KoreanChess(Env):
         self.properties[key] = properties
 
     @staticmethod
+    def compress_state_key(state_key):
+        empty_cnt = 0
+        state_key_list = []
+        for piece in state_key.split(','):
+            if piece == 0:
+                empty_cnt += 1
+            else:
+                if empty_cnt > 0:
+                    state_key_list.append(str(empty_cnt))
+                    empty_cnt = 0
+                state_key_list.append(piece)
+        if empty_cnt > 0:
+            state_key_list.append(str(empty_cnt))
+
+        return ','.join(state_key_list)
+
+    @staticmethod
     def convert_state_key(state_map):
         empty_cnt = 0
         state_key_list = []
@@ -96,6 +113,41 @@ class KoreanChess(Env):
             state_key_list.append(str(empty_cnt))
 
         return ','.join(state_key_list)
+
+    @staticmethod
+    def convert_state_map(state_key):
+        state_map = []
+        for piece in state_key.split(','):
+            if piece.isdigit():
+                state_map += [0] * int(piece)
+            else:
+                state_map.append(piece)
+        return np.array(state_map).reshape([-1, 9]).tolist()
+
+    @staticmethod
+    def convert_uncompressed_state_list(state_key):
+        state_map = []
+        for piece in state_key.split(','):
+            if piece.isdigit():
+                state_map += [0] * int(piece)
+            else:
+                state_map.append(piece)
+        return state_map
+
+    @staticmethod
+    def convert_state_list(state_key):
+        state_list = KoreanChess.convert_uncompressed_state_list(state_key)
+        converted_state = []
+        for piece in state_list:
+            if isinstance(piece, numbers.Integral):
+                converted_state.append(int(piece))
+                continue
+            if piece[0] is 'r':
+                converted_state.append(0 - int(piece[1:]))
+            else:
+                converted_state.append(int(piece[1:]))
+
+        return converted_state
 
     @staticmethod
     def get_actions(state_map, side):
@@ -283,40 +335,7 @@ class KoreanChess(Env):
                 action_cnt = len(self.state_list[state]['action_list'])
             Q[state] = np.zeros(action_cnt)
 
-    @staticmethod
-    def convert_state_map(state_key):
-        state_map = []
-        for piece in state_key.split(','):
-            if piece.isdigit():
-                state_map += [0] * int(piece)
-            else:
-                state_map.append(piece)
-        return np.array(state_map).reshape([-1, 9]).tolist()
 
-    @staticmethod
-    def convert_uncompressed_state_list(state_key):
-        state_map = []
-        for piece in state_key.split(','):
-            if piece.isdigit():
-                state_map += [0] * int(piece)
-            else:
-                state_map.append(piece)
-        return state_map
-
-    @staticmethod
-    def convert_state_list(state_key):
-        state_list = KoreanChess.convert_uncompressed_state_list(state_key)
-        converted_state = []
-        for piece in state_list:
-            if isinstance(piece, numbers.Integral):
-                converted_state.append(int(piece))
-                continue
-            if piece[0] is 'r':
-                converted_state.append(0 - int(piece[1:]))
-            else:
-                converted_state.append(int(piece[1:]))
-
-        return converted_state
 
     @staticmethod
     def compare_state(state_key1, state_key2):

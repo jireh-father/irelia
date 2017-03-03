@@ -1,15 +1,83 @@
 import sqlite3
+import os
+import json
+import numpy as np
+import datetime
+from env.korean_chess import KoreanChess
 
-conn = sqlite3.connect('q_blue.db')
+insert_list = []
+q_file = open('../q_blue_with_data.txt')
+i = 0
+key = None
+for line in q_file:
+    if i % 2 is 0:
+        key = line.strip()
+    else:
+        q_value = np.array(json.loads(line.strip()))
+        if np.sum(q_value) == 0:
+            quality_json = '0'
+        else:
+            quality_dict = {}
+            for j, q in enumerate(q_value):
+                if q != 0:
+                    quality_dict[j] = q
+            quality_json = json.dumps(quality_dict)
+        insert_list.append("('%s', '%s', %d, '%s', %d)" % ((KoreanChess.compress_state_key(key), quality_json, len(q_value), datetime.datetime.now().strftime('%Y-%m-%d %H:%I:%S'), 1)))
+    i += 1
+
+
+
+
+conn = sqlite3.connect('/home/irelia/sqlite/q_blue.db')
 
 c = conn.cursor()
 
 # Create table
-c.execute('''CREATE TABLE if not exists q_table
-             (state_key text primary_key, q_values text not null, update_time, )''')
+c.execute(
+    "CREATE TABLE IF NOT EXISTS t_quality ( state_key text PRIMARY KEY, quality_json text, action_size integer NOT NULL, update_date text, update_cnt integer DEFAULT 1 );")
 
 # Insert a row of data
-c.execute("INSERT INTO stocks VALUES ('2006-01-05','BUY','RHAT',100,35.14)")
+c.execute("INSERT INTO t_quality VALUES " + ','.join(insert_list))
+
+# Save (commit) the changes
+conn.commit()
+
+# We can also close the connection if we are done with it.
+# Just be sure any changes have been committed or they will be lost.
+conn.close()
+
+q_file = open('../q_red_with_data.txt')
+i = 0
+key = None
+for line in q_file:
+    if i % 2 is 0:
+        key = line.strip()
+    else:
+        q_value = np.array(json.loads(line.strip()))
+        if np.sum(q_value) == 0:
+            quality_json = '0'
+        else:
+            quality_dict = {}
+            for j, q in enumerate(q_value):
+                if q != 0:
+                    quality_dict[j] = q
+            quality_json = json.dumps(quality_dict)
+        insert_list.append("('%s', '%s', %d, '%s', %d)" % ((KoreanChess.compress_state_key(key), quality_json, len(q_value), datetime.datetime.now().strftime('%Y-%m-%d %H:%I:%S'), 1)))
+    i += 1
+
+
+
+
+conn = sqlite3.connect('/home/irelia/sqlite/q_red.db')
+
+c = conn.cursor()
+
+# Create table
+c.execute(
+    "CREATE TABLE IF NOT EXISTS t_quality ( state_key text PRIMARY KEY, quality_json text, action_size integer NOT NULL, update_date text, update_cnt integer DEFAULT 1 );")
+
+# Insert a row of data
+c.execute("INSERT INTO t_quality VALUES " + ','.join(insert_list))
 
 # Save (commit) the changes
 conn.commit()
