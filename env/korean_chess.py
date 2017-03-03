@@ -331,8 +331,7 @@ class KoreanChess(Env):
                 if piece is 0:
                     continue
                 # todo: 상하고 마하고 구현해면 빼
-                if piece[1] is not kcu.KING and piece[1] is not kcu.GUARDIAN and piece[1] is not kcu.HORSE and piece[
-                    1] is not kcu.SANG:
+                if piece[1] is not kcu.KING and piece[1] is not kcu.GUARDIAN:
                     return False
                     # todo: 포만 남았을경우 못넘는경우면 비긴걸로 계산
         return True
