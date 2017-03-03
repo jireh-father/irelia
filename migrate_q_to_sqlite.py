@@ -6,7 +6,7 @@ import datetime
 from env.korean_chess import KoreanChess
 
 insert_list = []
-q_file = open('../q_blue_with_data.txt')
+q_file = open('./q_blue_with_data.txt')
 i = 0
 key = None
 for line in q_file:
@@ -28,7 +28,7 @@ for line in q_file:
 
 
 
-conn = sqlite3.connect('/home/irelia/sqlite/q_blue.db')
+conn = sqlite3.connect('./q_blue.db')
 
 c = conn.cursor()
 
@@ -46,7 +46,7 @@ conn.commit()
 # Just be sure any changes have been committed or they will be lost.
 conn.close()
 
-q_file = open('../q_red_with_data.txt')
+q_file = open('./q_red_with_data.txt')
 i = 0
 key = None
 for line in q_file:
@@ -68,7 +68,7 @@ for line in q_file:
 
 
 
-conn = sqlite3.connect('/home/irelia/sqlite/q_red.db')
+conn = sqlite3.connect('./q_red.db')
 
 c = conn.cursor()
 
