@@ -5,7 +5,14 @@ import numpy as np
 import datetime
 from env.korean_chess import KoreanChess
 
-insert_list = []
+conn = sqlite3.connect('./q_blue.db')
+
+c = conn.cursor()
+
+# Create table
+c.execute(
+    "CREATE TABLE IF NOT EXISTS t_quality ( state_key text PRIMARY KEY, quality_json text, action_size integer NOT NULL, update_date text, update_cnt integer DEFAULT 1 );")
+
 q_file = open('./q_blue_with_data.txt')
 i = 0
 key = None
@@ -22,22 +29,14 @@ for line in q_file:
                 if q != 0:
                     quality_dict[j] = q
             quality_json = json.dumps(quality_dict)
-        insert_list.append("('%s', '%s', %d, '%s', %d)" % ((KoreanChess.compress_state_key(key), quality_json, len(q_value), datetime.datetime.now().strftime('%Y-%m-%d %H:%I:%S'), 1)))
+
+        # Insert a row of data
+        c.execute("INSERT INTO t_quality VALUES " + "('%s', '%s', %d, '%s', %d)" % ((KoreanChess.compress_state_key(key), quality_json, len(q_value),
+                                             datetime.datetime.now().strftime('%Y-%m-%d %H:%I:%S'), 1)))
     i += 1
 
+q_file.close()
 
-
-
-conn = sqlite3.connect('./q_blue.db')
-
-c = conn.cursor()
-
-# Create table
-c.execute(
-    "CREATE TABLE IF NOT EXISTS t_quality ( state_key text PRIMARY KEY, quality_json text, action_size integer NOT NULL, update_date text, update_cnt integer DEFAULT 1 );")
-
-# Insert a row of data
-c.execute("INSERT INTO t_quality VALUES " + ','.join(insert_list))
 
 # Save (commit) the changes
 conn.commit()
@@ -45,6 +44,13 @@ conn.commit()
 # We can also close the connection if we are done with it.
 # Just be sure any changes have been committed or they will be lost.
 conn.close()
+conn = sqlite3.connect('./q_red.db')
+
+c = conn.cursor()
+
+# Create table
+c.execute(
+    "CREATE TABLE IF NOT EXISTS t_quality ( state_key text PRIMARY KEY, quality_json text, action_size integer NOT NULL, update_date text, update_cnt integer DEFAULT 1 );")
 
 q_file = open('./q_red_with_data.txt')
 i = 0
@@ -62,22 +68,17 @@ for line in q_file:
                 if q != 0:
                     quality_dict[j] = q
             quality_json = json.dumps(quality_dict)
-        insert_list.append("('%s', '%s', %d, '%s', %d)" % ((KoreanChess.compress_state_key(key), quality_json, len(q_value), datetime.datetime.now().strftime('%Y-%m-%d %H:%I:%S'), 1)))
+
+        c.execute("INSERT INTO t_quality VALUES " + "('%s', '%s', %d, '%s', %d)" % ((KoreanChess.compress_state_key(key), quality_json, len(q_value),
+                                         datetime.datetime.now().strftime('%Y-%m-%d %H:%I:%S'), 1)))
     i += 1
 
 
+q_file.close()
 
-
-conn = sqlite3.connect('./q_red.db')
-
-c = conn.cursor()
-
-# Create table
-c.execute(
-    "CREATE TABLE IF NOT EXISTS t_quality ( state_key text PRIMARY KEY, quality_json text, action_size integer NOT NULL, update_date text, update_cnt integer DEFAULT 1 );")
 
 # Insert a row of data
-c.execute("INSERT INTO t_quality VALUES " + ','.join(insert_list))
+
 
 # Save (commit) the changes
 conn.commit()
