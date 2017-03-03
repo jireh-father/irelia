@@ -12,3 +12,7 @@ python train_q_learning_with_data.py
 ## play (trained ai vs trained ai)
 
 python train_q_learning_with_data_test.py
+
+
+## review site
+http://irelia.hovits.com/web/review.html
