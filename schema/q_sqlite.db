@@ -1,0 +1,7 @@
+CREATE TABLE IF NOT EXISTS t_quality (
+    state_key text PRIMARY KEY,
+    quality_json text,
+    action_size integer NOT NULL,
+    update_date text DEFAULT datetime('now', 'localtime'),
+    update_cnt integer DEFAULT 1
+)
