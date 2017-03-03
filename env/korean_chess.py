@@ -84,7 +84,7 @@ class KoreanChess(Env):
         empty_cnt = 0
         state_key_list = []
         for piece in state_key.split(','):
-            if piece == 0:
+            if piece == '0':
                 empty_cnt += 1
             else:
                 if empty_cnt > 0:
