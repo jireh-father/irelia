@@ -320,8 +320,8 @@
         if (window.map[step_data.to_y][step_data.to_x] != 0 && window.map[step_data.to_y][step_data.to_x][0] != color) {
             document.getElementById(window.id_map[step_data.to_y][step_data.to_x]).style.left = (window.death * 40) + 450 + "px"
             document.getElementById(window.id_map[step_data.to_y][step_data.to_x]).style.top = "400px"
-            document.getElementById(window.id_map[step_data.to_y][step_data.to_x]).setAttribute('id', '')
             document.getElementById(window.id_map[step_data.to_y][step_data.to_x]).setAttribute('onclick', '');
+            document.getElementById(window.id_map[step_data.to_y][step_data.to_x]).setAttribute('id', '')
             window.death += 1
         }
         window.map[step_data.to_y][step_data.to_x] = window.map[step_data.y][step_data.x]
