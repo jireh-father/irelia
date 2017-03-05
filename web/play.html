@@ -185,7 +185,7 @@
         if(window.color == 'r'){
             step_by_irelia();
         }else{
-            window.irelia_turn = false;
+
             get_actions();
         }
     }
@@ -196,7 +196,7 @@
         action = get_irelia_action();
         step(action, window.color == 'b' ? 'r' : 'b');
         checkGameState();
-        window.irelia_turn = false
+        get_actions();
     }
 
     function get_irelia_action(){
@@ -246,11 +246,36 @@
         cur_piece.setAttribute('id', 'moving_piece_' + i);
         cur_piece.setAttribute('onclick', 'step_by_user('+x+', '+y+', '+to_x+', '+to_y+');');
     }
+
+    function parse_actions(action_list){
+        result = {};
+        for(var i=0;i<action_list.length;i++){
+            action = action_list[i];
+            key = action['x'] + ":" + action['y'];
+            if(!result[key]){
+                result[key] = [];
+            }
+            result[key].push = action;
+        }
+        return result;
+    }
     
     function get_actions(){
-        //ajax get actions: map, color
-        //window.actions
-        window.actions = {'0:9':[{x:0,y:9,to_x:0,to_y:8},{x:0,y:9,to_x:0,to_y:7}], '8:9':[{x:8,y:9,to_x:8,to_y:8},{x:8,y:9,to_x:8,to_y:7}]}
+        var xhttp = new XMLHttpRequest();
+          xhttp.onreadystatechange = function() {
+            if (this.readyState == 4 && this.status == 200) {
+             response = JSON.parse(this.responseText);
+             if( !response or response['error'] == true){
+                alert('sorry unknown error..');
+                return;
+             }
+
+             window.actions = parse_actions(response);
+             window.irelia_turn = false;
+            }
+          };
+          xhttp.open("GET", "hovits.com:5000/actions?side="+window.color+"&state_map="+JSON.stringify(window.map), true);
+          xhttp.send();
     }
 
     function remove_moving_pieces()
