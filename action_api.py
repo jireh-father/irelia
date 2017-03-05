@@ -15,9 +15,12 @@ def play():
 @app.route("/action")
 def action():
     state_map = request.args.get('state_map')
+
     side = request.args.get('side')
     if not state_map or side not in ('b', 'r'):
         return json.dumps({'error': True, 'msg': 'invalid params', 'data': {'state_map': state_map, 'side': side}})
+
+    state_map = json.loads(state_map)
 
     if side is 'b':
         state_map = KoreanChess.reverse_state_map(state_map)
