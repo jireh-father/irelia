@@ -34,7 +34,7 @@ def action():
 
     c = conn.cursor()
 
-    c.execute('SELECT * FROM t_quality WHERE state_key=?', state_key)
+    c.execute("SELECT * FROM t_quality WHERE state_key='" + state_key + "'")
 
     result = c.fetchone()
     c.close()
