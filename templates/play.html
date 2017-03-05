@@ -315,8 +315,8 @@
 
         document.getElementById(window.id_map[step_data.y][step_data.x]).style.left =  (step_data.to_x * 50) + "px"
         document.getElementById(window.id_map[step_data.y][step_data.x]).style.top =  (step_data.to_y * 45) + "px"
-        document.getElementById(window.id_map[step_data.y][step_data.x]).setAttribute('id', "piece_"+step_data.to_y+"_"+step_data.to_x)
         document.getElementById(window.id_map[step_data.y][step_data.x]).setAttribute('onclick', 'selectPiece("'+window.map[step_data.to_y][step_data.to_x]+'", '+step_data.to_x+', '+step_data.to_y+');');
+        document.getElementById(window.id_map[step_data.y][step_data.x]).setAttribute('id', "piece_"+step_data.to_y+"_"+step_data.to_x)
         if (window.map[step_data.to_y][step_data.to_x] != 0 && window.map[step_data.to_y][step_data.to_x][0] != color) {
             document.getElementById(window.id_map[step_data.to_y][step_data.to_x]).style.left = (window.death * 40) + 450 + "px"
             document.getElementById(window.id_map[step_data.to_y][step_data.to_x]).style.top = "400px"
