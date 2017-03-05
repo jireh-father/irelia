@@ -193,14 +193,27 @@
     function step_by_irelia(){
         //color, current state map
         window.irelia_turn = true
-        action = get_irelia_action();
-        step(action, window.color == 'b' ? 'r' : 'b');
-        checkGameState();
-        get_actions();
+        get_irelia_action();
+
     }
 
     function get_irelia_action(){
-        return {x:0,y:0, to_x:0, to_y:1}
+        var xhttp = new XMLHttpRequest();
+          xhttp.onreadystatechange = function() {
+            if (this.readyState == 4 && this.status == 200) {
+             response = JSON.parse(this.responseText);
+             if( !response || response['error'] == true){
+                alert('sorry unknown error..');
+                return;
+             }
+             window.irelia_action = response;
+             step(action, window.color == 'b' ? 'r' : 'b');
+            checkGameState();
+            get_actions();
+            }
+          };
+          xhttp.open("GET", "http://hovits.com:5000/action?side="+window.color=='b'?'r':'b'+"&state_map="+JSON.stringify(window.map), true);
+          xhttp.send();
     }
     
     function selectPiece(piece, x, y){
