@@ -219,8 +219,9 @@
             }
         }
 
-        action_list = window.actions[x+":"+y]
-        if(!action_list || action_list.length < 1){
+        if(window.actions[x+":"+y]){
+            action_list = window.actions[x+":"+y];
+        }else{
             return;
         }
 
