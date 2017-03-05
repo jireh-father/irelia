@@ -29,7 +29,7 @@ def action():
     if not state_map or side not in ('b', 'r'):
         return json.dumps({'error': True, 'msg': 'invalid params', 'data': {'state_map': state_map, 'side': side}})
 
-    state_map = filter_state_map(json.loads(state_map))
+    filter_state_map(json.loads(state_map))
 
     if side == 'b':
         reverse_state_map = KoreanChess.reverse_state_map(state_map)
@@ -70,7 +70,9 @@ def actions():
     side = request.args.get('side')
     if not state_map or side not in ('b', 'r'):
         return json.dumps({'error': True, 'msg': 'invalid params', 'data': {'state_map': state_map, 'side': side}})
-    result = KoreanChess.get_actions(filter_state_map(json.loads(state_map)), side)
+    state_map = json.loads(state_map)
+    filter_state_map(state_map)
+    result = KoreanChess.get_actions(state_map, side)
 
     return json.dumps(result)
 
