@@ -6,13 +6,19 @@ import sqlite3
 import operator
 import random
 
-
 app = Flask(__name__)
+
 
 @app.route('/<string:page_name>/')
 def static_page(page_name):
     return render_template('%s.html' % page_name)
 
+
+def filter_state_map(state_map):
+    for y, row in enumerate(state_map):
+        for x, piece in enumerate(row):
+            if piece == '0':
+                state_map[y][x] = 0
 
 
 @app.route("/action")
@@ -23,7 +29,7 @@ def action():
     if not state_map or side not in ('b', 'r'):
         return json.dumps({'error': True, 'msg': 'invalid params', 'data': {'state_map': state_map, 'side': side}})
 
-    state_map = json.loads(state_map)
+    state_map = filter_state_map(json.loads(state_map))
 
     if side == 'b':
         reverse_state_map = KoreanChess.reverse_state_map(state_map)
@@ -64,13 +70,13 @@ def actions():
     side = request.args.get('side')
     if not state_map or side not in ('b', 'r'):
         return json.dumps({'error': True, 'msg': 'invalid params', 'data': {'state_map': state_map, 'side': side}})
-    result = KoreanChess.get_actions(json.loads(state_map), side)
+    result = KoreanChess.get_actions(filter_state_map(json.loads(state_map)), side)
 
     return json.dumps(result)
 
 
-def error(msg, data = None):
-    return json.dumps({'error':True,'msg':msg,'data':data})
+def error(msg, data=None):
+    return json.dumps({'error': True, 'msg': msg, 'data': data})
 
 
 if __name__ == "__main__":
