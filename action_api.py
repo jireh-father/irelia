@@ -47,7 +47,6 @@ def action():
         max_action = max(q_values.iteritems(), key=operator.itemgetter(1))[0]
         if max_action not in actions:
             action = random.choice(actions)
-            return error('There is no the action! ' + max_action)
         else:
             action = actions[max_action]
     else:
