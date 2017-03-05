@@ -280,8 +280,7 @@
 
     function remove_moving_pieces()
     {
-        layer = document.getElementsByClassName('moving_piece_layer');
-        layer[0].remove();
+        document.getElementById('moving_piece_layer').remove();
     }
 
     function step_by_user(x, y, to_x, to_y){
