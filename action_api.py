@@ -22,7 +22,7 @@ def action():
 
     state_map = json.loads(state_map)
 
-    if side is 'b':
+    if side == 'b':
         state_map = KoreanChess.reverse_state_map(state_map)
         db_name = 'q_blue.db'
     else:
@@ -34,9 +34,14 @@ def action():
 
     c = conn.cursor()
 
-    c.execute("SELECT * FROM t_quality WHERE state_key='" + state_key + "'")
+    c.execute("SELECT quality_json FROM t_quality WHERE state_key='" + state_key + "'")
 
     result = c.fetchone()
+    if not result:
+        '1'
+    else:
+        '2'
+
     c.close()
     return result
 
