@@ -193,13 +193,14 @@ class KoreanChess(Env):
         is_done = reward == KoreanChess.REWARD_LIST[kcu.KING] or KoreanChess.is_draw(state_map)
 
         # state_map 결과는 무조건 reverse해서 보내라
-        return self.reverse_state_map(state_map), reward, is_done, KoreanChess.is_draw(state_map)
+        return KoreanChess.reverse_state_map(state_map), reward, is_done, KoreanChess.is_draw(state_map)
 
     def is_losing_way(state_map, x, y, to_x, to_y, side):
 
         return False
 
-    def reverse_state_map(self, state_map):
+    @staticmethod
+    def reverse_state_map(state_map):
         reversed_map = np.array(list(reversed(np.array(state_map).flatten()))).reshape([-1, 9]).tolist()
         result_map = []
         for line in reversed_map:
@@ -262,7 +263,7 @@ class KoreanChess(Env):
         # sys.stdout.flush()
         # if side is kcu.RED:
         #     state = self.reverse_state_key(state)
-        #     map = self.reverse_state_map(self.state_list[state]['state_map'])
+        #     map = KoreanChess.reverse_state_map(self.state_list[state]['state_map'])
         # else:
         #     map = self.state_list[state]['state_map']
         print(
@@ -301,7 +302,7 @@ class KoreanChess(Env):
         # sys.stdout.flush()
         if side is kcu.RED:
             state = self.reverse_state_key(state)
-            map = self.reverse_state_map(self.state_list[state]['state_map'])
+            map = KoreanChess.reverse_state_map(self.state_list[state]['state_map'])
         else:
             map = self.state_list[state]['state_map']
         print(
