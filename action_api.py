@@ -1,5 +1,5 @@
 from env.korean_chess import KoreanChess
-from flask import Flask
+from flask import Flask, render_template
 from flask import request
 import json
 import sqlite3
@@ -7,12 +7,12 @@ import operator
 import random
 
 
-app = Flask(__name__, static_url_path='/home/irelia/public_html')
+app = Flask(__name__)
 
+@app.route('/<string:page_name>/')
+def static_page(page_name):
+    return render_template('%s.html' % page_name)
 
-@app.route('/play')
-def play():
-    return app.send_static_file('web/play.html')
 
 
 @app.route("/action")
@@ -29,6 +29,7 @@ def action():
         reverse_state_map = KoreanChess.reverse_state_map(state_map)
         db_name = './q_blue.db'
     else:
+        reverse_state_map = state_map
         db_name = './q_red.db'
 
     state_key = KoreanChess.convert_state_key(reverse_state_map)
