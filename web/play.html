@@ -6,7 +6,7 @@
 
 </head>
 <body>
-<script>
+<script type="text/javascript">
     window.piece_map = { b1 : '<img width="45" height="40" src="http://img.hovits.com/korean_chess/Green_Zol.png" style="position:absolute;margin-left:3px;margin-top:4px;left:0;top:0;transition:all 0.5s linear;"/>',
     b2 : '<img width="45" height="40" src="http://img.hovits.com/korean_chess/Green_Sang.png" style="position:absolute;margin-left:3px;margin-top:4px;left:0;top:0;transition:all 0.5s linear;"/>',
     b3 : '<img width="45" height="40" src="http://img.hovits.com/korean_chess/Green_Sa.png" style="position:absolute;margin-left:3px;margin-top:4px;left:0;top:0;transition:all 0.5s linear;"/>',
@@ -198,6 +198,10 @@
         checkGameState();
         window.irelia_turn = false
     }
+
+    function get_irelia_action(){
+        return {x:0,y:0, to_x:0, to_y:1}
+    }
     
     function selectPiece(piece, x, y){
         if(window.irelia_turn){
@@ -215,16 +219,15 @@
             }
         }
 
-        actions = window.actions[x+":"+y]
-        window.ttt = actions;
-        if(!actions || actions.length < 1){
+        action_list = window.actions[x+":"+y]
+        if(!action_list || action_list.length < 1){
             return;
         }
 
         window.selected_piece = x+":"+y;
         
-        for(var i =0 ;i<actions.length;i++){
-            action = actions[i]
+        for(var i =0 ;i<action_list.length;i++){
+            action = action_list[i]
             to_x = action.to_x
             to_y = action.to_y
             showAction(piece,x,y,to_x, to_y, i);
@@ -247,7 +250,7 @@
     function get_actions(){
         //ajax get actions: map, color
         //window.actions
-        window.actions = {'0:9':[{x:0,y:9,to_x:0,to_y:8},{x:0,y:9,to_x:0,to_y:7}]}
+        window.actions = {'0:9':[{x:0,y:9,to_x:0,to_y:8},{x:0,y:9,to_x:0,to_y:7}], '8:9':[{x:8,y:9,to_x:8,to_y:8},{x:8,y:9,to_x:8,to_y:7}]}
     }
 
     function remove_moving_pieces()
@@ -297,6 +300,7 @@
         return reversed_map;
     }
 
+
 </script>
 <div style="width:450px;height:40px;border:1px solid gray;">
     <span id="step_no"></span>
@@ -309,9 +313,9 @@
     <input id="but_replay" type="button" value="replay!" onclick="replay();" style="display:none"/>
 </div>
 <div id="setting" style="display:none;width:400px; height:200px;">
-<div>Choice Blue or Red!!</div>
-<img width="45" height="40" src="http://img.hovits.com/korean_chess/Green_King.png" onclick="choice_color('b')"/>
-<img width="45" height="40" src="http://img.hovits.com/korean_chess/Red_King.png" onclick="choice_color('r')"/>
+    <div>Choice Blue or Red!!</div>
+    <img width="45" height="40" src="http://img.hovits.com/korean_chess/Green_King.png" onclick="choice_color('b')"/>
+    <img width="45" height="40" src="http://img.hovits.com/korean_chess/Red_King.png" onclick="choice_color('r')"/>
 
 </div>
 <div id="position_type_b" style="display:none;">
