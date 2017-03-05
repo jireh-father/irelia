@@ -17,7 +17,7 @@ def static_page(page_name):
 def filter_state_map(state_map):
     for y, row in enumerate(state_map):
         for x, piece in enumerate(row):
-            if piece == u'0':
+            if piece == '0':
                 state_map[y][x] = 0
             else:
                 state_map[y][x] = str(piece)
