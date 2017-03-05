@@ -31,8 +31,6 @@ def action():
     if not state_map or side not in ('b', 'r'):
         return json.dumps({'error': True, 'msg': 'invalid params', 'data': {'state_map': state_map, 'side': side}})
 
-    filter_state_map(json.loads(state_map))
-
     if side == 'b':
         reverse_state_map = KoreanChess.reverse_state_map(state_map)
         db_name = './q_blue.db'
