@@ -13,14 +13,6 @@ app = Flask(__name__)
 def static_page(page_name):
     return render_template('%s.html' % page_name)
 
-
-def filter_state_map(state_map):
-    for y, row in enumerate(state_map):
-        for x, piece in enumerate(row):
-            if piece == '0':
-                state_map[y][x] = 0
-
-
 @app.route("/action")
 def action():
     state_map = request.args.get('state_map')
@@ -29,6 +21,7 @@ def action():
     if not state_map or side not in ('b', 'r'):
         return json.dumps({'error': True, 'msg': 'invalid params', 'data': {'state_map': state_map, 'side': side}})
 
+    state_map = json.loads(state_map)
     if side == 'b':
         reverse_state_map = KoreanChess.reverse_state_map(state_map)
         db_name = './q_blue.db'
@@ -69,7 +62,6 @@ def actions():
     if not state_map or side not in ('b', 'r'):
         return json.dumps({'error': True, 'msg': 'invalid params', 'data': {'state_map': state_map, 'side': side}})
     state_map = json.loads(state_map)
-    filter_state_map(state_map)
     result = KoreanChess.get_actions(state_map, side)
 
     return json.dumps(result)
