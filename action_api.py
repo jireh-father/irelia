@@ -3,7 +3,7 @@ from flask import Flask
 from flask import request
 import json
 
-app = Flask(__name__, static_url_path='')
+app = Flask(__name__, static_url_path='/home/irelia/public_html')
 
 @app.route('/play')
 def play():
