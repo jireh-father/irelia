@@ -226,7 +226,7 @@
         }
 
         window.selected_piece = x+":"+y;
-        
+        document.getElementById('mapbg').innerHTML += <div id="moving_piece_layer"></div>;
         for(var i =0 ;i<action_list.length;i++){
             action = action_list[i]
             to_x = action.to_x
@@ -239,12 +239,11 @@
     
     function showAction(piece, x,y,to_x, to_y, i){
         piece = window.moving_piece_map[piece]
-        document.getElementById('mapbg').innerHTML += piece;
+        document.getElementById('moving_piece_layer').innerHTML += piece;
 
-        cur_piece = document.getElementById('mapbg').children[document.getElementById('mapbg').children.length-1]
+        cur_piece = document.getElementById('moving_piece_layer').children[document.getElementById('moving_piece_layer').children.length-1]
         cur_piece.style.left = (to_x * 50) + "px"
         cur_piece.style.top = (to_y * 45) + "px"
-        cur_piece.setAttribute('id', 'moving_piece_' + i);
         cur_piece.setAttribute('onclick', 'step_by_user('+x+', '+y+', '+to_x+', '+to_y+');');
     }
 
@@ -281,11 +280,8 @@
 
     function remove_moving_pieces()
     {
-        pieces = document.getElementsByClassName('moving_piece');
-        cnt = pieces.length
-        for(var i=0;i<cnt;i++){
-            document.getElementById('moving_piece_' + i).remove();
-        }
+        layer = document.getElementsByClassName('moving_piece_layer');
+        layer[0].remove();
     }
 
     function step_by_user(x, y, to_x, to_y){
