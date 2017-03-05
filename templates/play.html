@@ -274,7 +274,7 @@
              window.irelia_turn = false;
             }
           };
-          xhttp.open("GET", "hovits.com:5000/actions?side="+window.color+"&state_map="+JSON.stringify(window.map), true);
+          xhttp.open("GET", "http://hovits.com:5000/actions?side="+window.color+"&state_map="+JSON.stringify(window.map), true);
           xhttp.send();
     }
 
