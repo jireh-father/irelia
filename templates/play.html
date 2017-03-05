@@ -297,8 +297,9 @@
 
     function step_by_user(x, y, to_x, to_y){
         remove_moving_pieces();
-        step({x:x,y:y,to_x:to_x,to_y:to_y}, window.color)
-        window.irelia_turn = true
+        step({x:x,y:y,to_x:to_x,to_y:to_y}, window.color);
+        window.selected_piece = null;
+        window.irelia_turn = true;
         checkGameState();
         step_by_irelia();
     }
