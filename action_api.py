@@ -87,7 +87,7 @@ def similar_action(actions, state_key, side, sqlite_cursor):
         actions_map[KoreanChess.build_action_key(act)] = True
 
     for item in result['hits']['hits']:
-        similar_state = item['_source']['state']
+        similar_state = KoreanChess.compress_state_key(item['_source']['state'])
         sqlite_cursor.execute(
             "SELECT quality_json FROM t_quality WHERE state_key='" + KoreanChess.compress_state_key(
                 similar_state) + "'")
