@@ -137,7 +137,7 @@ class KoreanChess(Env):
         for i, row in enumerate(result):
             for j, piece in enumerate(row):
                 if piece == '0':
-                    result[i][j] = int(0)
+                    result[i][j] = 0
         return result
 
     @staticmethod
@@ -220,7 +220,7 @@ class KoreanChess(Env):
         reversed_map = np.array(list(reversed(np.array(state_map).flatten()))).reshape([-1, 9]).tolist()
         result_map = []
         for line in reversed_map:
-            result_map.append([int(val) if val is '0' else val for val in line])
+            result_map.append([int(val) if val == u'0' else val for val in line])
         return result_map
 
     def reset(self):
