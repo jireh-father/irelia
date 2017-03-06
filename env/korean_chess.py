@@ -97,6 +97,17 @@ class KoreanChess(Env):
         return ','.join(state_key_list)
 
     @staticmethod
+    def decompress_state_key(state_key):
+        state_key_list = []
+        for piece in state_key.split(','):
+            if piece.isdigit():
+                state_key_list += ['0'] * int(piece)
+            else:
+                state_key_list.append(piece)
+
+        return ','.join(state_key_list)
+
+    @staticmethod
     def convert_state_key(state_map):
         empty_cnt = 0
         state_key_list = []
@@ -171,7 +182,7 @@ class KoreanChess(Env):
 
     def action(self, state_key, action_key, is_red=False):
         if is_red:
-            state = self.state_list[self.reverse_state_key(state_key)]
+            state = self.state_list[KoreanChess.reverse_state_key(state_key)]
         else:
             state = self.state_list[state_key]
         action = state['action_list'][action_key]
@@ -252,7 +263,7 @@ class KoreanChess(Env):
                                           'action_list': KoreanChess.get_actions(state_map, side), 'side': side}
 
         if side is kcu.RED:
-            return self.reverse_state_key(state_key)
+            return KoreanChess.reverse_state_key(state_key)
         else:
             return state_key
 
@@ -306,7 +317,7 @@ class KoreanChess(Env):
             os.system('clear')
         # sys.stdout.flush()
         if side is kcu.RED:
-            state = self.reverse_state_key(state)
+            state = KoreanChess.reverse_state_key(state)
             map = KoreanChess.reverse_state_map(self.state_list[state]['state_map'])
         else:
             map = self.state_list[state]['state_map']
@@ -336,7 +347,7 @@ class KoreanChess(Env):
             # if state is not in the Q, create state map and actions by state hash key
             if is_red:
                 # reverse state
-                action_cnt = len(self.state_list[self.reverse_state_key(state)]['action_list'])
+                action_cnt = len(self.state_list[KoreanChess.reverse_state_key(state)]['action_list'])
             else:
                 action_cnt = len(self.state_list[state]['action_list'])
             Q[state] = np.zeros(action_cnt)
@@ -364,7 +375,7 @@ class KoreanChess(Env):
 
         if action is False:
             if is_red is False:
-                state_key = self.reverse_state_key(state_key)
+                state_key = KoreanChess.reverse_state_key(state_key)
             self.create_state(self.convert_state_map(state_key), opposite_side)
             # state_list 에 새로 생성해서 추가
             return state_key, 0, False, False
@@ -429,7 +440,7 @@ class KoreanChess(Env):
     def get_action_with_record(self, Q, state, record, is_red=False):
         if is_red:
             # reverse state
-            action_list = self.state_list[self.reverse_state_key(state)]['action_list']
+            action_list = self.state_list[KoreanChess.reverse_state_key(state)]['action_list']
         else:
             action_list = self.state_list[state]['action_list']
 
@@ -452,7 +463,7 @@ class KoreanChess(Env):
     def get_action_list(self, state, is_red=False):
         if is_red:
             # reverse state
-            state_key = self.reverse_state_key(state)
+            state_key = KoreanChess.reverse_state_key(state)
         else:
             state_key = state
         if state_key not in self.state_list:

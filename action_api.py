@@ -5,6 +5,8 @@ import json
 import sqlite3
 import operator
 import random
+import numpy as np
+from elasticsearch import Elasticsearch as ES
 
 app = Flask(__name__)
 
@@ -47,22 +49,58 @@ def action():
     c.execute("SELECT quality_json FROM t_quality WHERE state_key='" + state_key + "'")
 
     result = c.fetchone()
-    actions = KoreanChess.get_actions(KoreanChess.reverse_state_map(state_map), side)
+    reversed_state_map = KoreanChess.reverse_state_map(state_map)
+    actions = KoreanChess.get_actions(reversed_state_map, side)
     if result:
         if result[0] == '0':
-            action = random.choice(actions)
+            action = similar_action(actions, state_key, side, c)
         else:
             q_values = json.loads(result[0])
             max_action = int(max(q_values.iteritems(), key=operator.itemgetter(1))[0])
             if len(actions) <= max_action:
-                action = random.choice(actions)
+                action = similar_action(actions, state_key, side, c)
             else:
                 action = actions[max_action]
     else:
-        action = random.choice(actions)
+        action = similar_action(actions, state_key, side, c)
 
     c.close()
     return json.dumps(action)
+
+
+def similar_action(actions, state_key, side, sqlite_cursor):
+    decomp_state_key = KoreanChess.decompress_state_key(state_key)
+    es = ES('52.79.166.102:80')
+    result = es.search('i_irelia_state', 't_blue_state' if side is 'b' else 't_red_state',
+                       {
+                           "query": {"match": {
+                               "state": decomp_state_key}}
+                       })
+    if not result or result['_shards']['failed'] > 0:
+        return random.choice(actions)
+
+    for item in result['hits']['hits']:
+        q_state = item['_source']['state']
+        sqlite_cursor.execute(
+            "SELECT quality_json FROM t_quality WHERE state_key='" + KoreanChess.compress_state_key(q_state) + "'")
+
+        q_result = sqlite_cursor.fetchone()
+        if not q_result or q_result[0] == '0':
+            continue
+
+        q_values = json.loads(result[0])
+        max_action = int(max(q_values.iteritems(), key=operator.itemgetter(1))[0])
+        state_map = KoreanChess.convert_state_map(state_key)
+        if side == 'r':
+            state_map = KoreanChess.reverse_state_map(state_map)
+        new_actions = KoreanChess.get_actions(state_map, side)
+        if len(new_actions) <= max_action:
+            action = random.choice(actions)
+        else:
+            action = new_actions[max_action]
+
+        return action
+    return random.choice(actions)
 
 
 @app.route("/actions")
