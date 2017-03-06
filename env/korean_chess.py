@@ -473,7 +473,7 @@ class KoreanChess(Env):
 
     @staticmethod
     def build_action_key(action):
-        return action['x'] + ':' + action['y'] + action['to_x'] + ':' + action['to_y']
+        return str(action['x']) + ':' + str(action['y']) + ':' + str(action['to_x']) + ':' + str(action['to_y'])
 
     def get_action_test(self, Q, state, is_red=False):
         action_list = self.get_action_list(state, is_red)
