@@ -54,7 +54,7 @@ def action():
         else:
             q_values = json.loads(result[0])
             max_action = int(max(q_values.iteritems(), key=operator.itemgetter(1))[0])
-            if max_action not in actions:
+            if len(actions) <= max_action:
                 action = random.choice(actions)
             else:
                 action = actions[max_action]
