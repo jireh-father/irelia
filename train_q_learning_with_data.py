@@ -171,7 +171,7 @@ for i in range(num_episodes):
 
     # if i % 10 is 0 and i is not 0:
     env.state_list = {}
-    env.state_links = {}
+
     if i % 50 is 0 and i is not 0:
         if os.path.isfile('./q_blue_with_data.txt'):
             shutil.move('./q_blue_with_data.txt', './q_blue_with_data_bak.txt')

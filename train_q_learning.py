@@ -22,8 +22,8 @@ env = Game.make('KoreanChess')
 # load q table if existed.
 restore_q_blue = {}
 restore_q_red = {}
-if os.path.isfile('./q_blue.txt'):
-    q_file = open('./q_blue.txt')
+if os.path.isfile('./q_blue_with_data.txt'):
+    q_file = open('./q_blue_with_data.txt')
     i = 0
     key = None
     for line in q_file:
@@ -33,8 +33,8 @@ if os.path.isfile('./q_blue.txt'):
             restore_q_blue[key] = np.array(json.loads(line.strip()))
         i += 1
 
-if os.path.isfile('./q_red.txt'):
-    q_file = open('./q_red.txt')
+if os.path.isfile('./q_red_with_data.txt'):
+    q_file = open('./q_red_with_data.txt')
     i = 0
     key = None
     for line in q_file:
@@ -67,7 +67,7 @@ for i in range(num_episodes):
     is_draw = False
     j = 0
     while not blue_done and not red_done:
-        if j >= 300:
+        if j >= 400:
             break
 
         blue_action = env.get_action(Q_blue, blue_state, i)
@@ -120,10 +120,13 @@ for i in range(num_episodes):
 
     blue_reward_list.append(blue_reward_all)
     red_reward_list.append(red_reward_all)
+
+    env.state_list = {}
+    env.state_links = {}
     # time.sleep(1)
 
 
-    if i % 10000 is 0 and i is not 0:
+    if i % 10 is 0 and i is not 0:
         if os.path.isfile('./q_blue.txt'):
             shutil.move('./q_blue.txt', './q_blue_bak.txt')
         if os.path.isfile('./q_red.txt'):
@@ -136,6 +139,3 @@ for i in range(num_episodes):
             for key in Q_red:
                 outfile.write(key + "\n" + json.dumps(Q_red[key].tolist()) + "\n")
             outfile.close()
-
-    if i % 10000 is 0 and i is not 0:
-        env.state_list = {}

@@ -14,7 +14,7 @@ import shutil
 state_list_file = None  # open('./state_list.json') if os.path.isfile('./state_list.json') else None
 restore_state_list = json.load(state_list_file) if state_list_file else None
 Game.register('KoreanChess',
-              {'position_type': 'random',
+              {'position_type': ['masangmasang', 'sangmasangma'],
                'state_list': restore_state_list if restore_state_list else None,
                'init_state': None, 'init_side': 'b'})
 
