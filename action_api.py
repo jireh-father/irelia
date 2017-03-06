@@ -48,8 +48,8 @@ def action():
 
     result = c.fetchone()
     actions = KoreanChess.get_actions(KoreanChess.reverse_state_map(state_map), side)
-    if result:
-        q_values = json.loads(result)
+    if len(result) > 0:
+        q_values = json.loads(result[0])
         max_action = max(q_values.iteritems(), key=operator.itemgetter(1))[0]
         if max_action not in actions:
             action = random.choice(actions)

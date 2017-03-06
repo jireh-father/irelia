@@ -122,7 +122,12 @@ class KoreanChess(Env):
                 state_map += [0] * int(piece)
             else:
                 state_map.append(piece)
-        return np.array(state_map).reshape([-1, 9]).tolist()
+        result = np.array(state_map).reshape([-1, 9]).tolist()
+        for i, row in enumerate(result):
+            for j, piece in enumerate(row):
+                if piece == '0':
+                    result[i][j] = int(0)
+        return result
 
     @staticmethod
     def convert_uncompressed_state_list(state_key):
@@ -335,8 +340,6 @@ class KoreanChess(Env):
             else:
                 action_cnt = len(self.state_list[state]['action_list'])
             Q[state] = np.zeros(action_cnt)
-
-
 
     @staticmethod
     def compare_state(state_key1, state_key2):
