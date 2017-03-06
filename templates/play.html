@@ -77,7 +77,7 @@
 
     function init() {
         document.getElementById('mapbg').innerHTML = '';
-        window.id_map = JSON.parse(JSON.stringify(window.map))
+        window.id_map = JSON.parse(JSON.stringify(window.map));
         for (var i = 0 ; i < window.map.length ; i++) {
             var row = window.map[i];
             for (var j = 0 ; j < row.length ; j++) {
@@ -92,8 +92,8 @@
                 if ( row[j][0] == window.color ){
                     cur_piece.setAttribute('onclick', 'selectPiece("'+row[j]+'", '+j+', '+i+');');
                 }
-                cur_piece.setAttribute("id", "piece_"+i+"_"+j)
-                window.id_map[i][j] = "piece_"+i+"_"+j
+                cur_piece.setAttribute("id", "piece_"+i+"_"+j);
+                window.id_map[i][j] = "piece_"+i+"_"+j;
             }
         }
 
@@ -105,25 +105,25 @@
 
     function review() {
         init();
-        window.review_interval_id = setInterval(step, 1000 * document.getElementById('interval').value)
+        window.review_interval_id = setInterval(step, 1000 * document.getElementById('interval').value);
 
-        document.getElementById('but_pause').removeAttribute('disabled')
-        document.getElementById('but_next').setAttribute('disabled', 'disabled')
+        document.getElementById('but_pause').removeAttribute('disabled');
+        document.getElementById('but_next').setAttribute('disabled', 'disabled');
     }
 
 
     function pause(){
         clearInterval(window.review_interval_id);
-        document.getElementById('but_pause').setAttribute('disabled', 'disabled')
-        document.getElementById('but_restart').removeAttribute('disabled')
-        document.getElementById('but_next').removeAttribute('disabled')
+        document.getElementById('but_pause').setAttribute('disabled', 'disabled');
+        document.getElementById('but_restart').removeAttribute('disabled');
+        document.getElementById('but_next').removeAttribute('disabled');
     }
 
     function restart(){
-        window.review_interval_id = setInterval(step, 1000 * document.getElementById('interval').value)
-        document.getElementById('but_restart').setAttribute('disabled', 'disabled')
-        document.getElementById('but_pause').removeAttribute('disabled')
-        document.getElementById('but_next').setAttribute('disabled', 'disabled')
+        window.review_interval_id = setInterval(step, 1000 * document.getElementById('interval').value);
+        document.getElementById('but_restart').setAttribute('disabled', 'disabled');
+        document.getElementById('but_pause').removeAttribute('disabled');
+        document.getElementById('but_next').setAttribute('disabled', 'disabled');
     }
 
     function next(){
@@ -135,19 +135,19 @@
     }
 
     function play() {
-        document.getElementById('setting').style.display = "block"
-        document.getElementById('but_replay').style.display = "inline-block"
-        document.getElementById('but_play').setAttribute('disabled', 'disabled')
+        document.getElementById('setting').style.display = "block";
+        document.getElementById('but_replay').style.display = "inline-block";
+        document.getElementById('but_play').setAttribute('disabled', 'disabled');
     }
 
     function replay(){
-        document.getElementById('setting').style.display = "block"
+        document.getElementById('setting').style.display = "block";
     }
 
     function choice_color(color) {
-        window.color = color
-        document.getElementById('setting').style.display = "none"
-        document.getElementById('position_type_' + color).style.display = "block"
+        window.color = color;
+        document.getElementById('setting').style.display = "none";
+        document.getElementById('position_type_' + color).style.display = "block";
     }
 
     function get_rand_pos() {
@@ -181,7 +181,7 @@
 
         window.map = default_map;
         init();
-        document.getElementById('position_type_' + color).style.display = "none"
+        document.getElementById('position_type_' + color).style.display = "none";
 
         if(window.color == 'r'){
             step_by_irelia();
@@ -206,10 +206,10 @@
                 alert('sorry unknown error..');
                 return;
              }
-             response.x = 8 -response.x
-              response.to_x = 8 -response.to_x
-              response.y = 9 -response.y
-              response.to_y = 9 -response.to_y
+             response.x = 8 -response.x;
+              response.to_x = 8 -response.to_x;
+              response.y = 9 -response.y;
+              response.to_y = 9 -response.to_y;
              step(response, window.color == 'b' ? 'r' : 'b');
             checkGameState();
             get_actions();
@@ -245,9 +245,9 @@
         window.selected_piece = x+":"+y;
         document.getElementById('mapbg').innerHTML += '<div id="moving_piece_layer"></div>';
         for(var i =0 ;i<action_list.length;i++){
-            action = action_list[i]
-            to_x = action.to_x
-            to_y = action.to_y
+            action = action_list[i];
+            to_x = action.to_x;
+            to_y = action.to_y;
             showAction(piece,x,y,to_x, to_y, i);
         }
          
@@ -255,12 +255,12 @@
     }
     
     function showAction(piece, x,y,to_x, to_y, i){
-        piece = window.moving_piece_map[piece]
+        piece = window.moving_piece_map[piece];
         document.getElementById('moving_piece_layer').innerHTML += piece;
 
-        cur_piece = document.getElementById('moving_piece_layer').children[document.getElementById('moving_piece_layer').children.length-1]
-        cur_piece.style.left = (to_x * 50) + "px"
-        cur_piece.style.top = (to_y * 45) + "px"
+        cur_piece = document.getElementById('moving_piece_layer').children[document.getElementById('moving_piece_layer').children.length-1];
+        cur_piece.style.left = (to_x * 50) + "px";
+        cur_piece.style.top = (to_y * 45) + "px";
         cur_piece.setAttribute('onclick', 'step_by_user('+x+', '+y+', '+to_x+', '+to_y+');');
     }
 
@@ -313,30 +313,30 @@
     }
 
     function step(step_data, color) {
-
-        document.getElementById(window.id_map[step_data.y][step_data.x]).style.left =  (step_data.to_x * 50) + "px"
-        document.getElementById(window.id_map[step_data.y][step_data.x]).style.top =  (step_data.to_y * 45) + "px"
-        document.getElementById(window.id_map[step_data.y][step_data.x]).setAttribute('onclick', 'selectPiece("'+window.map[step_data.y][step_data.x]+'", '+step_data.to_x+', '+step_data.to_y+');');
-        document.getElementById(window.id_map[step_data.y][step_data.x]).setAttribute('id', "piece_"+step_data.to_y+"_"+step_data.to_x)
         if (window.map[step_data.to_y][step_data.to_x] != 0 && window.map[step_data.to_y][step_data.to_x][0] != color) {
-            document.getElementById(window.id_map[step_data.to_y][step_data.to_x]).style.left = (window.death * 40) + 450 + "px"
-            document.getElementById(window.id_map[step_data.to_y][step_data.to_x]).style.top = "400px"
+            document.getElementById(window.id_map[step_data.to_y][step_data.to_x]).style.left = (window.death * 40) + 450 + "px";
+            document.getElementById(window.id_map[step_data.to_y][step_data.to_x]).style.top = "400px";
             document.getElementById(window.id_map[step_data.to_y][step_data.to_x]).setAttribute('onclick', '');
-            document.getElementById(window.id_map[step_data.to_y][step_data.to_x]).setAttribute('id', '')
-            window.death += 1
+            document.getElementById(window.id_map[step_data.to_y][step_data.to_x]).setAttribute('id', '');
+            window.death += 1;
         }
-        window.map[step_data.to_y][step_data.to_x] = window.map[step_data.y][step_data.x]
-        window.map[step_data.y][step_data.x] = 0
-        window.id_map[step_data.to_y][step_data.to_x] = "piece_"+step_data.to_y+"_"+step_data.to_x
-        window.id_map[step_data.y][step_data.x] = 0
+        document.getElementById(window.id_map[step_data.y][step_data.x]).style.left =  (step_data.to_x * 50) + "px";
+        document.getElementById(window.id_map[step_data.y][step_data.x]).style.top =  (step_data.to_y * 45) + "px";
+        document.getElementById(window.id_map[step_data.y][step_data.x]).setAttribute('onclick', 'selectPiece("'+window.map[step_data.y][step_data.x]+'", '+step_data.to_x+', '+step_data.to_y+');');
+        document.getElementById(window.id_map[step_data.y][step_data.x]).setAttribute('id', "piece_"+step_data.to_y+"_"+step_data.to_x);
 
-        window.step_no += 1
+        window.map[step_data.to_y][step_data.to_x] = window.map[step_data.y][step_data.x];
+        window.map[step_data.y][step_data.x] = 0;
+        window.id_map[step_data.to_y][step_data.to_x] = "piece_"+step_data.to_y+"_"+step_data.to_x;
+        window.id_map[step_data.y][step_data.x] = 0;
+
+        window.step_no += 1;
     }
 
 
     function reverse_map(map) {
         var flatten_arr = [].concat.apply([], map);
-        reverse_arr = flatten_arr.reverse()
+        reverse_arr = flatten_arr.reverse();
         var reversed_map = [];
         while(reverse_arr.length) reversed_map.push(reverse_arr.splice(0,9));
         return reversed_map;
