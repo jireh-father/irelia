@@ -88,7 +88,7 @@ def similar_action(actions, state_key, side, sqlite_cursor):
         if not q_result or q_result[0] == '0':
             continue
 
-        q_values = json.loads(result[0])
+        q_values = json.loads(q_result[0])
         max_action = int(max(q_values.iteritems(), key=operator.itemgetter(1))[0])
         state_map = KoreanChess.convert_state_map(state_key)
         if side == 'r':
