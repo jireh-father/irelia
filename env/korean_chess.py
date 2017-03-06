@@ -430,9 +430,9 @@ class KoreanChess(Env):
                 q_action = q_action_list[q_max_action_no]
                 for i, action in enumerate(action_list):
                     if action['x'] == q_action['x'] \
-                      and action['y'] == q_action['y'] \
-                      and action['to_x'] == q_action['to_x'] \
-                      and action['to_y'] == q_action['to_y']:
+                            and action['y'] == q_action['y'] \
+                            and action['to_x'] == q_action['to_x'] \
+                            and action['to_y'] == q_action['to_y']:
                         return i
 
         return np.argmax(Q[state] + np.random.randn(1, action_cnt) / (action_cnt * 10))
@@ -449,9 +449,9 @@ class KoreanChess(Env):
 
         for i, action in enumerate(action_list):
             if action['x'] == record['x'] \
-              and action['y'] == record['y'] \
-              and action['to_x'] == record['to_x'] \
-              and action['to_y'] == record['to_y']:
+                    and action['y'] == record['y'] \
+                    and action['to_x'] == record['to_x'] \
+                    and action['to_y'] == record['to_y']:
                 return i
 
         import json
@@ -470,6 +470,10 @@ class KoreanChess(Env):
             self.create_state(KoreanChess.convert_state_map(state_key), kcu.RED if is_red else kcu.BLUE)
         action_list = self.state_list[state_key]['action_list']
         return action_list
+
+    @staticmethod
+    def build_action_key(action):
+        return action['x'] + ':' + action['y'] + action['to_x'] + ':' + action['to_y']
 
     def get_action_test(self, Q, state, is_red=False):
         action_list = self.get_action_list(state, is_red)
@@ -493,9 +497,9 @@ class KoreanChess(Env):
                 q_action = q_action_list[q_max_action_no]
                 for i, action in enumerate(action_list):
                     if action['x'] == q_action['x'] \
-                      and action['y'] == q_action['y'] \
-                      and action['to_x'] == q_action['to_x'] \
-                      and action['to_y'] == q_action['to_y']:
+                            and action['y'] == q_action['y'] \
+                            and action['to_x'] == q_action['to_x'] \
+                            and action['to_y'] == q_action['to_y']:
                         return i
 
         return np.argmax(Q[state] + np.random.randn(1, action_cnt) / (action_cnt * 10))

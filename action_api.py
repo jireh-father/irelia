@@ -69,37 +69,52 @@ def action():
 
 
 def similar_action(actions, state_key, side, sqlite_cursor):
+    # decomp key
     decomp_state_key = KoreanChess.decompress_state_key(state_key)
+    # full text search for similar state key on elasticsearch
     es = ES('52.79.166.102:80')
     result = es.search('i_irelia_state', 't_blue_state' if side is 'b' else 't_red_state',
                        {
                            "query": {"match": {
                                "state": decomp_state_key}}
                        })
+
     if not result or result['_shards']['failed'] > 0:
         return random.choice(actions)
 
-    for item in result['hits']['hits']:
-        q_state = item['_source']['state']
-        sqlite_cursor.execute(
-            "SELECT quality_json FROM t_quality WHERE state_key='" + KoreanChess.compress_state_key(q_state) + "'")
+    actions_map = {}
+    for act in actions:
+        actions_map[KoreanChess.build_action_key(act)] = True
 
-        q_result = sqlite_cursor.fetchone()
-        if not q_result or q_result[0] == '0':
+    for item in result['hits']['hits']:
+        similar_state = item['_source']['state']
+        sqlite_cursor.execute(
+            "SELECT quality_json FROM t_quality WHERE state_key='" + KoreanChess.compress_state_key(
+                similar_state) + "'")
+
+        q_json = sqlite_cursor.fetchone()
+        if not q_json or q_json[0] == '0':
             continue
 
-        q_values = json.loads(q_result[0])
-        max_action = int(max(q_values.iteritems(), key=operator.itemgetter(1))[0])
-        state_map = KoreanChess.convert_state_map(state_key)
+        similar_state_map = KoreanChess.convert_state_map(similar_state)
         if side == 'r':
-            state_map = KoreanChess.reverse_state_map(state_map)
-        new_actions = KoreanChess.get_actions(state_map, side)
-        if len(new_actions) <= max_action:
-            action = random.choice(actions)
-        else:
-            action = new_actions[max_action]
+            similar_state_map = KoreanChess.reverse_state_map(similar_state_map)
+        similar_state_actions = KoreanChess.get_actions(similar_state_map, side)
 
-        return action
+        q_values = json.loads(q_json[0])
+
+        q_values = sorted(q_values.items(), key=lambda x: (-x[1], x[0]))
+
+        for q_value_tuple in q_values:
+            # get action no
+            action_no = int(q_value_tuple[0])
+            q_value = q_value_tuple[1]
+            if q_value <= 0:
+                break
+            sim_action = similar_state_actions[action_no]
+            if KoreanChess.build_action_key(sim_action) in actions_map:
+                return sim_action
+
     return random.choice(actions)
 
 
