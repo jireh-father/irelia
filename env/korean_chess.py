@@ -403,9 +403,9 @@ class KoreanChess(Env):
         return new_state_key, reward, is_done, is_draw
 
     def insert_state_key(state_key, is_red=False):
-        side = kcu.RED if is_red else kcu.BLUE
+        side = 'red' if is_red else 'blue'
         es = ES('52.79.135.2:80')
-        result = es.search('i_irelia_state', 't_blue_state', {
+        result = es.search('i_irelia_state', 't_%s_state' % side, {
             "query": {
                 "constant_score": {
                     "filter": {
@@ -419,25 +419,8 @@ class KoreanChess(Env):
         if result and 'hits' in result and result['hits']['total'] > 0:
             return True
 
-        # es.
-        # i = 0
-        # key = None
-        # bulk_list = []
-        # blue_index = {"index": {"_index": "i_irelia_state", "_type": "t_blue_state"}}
-        # for line in q_file:
-        #     if i % 2 is 0:
-        #         key = line.strip()
-        #         decomp_key = KoreanChess.decompress_state_key(key)
-        #         bulk_list.append(blue_index)
-        #         bulk_list.append({"state": decomp_key})
-        #     if i % 1000 == 0 and i != 0:
-        #         es.bulk(bulk_list)
-        #         bulk_list = []
-        #     i += 1
-        #
-        # q_file.close()
-        # es.bulk(bulk_list)
-
+        result = es.index('i_irelia_state', 't_%s_state' % side, {"state": state_key})
+        return result and result['created'] == True
 
     def add_state_link(self, source_state, target_state, action):
         if source_state not in self.state_links:

@@ -44,13 +44,14 @@ def is_enemy(state_map, x, y, side):
     return state_map[y][x] != 0 and state_map[y][x][0] != side
 
 
-def is_jang(state_map, to_x, to_y, side):
+def is_checkmate_try(state_map, to_x, to_y, side):
     return state_map[to_y][to_x][1] == KING and state_map[to_y][to_x][0] != side
 
-
-def is_dead_end(state_map, x, y, to_x, to_y, side):
+def is_checkmate(state_map, x, y, to_x, to_y, side):
     return False
 
+def is_stalemate():
+    return False
 
 def is_cannon(state_map, x, y):
     return state_map[y][x] is not 0 and int(state_map[y][x][1]) is CANNON
