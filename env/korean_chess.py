@@ -15,6 +15,9 @@ from env.env import Env
 from env.korean_chess_piece import piece_factory
 from env import korean_chess_util as kcu
 import operator
+import json
+import sqlite3
+from elasticsearch import Elasticsearch as ES
 
 
 class KoreanChess(Env):
@@ -370,7 +373,7 @@ class KoreanChess(Env):
                     # todo: 포만 남았을경우 못넘는경우면 비긴걸로 계산
         return True
 
-    def step(self, action, state_key, is_red=False):
+    def step(self, action, state_key, is_red=False, use_es=False):
         opposite_side = kcu.BLUE if is_red else kcu.RED
 
         if action is False:
@@ -393,9 +396,48 @@ class KoreanChess(Env):
 
         # print next state
         # self.print_map(new_state_key, opposite_side)
+        if use_es:
+            KoreanChess.insert_state_key(new_state_key, is_red)
 
         # return new_state, reward, is_done
         return new_state_key, reward, is_done, is_draw
+
+    def insert_state_key(state_key, is_red=False):
+        side = kcu.RED if is_red else kcu.BLUE
+        es = ES('52.79.135.2:80')
+        result = es.search('i_irelia_state', 't_blue_state', {
+            "query": {
+                "constant_score": {
+                    "filter": {
+                        "term": {
+                            "state.keyword": state_key}
+                    }
+                }
+            }
+        })
+
+        if result and 'hits' in result and result['hits']['total'] > 0:
+            return True
+
+        # es.
+        # i = 0
+        # key = None
+        # bulk_list = []
+        # blue_index = {"index": {"_index": "i_irelia_state", "_type": "t_blue_state"}}
+        # for line in q_file:
+        #     if i % 2 is 0:
+        #         key = line.strip()
+        #         decomp_key = KoreanChess.decompress_state_key(key)
+        #         bulk_list.append(blue_index)
+        #         bulk_list.append({"state": decomp_key})
+        #     if i % 1000 == 0 and i != 0:
+        #         es.bulk(bulk_list)
+        #         bulk_list = []
+        #     i += 1
+        #
+        # q_file.close()
+        # es.bulk(bulk_list)
+
 
     def add_state_link(self, source_state, target_state, action):
         if source_state not in self.state_links:
@@ -406,6 +448,37 @@ class KoreanChess(Env):
 
     def reverse_state_key(self, state):
         return ','.join(list(reversed(state.split(','))))
+
+    def get_action_es(self, state_key, side):
+        if side == 'b':
+            db_name = './q_blue.db'
+            state_map = KoreanChess.convert_state_map(state_key)
+        else:
+            state_map = KoreanChess.reverse_state_map(KoreanChess.convert_state_map(state_key))
+            db_name = './q_red.db'
+
+        conn = sqlite3.connect(db_name)
+
+        c = conn.cursor()
+
+        c.execute("SELECT quality_json FROM t_quality WHERE state_key='" + state_key + "'")
+
+        result = c.fetchone()
+        actions = KoreanChess.get_actions(state_map, side)
+        if result:
+            if result[0] == '0':
+                action_no = KoreanChess.similar_action_no(actions, state_key, side, c)
+            else:
+                q_values = json.loads(result[0])
+                max_action = int(max(q_values.iteritems(), key=operator.itemgetter(1))[0])
+                if len(actions) <= max_action:
+                    action_no = KoreanChess.similar_action_no(actions, state_key, side, c)
+                else:
+                    action_no = max_action
+        else:
+            action_no = KoreanChess.similar_action_no(actions, state_key, side, c)
+
+        return action_no
 
     def get_action(self, Q, state, i, is_red=False):
         action_list = self.get_action_list(state, is_red)
@@ -503,3 +576,127 @@ class KoreanChess(Env):
                         return i
 
         return np.argmax(Q[state] + np.random.randn(1, action_cnt) / (action_cnt * 10))
+
+    @staticmethod
+    def similar_action(actions, state_key, side, sqlite_cursor):
+        # decomp key
+        decomp_state_key = KoreanChess.decompress_state_key(state_key)
+        # full text search for similar state key on elasticsearch
+        es = ES('52.79.135.2:80')
+        result = es.search('i_irelia_state', 't_blue_state' if side is 'b' else 't_red_state',
+                           {
+                               "query": {"match": {
+                                   "state": decomp_state_key}}
+                           })
+
+        if not result or result['_shards']['failed'] > 0:
+            return random.choice(actions)
+
+        actions_map = {}
+        for act in actions:
+            actions_map[KoreanChess.build_action_key(act)] = True
+
+        for item in result['hits']['hits']:
+            similar_state = KoreanChess.compress_state_key(item['_source']['state'])
+            sqlite_cursor.execute(
+                "SELECT quality_json FROM t_quality WHERE state_key='" + KoreanChess.compress_state_key(
+                    similar_state) + "'")
+
+            q_json = sqlite_cursor.fetchone()
+            if not q_json or q_json[0] == '0':
+                continue
+
+            similar_state_map = KoreanChess.convert_state_map(similar_state)
+            if side == 'r':
+                similar_state_map = KoreanChess.reverse_state_map(similar_state_map)
+            similar_state_actions = KoreanChess.get_actions(similar_state_map, side)
+
+            q_values = json.loads(q_json[0])
+
+            q_values = sorted(q_values.items(), key=lambda x: (-x[1], x[0]))
+
+            for q_value_tuple in q_values:
+                # get action no
+                action_no = int(q_value_tuple[0])
+                q_value = q_value_tuple[1]
+                if q_value <= 0:
+                    break
+                sim_action = similar_state_actions[action_no]
+                if KoreanChess.build_action_key(sim_action) in actions_map:
+                    return sim_action
+
+        return random.choice(actions)
+
+    @staticmethod
+    def similar_action_no(actions, state_key, side, sqlite_cursor):
+        # decomp key
+        decomp_state_key = KoreanChess.decompress_state_key(state_key)
+        # full text search for similar state key on elasticsearch
+        es = ES('52.79.135.2:80')
+        result = es.search('i_irelia_state', 't_blue_state' if side is 'b' else 't_red_state',
+                           {
+                               "query": {"match": {
+                                   "state": decomp_state_key}}
+                           })
+
+        if not result or result['_shards']['failed'] > 0:
+            return random.randint(0, len(actions) - 1)
+
+        actions_map = {}
+        for i, act in enumerate(actions):
+            actions_map[KoreanChess.build_action_key(act)] = i
+
+        for item in result['hits']['hits']:
+            similar_state = KoreanChess.compress_state_key(item['_source']['state'])
+            sqlite_cursor.execute(
+                "SELECT quality_json FROM t_quality WHERE state_key='" + KoreanChess.compress_state_key(
+                    similar_state) + "'")
+
+            q_json = sqlite_cursor.fetchone()
+            if not q_json or q_json[0] == '0':
+                continue
+
+            similar_state_map = KoreanChess.convert_state_map(similar_state)
+            if side == 'r':
+                similar_state_map = KoreanChess.reverse_state_map(similar_state_map)
+            similar_state_actions = KoreanChess.get_actions(similar_state_map, side)
+
+            q_values = json.loads(q_json[0])
+
+            q_values = sorted(q_values.items(), key=lambda x: (-x[1], x[0]))
+
+            for q_value_tuple in q_values:
+                # get action no
+                action_no = int(q_value_tuple[0])
+                q_value = q_value_tuple[1]
+                if q_value <= 0:
+                    break
+                sim_action = similar_state_actions[action_no]
+                sim_action_key = KoreanChess.build_action_key(sim_action)
+                if sim_action_key in actions_map:
+                    return actions_map[sim_action_key]
+
+        return random.randint(0, len(actions) - 1)
+
+    @staticmethod
+    def get_q_from_es(state_key, side):
+        if side == 'b':
+            db_name = './q_blue.db'
+        else:
+            db_name = './q_red.db'
+
+        conn = sqlite3.connect(db_name)
+
+        c = conn.cursor()
+
+        c.execute("SELECT quality_json FROM t_quality WHERE state_key='" + state_key + "'")
+
+        result = c.fetchone()
+
+        if result:
+            if result[0] == '0':
+                return None
+            else:
+                return json.loads(result[0])
+        else:
+            return None

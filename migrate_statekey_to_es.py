@@ -2,7 +2,7 @@ from elasticsearch import Elasticsearch as ES
 from env.korean_chess import KoreanChess
 import sys
 
-es = ES('52.79.166.102:80')
+es = ES('52.79.135.2:80')
 
 q_file = open('./q_blue_with_data.txt')
 i = 0
