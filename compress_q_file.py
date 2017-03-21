@@ -3,7 +3,7 @@ import os
 import json
 import numpy as np
 import datetime
-from env.korean_chess import KoreanChess
+from env.korean_chess.core import Core
 
 
 q_file = open('./q_blue_with_data.txt')
@@ -13,7 +13,7 @@ key = None
 for line in q_file:
     if i % 2 is 0:
         key = line.strip()
-        compress_q_file.write(KoreanChess.compress_state_key(key) + "\n")
+        compress_q_file.write(Core.compress_state_key(key) + "\n")
     else:
         compress_q_file.write(line.strip() + "\n")
     i += 1
@@ -30,7 +30,7 @@ key = None
 for line in q_file:
     if i % 2 is 0:
         key = line.strip()
-        compress_q_file.write(KoreanChess.compress_state_key(key) + "\n")
+        compress_q_file.write(Core.compress_state_key(key) + "\n")
     else:
         compress_q_file.write(line.strip() + "\n")
     i += 1

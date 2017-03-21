@@ -2,14 +2,9 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from game.game import Game
-import numpy as np
-import time
-import json
-from env import korean_chess_util as kcu
-from env.korean_chess import KoreanChess
-import sys
 import sqlite3
+import sys
+
 conn = sqlite3.connect('q_red.db')
 
 c = conn.cursor()
@@ -19,7 +14,7 @@ c.execute("SELECT quality_json FROM t_quality WHERE state_key='r6,r4,r2,r3,1,r3,
 result = c.fetchone()
 print(result)
 sys.exit()
-ret = KoreanChess.convert_state_map(
+ret = Core.convert_state_map(
     'b6,b2,b4,b3,1,b3,b2,b4,b6,4,b7,5,b5,5,b5,1,b1,1,b1,1,b1,1,b1,b1,19,r1,1,r1,1,r1,1,r1,1,r1,1,r5,5,r5,5,r7,4,r6,r4,r2,r3,1,r3,r2,r4,r6')
 print(ret)
 sys.exit()

@@ -3,7 +3,7 @@ import os
 import json
 import numpy as np
 import datetime
-from env.korean_chess import KoreanChess
+from env.korean_chess.core import Core
 
 conn = sqlite3.connect('./q_blue.db')
 
@@ -31,7 +31,7 @@ for line in q_file:
             quality_json = json.dumps(quality_dict)
 
         # Insert a row of data
-        c.execute("INSERT INTO t_quality VALUES " + "('%s', '%s', %d, '%s', %d)" % ((KoreanChess.compress_state_key(key), quality_json, len(q_value),
+        c.execute("INSERT INTO t_quality VALUES " + "('%s', '%s', %d, '%s', %d)" % ((Core.compress_state_key(key), quality_json, len(q_value),
                                              datetime.datetime.now().strftime('%Y-%m-%d %H:%I:%S'), 1)))
     i += 1
 
@@ -69,7 +69,7 @@ for line in q_file:
                     quality_dict[j] = q
             quality_json = json.dumps(quality_dict)
 
-        c.execute("INSERT INTO t_quality VALUES " + "('%s', '%s', %d, '%s', %d)" % ((KoreanChess.compress_state_key(key), quality_json, len(q_value),
+        c.execute("INSERT INTO t_quality VALUES " + "('%s', '%s', %d, '%s', %d)" % ((Core.compress_state_key(key), quality_json, len(q_value),
                                          datetime.datetime.now().strftime('%Y-%m-%d %H:%I:%S'), 1)))
     i += 1
 

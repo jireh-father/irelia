@@ -1,5 +1,5 @@
 from elasticsearch import Elasticsearch as ES
-from env.korean_chess import KoreanChess
+from env.korean_chess.core import Core
 import sys
 
 es = ES('52.79.135.2:80')
@@ -12,7 +12,7 @@ blue_index = {"index": {"_index": "i_irelia_state", "_type": "t_blue_state"}}
 for line in q_file:
     if i % 2 is 0:
         key = line.strip()
-        decomp_key = KoreanChess.decompress_state_key(key)
+        decomp_key = Core.decompress_state_key(key)
         bulk_list.append(blue_index)
         bulk_list.append({"state": decomp_key})
     if i % 1000 == 0 and i != 0:
@@ -31,7 +31,7 @@ red_index = {"index": {"_index": "i_irelia_state", "_type": "t_red_state"}}
 for line in q_file:
     if i % 2 is 0:
         key = line.strip()
-        decomp_key = KoreanChess.decompress_state_key(key)
+        decomp_key = Core.decompress_state_key(key)
         bulk_list.append(red_index)
         bulk_list.append({"state": decomp_key})
     if i % 1000 == 0 and i != 0:

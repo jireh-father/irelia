@@ -4,23 +4,23 @@ from __future__ import division
 from __future__ import print_function
 
 import copy
+import json
+import numbers
+import operator
 import os
 import random
-import sys
-import time
-import numpy as np
-import numbers
-
-from env.env import Env
-from env.korean_chess_piece import piece_factory
-from env import korean_chess_util as kcu
-import operator
-import json
 import sqlite3
+import time
+
+import numpy as np
 from elasticsearch import Elasticsearch as ES
 
+from env.korean_chess import common
+from env.env import Env
+from env.korean_chess import piece_factory
 
-class KoreanChess(Env):
+
+class Core(Env):
     PIECE_LIST = {'r1': '졸(홍)', 'r2': '상(홍)', 'r3': '사(홍)', 'r4': '마(홍)', 'r5': '포(홍)', 'r6': '차(홍)', 'r7': '궁(홍)',
                   'b1': '졸(청)', 'b2': '상(청)', 'b3': '사(청)', 'b4': '마(청)', 'b5': '포(청)', 'b6': '차(청)', 'b7': '궁(청)',
                   0: '------'}
@@ -62,21 +62,18 @@ class KoreanChess(Env):
     }
 
     REWARD_LIST = {
-        kcu.SOLDIER: 1,
-        kcu.SANG: 2,
-        kcu.GUARDIAN: 3,
-        kcu.HORSE: 4,
-        kcu.CANNON: 5,
-        kcu.CAR: 6,
-        kcu.KING: 46,
+        common.SOLDIER: 1,
+        common.SANG: 2,
+        common.GUARDIAN: 3,
+        common.HORSE: 4,
+        common.CANNON: 5,
+        common.CAR: 6,
+        common.KING: 46,
     }
 
     def __init__(self, properties):
         Env.__init__(self, properties)
-        if self.properties and 'state_list' in self.properties:
-            self.state_list = self.properties['state_list']
-        if not self.state_list:
-            self.state_list = {}
+        self.state_list = {}
         self.history = []
 
     def set_property(self, key, properties):
@@ -155,7 +152,7 @@ class KoreanChess(Env):
 
     @staticmethod
     def convert_state_list(state_key):
-        state_list = KoreanChess.convert_uncompressed_state_list(state_key)
+        state_list = Core.convert_uncompressed_state_list(state_key)
         converted_state = []
         for piece in state_list:
             if isinstance(piece, numbers.Integral):
@@ -175,7 +172,7 @@ class KoreanChess(Env):
             for x, piece in enumerate(line):
                 if piece == 0 or piece[0] != side:
                     continue
-                action_list += KoreanChess.get_piece_actions(state_map, x, y)
+                action_list += Core.get_piece_actions(state_map, x, y)
 
         return action_list
 
@@ -185,7 +182,7 @@ class KoreanChess(Env):
 
     def action(self, state_key, action_key, is_red=False):
         if is_red:
-            state = self.state_list[KoreanChess.reverse_state_key(state_key)]
+            state = self.state_list[Core.reverse_state_key(state_key)]
         else:
             state = self.state_list[state_key]
         action = state['action_list'][action_key]
@@ -201,7 +198,7 @@ class KoreanChess(Env):
         if to_value is 0:
             reward = 0
         else:
-            reward = KoreanChess.REWARD_LIST[int(to_value[1])]
+            reward = Core.REWARD_LIST[int(to_value[1])]
 
         # 이동 지점에 기존지점 말 저장
         state_map[to_y][to_x] = state_map[y][x]
@@ -209,10 +206,10 @@ class KoreanChess(Env):
         # 기존 지점 0으로 세팅
         state_map[y][x] = 0
 
-        is_done = reward == KoreanChess.REWARD_LIST[kcu.KING] or KoreanChess.is_draw(state_map)
+        is_done = reward == Core.REWARD_LIST[common.KING] or Core.is_draw(state_map)
 
         # state_map 결과는 무조건 reverse해서 보내라
-        return KoreanChess.reverse_state_map(state_map), reward, is_done, KoreanChess.is_draw(state_map)
+        return Core.reverse_state_map(state_map), reward, is_done, Core.is_draw(state_map)
 
     def is_losing_way(state_map, x, y, to_x, to_y, side):
 
@@ -231,24 +228,24 @@ class KoreanChess(Env):
             default_map = self.properties['init_state']
             side = self.properties['init_side'] if self.properties['init_side'] else 'b'
         else:
-            side = kcu.BLUE
+            side = common.BLUE
             if not self.properties['position_type'] or self.properties['position_type'] == 'random':
                 before_rand_position = random.randint(0, 3)
                 after_rand_position = random.randint(0, 3)
-                position_type_list = [KoreanChess.rand_position_list[before_rand_position],
-                                      KoreanChess.rand_position_list[after_rand_position]]
+                position_type_list = [Core.rand_position_list[before_rand_position],
+                                      Core.rand_position_list[after_rand_position]]
             else:
                 position_type_list = self.properties['position_type']
 
-            default_map = copy.deepcopy(KoreanChess.default_state_map)
+            default_map = copy.deepcopy(Core.default_state_map)
 
             for i, position_type in enumerate(position_type_list):
-                if position_type not in KoreanChess.POSITION_TYPE_LIST:
+                if position_type not in Core.POSITION_TYPE_LIST:
                     raise Exception('position_type is invalid : ' + position_type)
 
                 line_idx = -1 if i == 0 else 0
 
-                default_map[line_idx] = KoreanChess.POSITION_TYPE_LIST[position_type][i]
+                default_map[line_idx] = Core.POSITION_TYPE_LIST[position_type][i]
 
         state_key = self.create_state(default_map, side)
 
@@ -260,13 +257,13 @@ class KoreanChess(Env):
         return state_key
 
     def create_state(self, state_map, side):
-        state_key = KoreanChess.convert_state_key(state_map)
+        state_key = Core.convert_state_key(state_map)
         if state_key not in self.state_list:
             self.state_list[state_key] = {'state_map': state_map,
-                                          'action_list': KoreanChess.get_actions(state_map, side), 'side': side}
+                                          'action_list': Core.get_actions(state_map, side), 'side': side}
 
-        if side is kcu.RED:
-            return KoreanChess.reverse_state_key(state_key)
+        if side is common.RED:
+            return Core.reverse_state_key(state_key)
         else:
             return state_key
 
@@ -280,9 +277,9 @@ class KoreanChess(Env):
         # else:
         #     os.system('clear')
         # sys.stdout.flush()
-        # if side is kcu.RED:
+        # if side is util.RED:
         #     state = self.reverse_state_key(state)
-        #     map = KoreanChess.reverse_state_map(self.state_list[state]['state_map'])
+        #     map = Core.reverse_state_map(self.state_list[state]['state_map'])
         # else:
         #     map = self.state_list[state]['state_map']
         print(
@@ -303,7 +300,7 @@ class KoreanChess(Env):
         #     print(file, line)
         #
         # for line in map:
-        #     converted_line = [KoreanChess.PIECE_LIST[val] for val in line]
+        #     converted_line = [Core.PIECE_LIST[val] for val in line]
         #     # sys.stdout.write('\r' + ' '.join(converted_line))
         #     print(' '.join(converted_line))
         #     # print('======================================================')
@@ -319,9 +316,9 @@ class KoreanChess(Env):
         else:
             os.system('clear')
         # sys.stdout.flush()
-        if side is kcu.RED:
-            state = KoreanChess.reverse_state_key(state)
-            map = KoreanChess.reverse_state_map(self.state_list[state]['state_map'])
+        if side is common.RED:
+            state = Core.reverse_state_key(state)
+            map = Core.reverse_state_map(self.state_list[state]['state_map'])
         else:
             map = self.state_list[state]['state_map']
         print(
@@ -340,7 +337,7 @@ class KoreanChess(Env):
                 print('running')
 
             for line in map:
-                converted_line = [KoreanChess.PIECE_LIST[val] for val in line]
+                converted_line = [Core.PIECE_LIST[val] for val in line]
                 # sys.stdout.write('\r' + ' '.join(converted_line))
                 print(' '.join(converted_line))
                 # print('======================================================')
@@ -350,15 +347,15 @@ class KoreanChess(Env):
             # if state is not in the Q, create state map and actions by state hash key
             if is_red:
                 # reverse state
-                action_cnt = len(self.state_list[KoreanChess.reverse_state_key(state)]['action_list'])
+                action_cnt = len(self.state_list[Core.reverse_state_key(state)]['action_list'])
             else:
                 action_cnt = len(self.state_list[state]['action_list'])
             Q[state] = np.zeros(action_cnt)
 
     @staticmethod
     def compare_state(state_key1, state_key2):
-        state_list1 = KoreanChess.convert_state_list(state_key1)
-        state_list2 = KoreanChess.convert_state_list(state_key2)
+        state_list1 = Core.convert_state_list(state_key1)
+        state_list2 = Core.convert_state_list(state_key2)
         return np.sum(np.abs(np.array(state_list1) - np.array(state_list2)))
 
     @staticmethod
@@ -368,17 +365,17 @@ class KoreanChess(Env):
                 if piece is 0:
                     continue
                 # todo: 상하고 마하고 구현해면 빼
-                if piece[1] is not kcu.KING and piece[1] is not kcu.GUARDIAN:
+                if piece[1] is not common.KING and piece[1] is not common.GUARDIAN:
                     return False
                     # todo: 포만 남았을경우 못넘는경우면 비긴걸로 계산
         return True
 
     def step(self, action, state_key, is_red=False, use_es=False):
-        opposite_side = kcu.BLUE if is_red else kcu.RED
+        opposite_side = common.BLUE if is_red else common.RED
 
         if action is False:
             if is_red is False:
-                state_key = KoreanChess.reverse_state_key(state_key)
+                state_key = Core.reverse_state_key(state_key)
             self.create_state(self.convert_state_map(state_key), opposite_side)
             # state_list 에 새로 생성해서 추가
             return state_key, 0, False, False
@@ -397,7 +394,7 @@ class KoreanChess(Env):
         # print next state
         # self.print_map(new_state_key, opposite_side)
         if use_es:
-            KoreanChess.insert_state_key(new_state_key, is_red)
+            Core.insert_state_key(new_state_key, is_red)
 
         # return new_state, reward, is_done
         return new_state_key, reward, is_done, is_draw
@@ -435,9 +432,9 @@ class KoreanChess(Env):
     def get_action_es(self, state_key, side):
         if side == 'b':
             db_name = './q_blue.db'
-            state_map = KoreanChess.convert_state_map(state_key)
+            state_map = Core.convert_state_map(state_key)
         else:
-            state_map = KoreanChess.reverse_state_map(KoreanChess.convert_state_map(state_key))
+            state_map = Core.reverse_state_map(Core.convert_state_map(state_key))
             db_name = './q_red.db'
 
         conn = sqlite3.connect(db_name)
@@ -447,19 +444,19 @@ class KoreanChess(Env):
         c.execute("SELECT quality_json FROM t_quality WHERE state_key='" + state_key + "'")
 
         result = c.fetchone()
-        actions = KoreanChess.get_actions(state_map, side)
+        actions = Core.get_actions(state_map, side)
         if result:
             if result[0] == '0':
-                action_no = KoreanChess.similar_action_no(actions, state_key, side, c)
+                action_no = Core.similar_action_no(actions, state_key, side, c)
             else:
                 q_values = json.loads(result[0])
                 max_action = int(max(q_values.iteritems(), key=operator.itemgetter(1))[0])
                 if len(actions) <= max_action:
-                    action_no = KoreanChess.similar_action_no(actions, state_key, side, c)
+                    action_no = Core.similar_action_no(actions, state_key, side, c)
                 else:
                     action_no = max_action
         else:
-            action_no = KoreanChess.similar_action_no(actions, state_key, side, c)
+            action_no = Core.similar_action_no(actions, state_key, side, c)
 
         return action_no
 
@@ -473,7 +470,7 @@ class KoreanChess(Env):
         if action_cnt < 1 or np.sum(Q[state]) == 0:
             q_state_key_list = {}
             for q_state_key in Q:
-                diff_score = KoreanChess.compare_state(state, q_state_key)
+                diff_score = Core.compare_state(state, q_state_key)
                 q_state_key_list[q_state_key] = diff_score
 
             sorted_q_state_list = sorted(q_state_key_list.items(), key=operator.itemgetter(1))
@@ -486,9 +483,9 @@ class KoreanChess(Env):
                 q_action = q_action_list[q_max_action_no]
                 for i, action in enumerate(action_list):
                     if action['x'] == q_action['x'] \
-                            and action['y'] == q_action['y'] \
-                            and action['to_x'] == q_action['to_x'] \
-                            and action['to_y'] == q_action['to_y']:
+                      and action['y'] == q_action['y'] \
+                      and action['to_x'] == q_action['to_x'] \
+                      and action['to_y'] == q_action['to_y']:
                         return i
 
         return np.argmax(Q[state] + np.random.randn(1, action_cnt) / (action_cnt * 10))
@@ -496,7 +493,7 @@ class KoreanChess(Env):
     def get_action_with_record(self, Q, state, record, is_red=False):
         if is_red:
             # reverse state
-            action_list = self.state_list[KoreanChess.reverse_state_key(state)]['action_list']
+            action_list = self.state_list[Core.reverse_state_key(state)]['action_list']
         else:
             action_list = self.state_list[state]['action_list']
 
@@ -505,9 +502,9 @@ class KoreanChess(Env):
 
         for i, action in enumerate(action_list):
             if action['x'] == record['x'] \
-                    and action['y'] == record['y'] \
-                    and action['to_x'] == record['to_x'] \
-                    and action['to_y'] == record['to_y']:
+              and action['y'] == record['y'] \
+              and action['to_x'] == record['to_x'] \
+              and action['to_y'] == record['to_y']:
                 return i
 
         import json
@@ -519,11 +516,11 @@ class KoreanChess(Env):
     def get_action_list(self, state, is_red=False):
         if is_red:
             # reverse state
-            state_key = KoreanChess.reverse_state_key(state)
+            state_key = Core.reverse_state_key(state)
         else:
             state_key = state
         if state_key not in self.state_list:
-            self.create_state(KoreanChess.convert_state_map(state_key), kcu.RED if is_red else kcu.BLUE)
+            self.create_state(Core.convert_state_map(state_key), common.RED if is_red else common.BLUE)
         action_list = self.state_list[state_key]['action_list']
         return action_list
 
@@ -540,7 +537,7 @@ class KoreanChess(Env):
         if action_cnt < 1 or np.sum(Q[state]) == 0:
             q_state_key_list = {}
             for q_state_key in Q:
-                diff_score = KoreanChess.compare_state(state, q_state_key)
+                diff_score = Core.compare_state(state, q_state_key)
                 q_state_key_list[q_state_key] = diff_score
 
             sorted_q_state_list = sorted(q_state_key_list.items(), key=operator.itemgetter(1))
@@ -553,9 +550,9 @@ class KoreanChess(Env):
                 q_action = q_action_list[q_max_action_no]
                 for i, action in enumerate(action_list):
                     if action['x'] == q_action['x'] \
-                            and action['y'] == q_action['y'] \
-                            and action['to_x'] == q_action['to_x'] \
-                            and action['to_y'] == q_action['to_y']:
+                      and action['y'] == q_action['y'] \
+                      and action['to_x'] == q_action['to_x'] \
+                      and action['to_y'] == q_action['to_y']:
                         return i
 
         return np.argmax(Q[state] + np.random.randn(1, action_cnt) / (action_cnt * 10))
@@ -563,7 +560,7 @@ class KoreanChess(Env):
     @staticmethod
     def similar_action(actions, state_key, side, sqlite_cursor):
         # decomp key
-        decomp_state_key = KoreanChess.decompress_state_key(state_key)
+        decomp_state_key = Core.decompress_state_key(state_key)
         # full text search for similar state key on elasticsearch
         es = ES('52.79.135.2:80')
         result = es.search('i_irelia_state', 't_blue_state' if side is 'b' else 't_red_state',
@@ -577,22 +574,22 @@ class KoreanChess(Env):
 
         actions_map = {}
         for act in actions:
-            actions_map[KoreanChess.build_action_key(act)] = True
+            actions_map[Core.build_action_key(act)] = True
 
         for item in result['hits']['hits']:
-            similar_state = KoreanChess.compress_state_key(item['_source']['state'])
+            similar_state = Core.compress_state_key(item['_source']['state'])
             sqlite_cursor.execute(
-                "SELECT quality_json FROM t_quality WHERE state_key='" + KoreanChess.compress_state_key(
+                "SELECT quality_json FROM t_quality WHERE state_key='" + Core.compress_state_key(
                     similar_state) + "'")
 
             q_json = sqlite_cursor.fetchone()
             if not q_json or q_json[0] == '0':
                 continue
 
-            similar_state_map = KoreanChess.convert_state_map(similar_state)
+            similar_state_map = Core.convert_state_map(similar_state)
             if side == 'r':
-                similar_state_map = KoreanChess.reverse_state_map(similar_state_map)
-            similar_state_actions = KoreanChess.get_actions(similar_state_map, side)
+                similar_state_map = Core.reverse_state_map(similar_state_map)
+            similar_state_actions = Core.get_actions(similar_state_map, side)
 
             q_values = json.loads(q_json[0])
 
@@ -605,7 +602,7 @@ class KoreanChess(Env):
                 if q_value <= 0:
                     break
                 sim_action = similar_state_actions[action_no]
-                if KoreanChess.build_action_key(sim_action) in actions_map:
+                if Core.build_action_key(sim_action) in actions_map:
                     return sim_action
 
         return random.choice(actions)
@@ -613,7 +610,7 @@ class KoreanChess(Env):
     @staticmethod
     def similar_action_no(actions, state_key, side, sqlite_cursor):
         # decomp key
-        decomp_state_key = KoreanChess.decompress_state_key(state_key)
+        decomp_state_key = Core.decompress_state_key(state_key)
         # full text search for similar state key on elasticsearch
         es = ES('52.79.135.2:80')
         result = es.search('i_irelia_state', 't_blue_state' if side is 'b' else 't_red_state',
@@ -627,22 +624,22 @@ class KoreanChess(Env):
 
         actions_map = {}
         for i, act in enumerate(actions):
-            actions_map[KoreanChess.build_action_key(act)] = i
+            actions_map[Core.build_action_key(act)] = i
 
         for item in result['hits']['hits']:
-            similar_state = KoreanChess.compress_state_key(item['_source']['state'])
+            similar_state = Core.compress_state_key(item['_source']['state'])
             sqlite_cursor.execute(
-                "SELECT quality_json FROM t_quality WHERE state_key='" + KoreanChess.compress_state_key(
+                "SELECT quality_json FROM t_quality WHERE state_key='" + Core.compress_state_key(
                     similar_state) + "'")
 
             q_json = sqlite_cursor.fetchone()
             if not q_json or q_json[0] == '0':
                 continue
 
-            similar_state_map = KoreanChess.convert_state_map(similar_state)
+            similar_state_map = Core.convert_state_map(similar_state)
             if side == 'r':
-                similar_state_map = KoreanChess.reverse_state_map(similar_state_map)
-            similar_state_actions = KoreanChess.get_actions(similar_state_map, side)
+                similar_state_map = Core.reverse_state_map(similar_state_map)
+            similar_state_actions = Core.get_actions(similar_state_map, side)
 
             q_values = json.loads(q_json[0])
 
@@ -655,7 +652,7 @@ class KoreanChess(Env):
                 if q_value <= 0:
                     break
                 sim_action = similar_state_actions[action_no]
-                sim_action_key = KoreanChess.build_action_key(sim_action)
+                sim_action_key = Core.build_action_key(sim_action)
                 if sim_action_key in actions_map:
                     return actions_map[sim_action_key]
 

@@ -2,15 +2,17 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from game.game import Game
-import numpy as np
-import time
 import json
-from env import korean_chess_util as kcu
-from env.korean_chess import KoreanChess
 import os
-import shutil
 import random
+import shutil
+import time
+
+import numpy as np
+
+from env.korean_chess import common
+from env.korean_chess.core import Core
+from game.game import Game
 
 # you can restore state_list
 state_list_file = None  # open('./state_list.json') if os.path.isfile('./state_list.json') else None
@@ -85,7 +87,7 @@ for i in range(num_episodes):
 
         blue_state = env.reset()
 
-        env.print_map(blue_state, kcu.BLUE)
+        env.print_map(blue_state, common.BLUE)
         blue_reward_all = 0
         red_reward_all = 0
         blue_done = False
@@ -100,12 +102,12 @@ for i in range(num_episodes):
                 blue_action = env.get_action_with_record(Q_blue, blue_state, records[j])
                 if blue_action is not False:
                     red_state, blue_reward, blue_done, is_draw = env.step(blue_action, blue_state)
-                    if record_count - 2 <= j and winner is kcu.BLUE:
-                        blue_reward = KoreanChess.REWARD_LIST[kcu.KING]
+                    if record_count - 2 <= j and winner is common.BLUE:
+                        blue_reward = Core.REWARD_LIST[common.KING]
                 else:
                     break
-                env.print_map(red_state, kcu.RED, str(i) + ':' + str(k), j, blue_reward_all, red_reward_all,
-                              kcu.BLUE if blue_done else False,
+                env.print_map(red_state, common.RED, str(i) + ':' + str(k), j, blue_reward_all, red_reward_all,
+                              common.BLUE if blue_done else False,
                               is_draw, blue_win_cnt, red_win_cnt, Q1=Q_blue, Q2=Q_red, file=record_file_name,
                               line=record_file_line)
 
@@ -133,12 +135,12 @@ for i in range(num_episodes):
                 red_action = env.get_action_with_record(Q_red, red_state, records[j], True)
                 if red_action is not False:
                     next_blue_state, red_reward, red_done, is_draw = env.step(red_action, red_state, True)
-                    if record_count - 2 <= j and winner is kcu.RED:
-                        red_reward = KoreanChess.REWARD_LIST[kcu.KING]
+                    if record_count - 2 <= j and winner is common.RED:
+                        red_reward = Core.REWARD_LIST[common.KING]
                 else:
                     break
-                env.print_map(next_blue_state, kcu.BLUE, str(i) + ':' + str(k), j, blue_reward_all, red_reward_all,
-                              kcu.RED if red_done else False,
+                env.print_map(next_blue_state, common.BLUE, str(i) + ':' + str(k), j, blue_reward_all, red_reward_all,
+                              common.RED if red_done else False,
                               is_draw, blue_win_cnt, red_win_cnt, Q1=Q_blue, Q2=Q_red, file=record_file_name,
                               line=record_file_line)
 

@@ -2,7 +2,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from env.korean_chess import KoreanChess
+from env.korean_chess.core import Core as KoreanChess
 
 
 class Game(object):

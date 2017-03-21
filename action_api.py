@@ -1,4 +1,4 @@
-from env.korean_chess import KoreanChess
+from env.korean_chess.core import Core
 from flask import Flask, render_template
 from flask import request
 import json
@@ -34,13 +34,13 @@ def action():
     state_map = json.loads(state_map)
     filter_state_map(state_map)
     if side == 'b':
-        reverse_state_map = KoreanChess.reverse_state_map(state_map)
+        reverse_state_map = Core.reverse_state_map(state_map)
         db_name = './q_blue.db'
     else:
         reverse_state_map = state_map
         db_name = './q_red.db'
 
-    state_key = KoreanChess.convert_state_key(reverse_state_map)
+    state_key = Core.convert_state_key(reverse_state_map)
 
     conn = sqlite3.connect(db_name)
 
@@ -49,26 +49,23 @@ def action():
     c.execute("SELECT quality_json FROM t_quality WHERE state_key='" + state_key + "'")
 
     result = c.fetchone()
-    reversed_state_map = KoreanChess.reverse_state_map(state_map)
-    actions = KoreanChess.get_actions(reversed_state_map, side)
+    reversed_state_map = Core.reverse_state_map(state_map)
+    actions = Core.get_actions(reversed_state_map, side)
     if result:
         if result[0] == '0':
-            action = KoreanChess.similar_action(actions, state_key, side, c)
+            action = Core.similar_action(actions, state_key, side, c)
         else:
             q_values = json.loads(result[0])
             max_action = int(max(q_values.iteritems(), key=operator.itemgetter(1))[0])
             if len(actions) <= max_action:
-                action = KoreanChess.similar_action(actions, state_key, side, c)
+                action = Core.similar_action(actions, state_key, side, c)
             else:
                 action = actions[max_action]
     else:
-        action = KoreanChess.similar_action(actions, state_key, side, c)
+        action = Core.similar_action(actions, state_key, side, c)
 
     c.close()
     return json.dumps(action)
-
-
-
 
 
 @app.route("/actions")
@@ -79,7 +76,7 @@ def actions():
         return json.dumps({'error': True, 'msg': 'invalid params', 'data': {'state_map': state_map, 'side': side}})
     state_map = json.loads(state_map)
     filter_state_map(state_map)
-    result = KoreanChess.get_actions(state_map, side)
+    result = Core.get_actions(state_map, side)
 
     return json.dumps(result)
 

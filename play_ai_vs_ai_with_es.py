@@ -2,14 +2,14 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from game.game import Game
-import numpy as np
-import time
 import json
-from env import korean_chess_util as kcu
 import os
 import shutil
-from elasticsearch import Elasticsearch as ES
+
+import numpy as np
+
+from env.korean_chess import common
+from game.game import Game
 
 # you can restore state_list
 state_list_file = None  # open('./state_list.json') if os.path.isfile('./state_list.json') else None
@@ -57,7 +57,7 @@ red_win_cnt = 0
 blue_state = env.reset()
 init_map = env.state_list[blue_state]['state_map']
 # history.append(blue_state)
-env.print_map_for_test(blue_state, kcu.BLUE)
+env.print_map_for_test(blue_state, common.BLUE)
 blue_reward_all = 0
 red_reward_all = 0
 blue_done = False
@@ -70,8 +70,8 @@ while not blue_done and not red_done:
     blue_action = env.get_action_test(Q_blue, blue_state)
     red_state, blue_reward, blue_done, is_draw = env.step(blue_action, blue_state)
     # history.append(red_state)
-    env.print_map_for_test(red_state, kcu.RED, 0, j, blue_reward_all, red_reward_all,
-                           kcu.BLUE if blue_done else False,
+    env.print_map_for_test(red_state, common.RED, 0, j, blue_reward_all, red_reward_all,
+                           common.BLUE if blue_done else False,
                            is_draw, blue_win_cnt, red_win_cnt, Q1=Q_blue, Q2=Q_red)
     if blue_action is False and red_action is False:
         break
@@ -86,8 +86,8 @@ while not blue_done and not red_done:
     red_action = env.get_action_test(Q_red, red_state, True)
     next_blue_state, red_reward, red_done, is_draw = env.step(red_action, red_state, True)
     # history.append(next_blue_state)
-    env.print_map_for_test(next_blue_state, kcu.BLUE, 0, j, blue_reward_all, red_reward_all,
-                           kcu.RED if red_done else False,
+    env.print_map_for_test(next_blue_state, common.BLUE, 0, j, blue_reward_all, red_reward_all,
+                           common.RED if red_done else False,
                            is_draw, blue_win_cnt, red_win_cnt, Q1=Q_blue, Q2=Q_red)
 
     if blue_action is False and red_action is False:

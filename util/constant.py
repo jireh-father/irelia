@@ -1,0 +1,2 @@
+ARG_TRAIN_MODE_FROM_SCRATCH = "from_scratch"
+ARG_TRAIN_MODE_FINE_TUNE = "fine_tune"
