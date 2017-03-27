@@ -18,7 +18,7 @@ logits, end_points = nn.sl_policy_network(inputs, FLAGS.num_repeat_layers, FLAGS
 print(logits)
 
 with tf.variable_scope('cross_entropy'):
-    cross_entropy = tf.nn.softmax_cross_entropy_with_logits(logits, labels)
+    cross_entropy = tf.nn.softmax_cross_entropy_with_logits(logits=logits, labels=labels)
     loss = tf.reduce_mean(cross_entropy)
 
 # train
