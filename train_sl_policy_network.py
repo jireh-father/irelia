@@ -115,7 +115,7 @@ for epoch in range(FLAGS.max_epoch):
         if i % 20 is 0:
             rand_valid_indices = np.random.choice(valid_indices, size=FLAGS.batch_size)
             x_valid = valid_inputs[rand_valid_indices]
-            y_valid = valid_inputs[rand_valid_indices]
+            y_valid = valid_labels[rand_valid_indices]
 
             valid_loss, valid_logits, _, valid_acc = sess.run(
                 [loss, logits, train, accuracy], {inputs: x_valid, labels: y_valid})
