@@ -94,7 +94,9 @@ y_train = [[[[0, 0, 0, 0, 0, 0, 0, 0, 0],
 
 train_inputs, train_labels, valid_inputs, valid_labels = reader.load_train(FLAGS.data_path)
 train_cnt = len(train_labels)
+
 train_indices = np.arange(train_cnt)
+valid_indices = np.arange(len(valid_labels))
 
 train_cnt = len(train_labels)
 steps = train_cnt // FLAGS.batch_size
@@ -105,19 +107,25 @@ for epoch in range(FLAGS.max_epoch):
         x_train = train_inputs[rand_train_indices]
         y_train = train_labels[rand_train_indices]
 
-        curr_loss, curr_logits, _, pred, pred_eq, acc = sess.run(
-            [loss, logits, train, predict, correct_prediction, accuracy], {inputs: x_train, labels: y_train})
+        curr_loss, curr_logits, _, acc = sess.run(
+            [loss, logits, train, accuracy], {inputs: x_train, labels: y_train})
 
-        print("loss: %s " % curr_loss)
-        print(pred)
-        print(pred_eq)
-        print(acc)
-        # before = curr_logits[0, :, :, 0].flatten()
-        # after = curr_logits[0, :, :, 1].flatten()
-        # print(before)
-        # sort_key = before.argsort()[-10:]
-        # print(before[sort_key])
-        # sort_key = after.argsort()[-10:]
-        # print(after[sort_key])
-        # print(curr_logits[0, :, :, 1])
-        # print(curr_logits[0][:, 1])
+        if i % 10 is 0:
+            print("train loss: %s, accuracy: %s " % (curr_loss, acc))
+        if i % 20 is 0:
+            rand_valid_indices = np.random.choice(valid_indices, size=FLAGS.batch_size)
+            x_valid = valid_inputs[rand_valid_indices]
+            y_valid = valid_inputs[rand_valid_indices]
+
+            valid_loss, valid_logits, _, valid_acc = sess.run(
+                [loss, logits, train, accuracy], {inputs: x_valid, labels: y_valid})
+            print("validation loss: %s, accuracy: %s " % (valid_loss, valid_acc))
+            # before = curr_logits[0, :, :, 0].flatten()
+            # after = curr_logits[0, :, :, 1].flatten()
+            # print(before)
+            # sort_key = before.argsort()[-10:]
+            # print(before[sort_key])
+            # sort_key = after.argsort()[-10:]
+            # print(after[sort_key])
+            # print(curr_logits[0, :, :, 1])
+            # print(curr_logits[0][:, 1])
