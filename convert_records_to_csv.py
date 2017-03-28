@@ -14,7 +14,7 @@ output_file = open(output_path, mode='w')
 records_file = open(records_path)
 lines = records_file.readlines()
 for i, line in enumerate(lines):
-    if i > 100:
+    if i > 1000:
         break
     line = line.strip()
     records = json.loads(line)

@@ -25,6 +25,10 @@ with tf.variable_scope('cross_entropy'):
     cross_entropy = tf.nn.softmax_cross_entropy_with_logits(logits=logits, labels=labels)
     loss = tf.reduce_mean(cross_entropy)
 
+predict = tf.argmax(end_points['Predictions'], 1)
+correct_prediction = tf.equal(predict, tf.argmax(labels, 1))
+accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float16))
+
 # train
 with tf.name_scope('train'):
     optimizer = tf.train.RMSPropOptimizer(FLAGS.learning_rate, decay=0.9, momentum=0.9, epsilon=1.0)
@@ -101,10 +105,13 @@ for epoch in range(FLAGS.max_epoch):
         x_train = train_inputs[rand_train_indices]
         y_train = train_labels[rand_train_indices]
 
-        curr_loss, curr_logits, _ = sess.run([loss, logits, train], {inputs: x_train, labels: y_train})
+        curr_loss, curr_logits, _, pred, pred_eq, acc = sess.run(
+            [loss, logits, train, predict, correct_prediction, accuracy], {inputs: x_train, labels: y_train})
 
         print("loss: %s " % curr_loss)
-        print(curr_logits)
+        print(pred)
+        print(pred_eq)
+        print(acc)
         # before = curr_logits[0, :, :, 0].flatten()
         # after = curr_logits[0, :, :, 1].flatten()
         # print(before)
