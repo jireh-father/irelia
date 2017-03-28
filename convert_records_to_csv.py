@@ -3,7 +3,7 @@ import csv
 from game.game import Game
 
 records_path = 'D:/data/korean_chess/records.txt'
-output_path = 'D:/data/korean_chess/records.csv'
+output_path = 'D:/data/korean_chess/records_test.csv'
 k = 0
 Game.register('KoreanChess',
               {'position_type': 'random', 'init_state': None, 'init_side': 'b'})

@@ -11,15 +11,21 @@ tf.app.flags.DEFINE_integer('num_filters', 192, 'The number of cnn filters.')
 tf.app.flags.DEFINE_integer('num_repeat_layers', 11, 'The number of cnn repeat layers.')
 tf.app.flags.DEFINE_float('learning_rate', 0.01, 'learning_rate.')
 tf.app.flags.DEFINE_string('data_path', '/home/igseo/data/korean_chess/records.csv', 'training data path')
+tf.app.flags.DEFINE_string('data_format', 'NCHW', 'cnn data format')
 
 width = 9
 height = 10
 num_input_feature = 3
 
-inputs = tf.placeholder(tf.float16, [None, num_input_feature, height, width], name='inputs')
-labels = tf.placeholder(tf.float16, [None, 2, height, width], name='labels')
+if FLAGS.data_format is 'NCHW':
+    inputs = tf.placeholder(tf.float16, [None, num_input_feature, height, width], name='inputs')
+    labels = tf.placeholder(tf.float16, [None, 2, height, width], name='labels')
+else:
+    inputs = tf.placeholder(tf.float16, [None, height, width, num_input_feature], name='inputs')
+    labels = tf.placeholder(tf.float16, [None, height, width, 2], name='labels')
 
-logits, end_points = nn.sl_policy_network(inputs, FLAGS.num_repeat_layers, FLAGS.num_filters, data_format='NCHW')
+logits, end_points = nn.sl_policy_network(inputs, FLAGS.num_repeat_layers, FLAGS.num_filters,
+                                          data_format=FLAGS.data_format)
 
 with tf.variable_scope('cross_entropy'):
     cross_entropy = tf.nn.softmax_cross_entropy_with_logits(logits=logits, labels=labels)
@@ -106,6 +112,9 @@ for epoch in range(FLAGS.max_epoch):
         rand_train_indices = np.random.choice(train_indices, size=FLAGS.batch_size)
         x_train = train_inputs[rand_train_indices]
         y_train = train_labels[rand_train_indices]
+        if FLAGS.data_format is not 'NCHW':
+            x_train = np.transpose(x_train, (0, 2, 3, 1))
+            y_train = np.transpose(y_train, (0, 2, 3, 1))
 
         curr_loss, curr_logits, _, acc = sess.run(
             [loss, logits, train, accuracy], {inputs: x_train, labels: y_train})
@@ -116,6 +125,9 @@ for epoch in range(FLAGS.max_epoch):
             rand_valid_indices = np.random.choice(valid_indices, size=FLAGS.batch_size)
             x_valid = valid_inputs[rand_valid_indices]
             y_valid = valid_labels[rand_valid_indices]
+            if FLAGS.data_format is not 'NCHW':
+                x_valid = np.transpose(x_valid, (0, 2, 3, 1))
+                y_valid = np.transpose(y_valid, (0, 2, 3, 1))
 
             valid_loss, valid_logits, _, valid_acc = sess.run(
                 [loss, logits, train, accuracy], {inputs: x_valid, labels: y_valid})
