@@ -5,9 +5,11 @@ import os
 import re
 import re
 import json
+import json
+import sys
 
-record_dir = 'D:/data/korean_chess/records'
-output_path = 'records.txt'
+record_dir = 'D:/data/korean_chess/gibo'
+output_path = 'D:/data/korean_chess/records.txt'
 
 position_type_map = {u'마상상마': 'masangsangma', u'마상마상': 'masangmasang', u'상마마상': 'sangmamasang',
                      u'상마상마': 'sangmasangma'}
@@ -15,6 +17,8 @@ position_type_map = {u'마상상마': 'masangsangma', u'마상마상': 'masangma
 red_position_type_map = {u'마상상마': 'masangsangma', u'마상마상': 'sangmasangma', u'상마마상': 'sangmamasang',
                          u'상마상마': 'masangmasang'}
 
+
+# result_msg_list = {}
 
 def parse_record(tmp_records):
     tmp_record_list = tmp_records.split(' ')
@@ -41,7 +45,7 @@ def parse_record(tmp_records):
             x = 8 - x
             to_y = 9 - to_y
             to_x = 8 - to_x
-        # print({'x': x, 'y': y, 'to_x': to_x, 'to_y': to_y})
+        print({'x': x, 'y': y, 'to_x': to_x, 'to_y': to_y})
         result.append({'x': x, 'y': y, 'to_x': to_x, 'to_y': to_y})
     return result
 
@@ -61,17 +65,24 @@ for record_file_path in record_files:
     except UnicodeDecodeError:
         continue
     i_line = 0
-    for line in lines:
+    for i, line in enumerate(lines):
+        print(record_file_path, i)
         i_line += 1
         line = line.strip()
         if not line:
             if tmp_records:
-                record_list.append({'blue_position_type': blue_position_type,
-                                    'red_position_type': red_position_type,
-                                    'winner': result,
-                                    'records': parse_record(tmp_records),
-                                    'file': record_file_path,
-                                    'line': i_line})
+                err = False
+                try:
+                    parsed_records = parse_record(tmp_records)
+                except:
+                    err = True
+                if not err:
+                    record_list.append({'blue_position_type': blue_position_type,
+                                        'red_position_type': red_position_type,
+                                        'winner': result,
+                                        'records': parsed_records,
+                                        'file': record_file_path,
+                                        'line': i_line})
                 tmp_records = ''
                 blue_position_type = None
                 red_position_type = None
@@ -91,13 +102,13 @@ for record_file_path in record_files:
             continue
 
         if line[1:4] == u'초차림':
-            print(record_file_path)
             blue_position_type = position_type_map[line[6:10]]
             continue
         if line[1:4] == u'한차림':
             red_position_type = red_position_type_map[line[6:10]]
             continue
         if line[1:4] == u'대국결':
+            # result_msg_list[line] = True
             if re.findall('접속 끊김|시간승|무승부', line, re.UNICODE):
                 blue_position_type = None
                 red_position_type = None
@@ -117,6 +128,7 @@ for record_file_path in record_files:
             # for records in record_list:
             #     print(records)
 
+# print(json.dumps(list(result_msg_list.keys())))
 with open(output_path, 'w') as outfile:
     for records in record_list:
         outfile.write(json.dumps(records) + "\n")

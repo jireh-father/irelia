@@ -71,6 +71,16 @@ class Core(Env):
         common.KING: 46,
     }
 
+    CONV_PIECE_LIST = {
+        common.SOLDIER: '0.15',
+        common.SANG: '0.29',
+        common.GUARDIAN: '0.43',
+        common.HORSE: '0.58',
+        common.CANNON: '0.72',
+        common.CAR: '0.86',
+        common.KING: '1.0',
+    }
+
     def __init__(self, properties):
         Env.__init__(self, properties)
         self.state_list = {}
@@ -124,6 +134,39 @@ class Core(Env):
             state_key_list.append(str(empty_cnt))
 
         return ','.join(state_key_list)
+
+    def build_csv_data(self, state_key, color, records):
+        blue_feature_map = []
+        red_feature_map = []
+        for piece in state_key.split(','):
+            if piece.isdigit():
+                blue_feature_map += ['0'] * int(piece)
+                red_feature_map += ['0'] * int(piece)
+            else:
+                if piece[0] is 'b':
+                    blue_feature_map.append(Core.CONV_PIECE_LIST[int(piece[1])])
+                    red_feature_map.append('0')
+                else:
+                    red_feature_map.append(Core.CONV_PIECE_LIST[int(piece[1])])
+                    blue_feature_map.append('0')
+        if color is 'b':
+            color_feature_map = ['0.5'] * 10 * 9
+            y = records['y']
+            x = records['x']
+            to_y = records['to_y']
+            to_x = records['to_x']
+        else:
+            color_feature_map = ['1'] * 10 * 9
+            y = 9 - records['y']
+            x = 8 - records['x']
+            to_y = 9 - records['to_y']
+            to_x = 8 - records['to_x']
+
+        from_label_map = ['0'] * 10 * 9
+        to_label_map = ['0'] * 10 * 9
+        from_label_map[y * 9 + x] = '1'
+        to_label_map[to_y * 9 + to_x] = '1'
+        return blue_feature_map + red_feature_map + color_feature_map + from_label_map + to_label_map
 
     @staticmethod
     def convert_state_map(state_key):
@@ -182,7 +225,7 @@ class Core(Env):
 
     def action(self, state_key, action_key, is_red=False):
         if is_red:
-            state = self.state_list[Core.reverse_state_key(state_key)]
+            state = self.state_list[self.reverse_state_key(state_key)]
         else:
             state = self.state_list[state_key]
         action = state['action_list'][action_key]
@@ -263,7 +306,7 @@ class Core(Env):
                                           'action_list': Core.get_actions(state_map, side), 'side': side}
 
         if side is common.RED:
-            return Core.reverse_state_key(state_key)
+            return self.reverse_state_key(state_key)
         else:
             return state_key
 
@@ -493,7 +536,7 @@ class Core(Env):
     def get_action_with_record(self, Q, state, record, is_red=False):
         if is_red:
             # reverse state
-            action_list = self.state_list[Core.reverse_state_key(state)]['action_list']
+            action_list = self.state_list[self.reverse_state_key(state)]['action_list']
         else:
             action_list = self.state_list[state]['action_list']
 
