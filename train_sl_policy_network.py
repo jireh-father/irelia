@@ -10,7 +10,7 @@ tf.app.flags.DEFINE_integer('batch_size', 64, 'The number of samples in each bat
 tf.app.flags.DEFINE_integer('num_filters', 192, 'The number of cnn filters.')
 tf.app.flags.DEFINE_integer('num_repeat_layers', 11, 'The number of cnn repeat layers.')
 tf.app.flags.DEFINE_float('learning_rate', 0.01, 'learning_rate.')
-tf.app.flags.DEFINE_string('data_path', 'D:/data/korean_chess/records.csv', 'training data path')
+tf.app.flags.DEFINE_string('data_path', '/home/igseo/data/korean_chess/records.csv', 'training data path')
 
 width = 9
 height = 10
