@@ -28,12 +28,13 @@ else:
 logits, end_points = nn.sl_policy_network(inputs, F.num_repeat_layers, F.num_filters,
                                           data_format=F.data_format)
 
-if F.data_format is not 'NCHW':
-    predict = tf.reshape(end_points['Predictions'], [1, 2])
-    predict = tf.argmax(predict, 1)
-    print(predict)
+if F.data_format is 'NCHW':
+    reshaped_predict = tf.reshape(end_points['Predictions'], [1, 2, 90])
+    predict = tf.argmax(reshaped_predict, 2)
 else:
-    predict = tf.argmax(end_points['Predictions'], 1)
+    transposed_predict = tf.transpose(end_points['Predictions'], perm=[0, 2, 3, 1])
+    reshaped_predict = tf.reshape(transposed_predict, [1, 2, 90])
+    predict = tf.argmax(reshaped_predict, 2)
 
 init = tf.global_variables_initializer()
 sess = tf.InteractiveSession()
@@ -46,7 +47,9 @@ if os.path.isfile(F.checkpoint_path):
 x_train = common.convert_state_feature_map(F.state)
 if F.data_format is not 'NCHW':
     x_train = np.transpose(x_train, (0, 2, 3, 1))
-prediction, = sess.run([predict], {inputs: x_train})
+result, raw_prediction = sess.run([predict, end_points['Predictions']], {inputs: x_train})
+
+print(result, raw_prediction)
 
 # x_train = [[[[.6], [.4], [.2], [.3], [0], [.3], [.4], [.2], [.6]],
 #             [[0], [0], [0], [0], [1], [0], [0], [0], [0]],
