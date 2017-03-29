@@ -13,7 +13,8 @@ tf.app.flags.DEFINE_integer('num_repeat_layers', 11, 'The number of cnn repeat l
 tf.app.flags.DEFINE_float('learning_rate', 0.01, 'learning_rate.')
 tf.app.flags.DEFINE_string('data_path', '/home/igseo/data/korean_chess/records.csv', 'training data path')
 tf.app.flags.DEFINE_string('data_format', 'NCHW', 'cnn data format')
-tf.app.flags.DEFINE_string('save_path', '/home/igseo/data/korean_chess/train/sl_policy_network.ckpt', 'cnn data format')
+tf.app.flags.DEFINE_string('checkpoint_path', '/home/igseo/data/korean_chess/train/sl_policy_network.ckpt',
+                           'cnn data format')
 tf.app.flags.DEFINE_integer('save_interval_epoch', 1, 'Save Interval by Epoch.')
 tf.app.flags.DEFINE_integer('print_interval_steps', 10, 'Print Interval by steps.')
 tf.app.flags.DEFINE_integer('validation_interval_steps', 30, 'Validation Interval by steps.')
@@ -36,10 +37,6 @@ with tf.variable_scope('cross_entropy'):
     cross_entropy = tf.nn.softmax_cross_entropy_with_logits(logits=logits, labels=labels)
     loss = tf.reduce_mean(cross_entropy)
 
-predict = tf.argmax(end_points['Predictions'], 1)
-correct_prediction = tf.equal(predict, tf.argmax(labels, 1))
-accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float16))
-
 # train
 with tf.name_scope('train'):
     optimizer = tf.train.RMSPropOptimizer(F.learning_rate, decay=0.9, momentum=0.9, epsilon=1.0)
@@ -51,11 +48,11 @@ sess = tf.InteractiveSession()
 sess.run(init)
 
 saver = tf.train.Saver()
-if os.path.isfile(F.save_path):
-    saver.restore(sess, F.save_path)
+if os.path.isfile(F.checkpoint_path):
+    saver.restore(sess, F.checkpoint_path)
 
-if not os.path.isdir(os.path.dirname(F.save_path)):
-    os.makedirs(os.path.dirname(F.save_path))
+if not os.path.isdir(os.path.dirname(F.checkpoint_path)):
+    os.makedirs(os.path.dirname(F.checkpoint_path))
 
 train_inputs, train_labels, valid_inputs, valid_labels = reader.load_train(F.data_path)
 train_cnt = len(train_labels)
@@ -75,11 +72,11 @@ for epoch in range(F.max_epoch):
             x_train = np.transpose(x_train, (0, 2, 3, 1))
             y_train = np.transpose(y_train, (0, 2, 3, 1))
 
-        curr_loss, curr_logits, _, acc = sess.run(
-            [loss, logits, train, accuracy], {inputs: x_train, labels: y_train})
+        curr_loss, curr_logits, _ = sess.run(
+            [loss, logits, train], {inputs: x_train, labels: y_train})
 
         if i % F.print_interval_steps is 0:
-            print("train loss: %s, accuracy: %s " % (curr_loss, acc))
+            print("train loss: %s" % curr_loss)
         if i % F.validation_interval_steps is 0:
             rand_valid_indices = np.random.choice(valid_indices, size=F.batch_size)
             x_valid = valid_inputs[rand_valid_indices]
@@ -88,11 +85,11 @@ for epoch in range(F.max_epoch):
                 x_valid = np.transpose(x_valid, (0, 2, 3, 1))
                 y_valid = np.transpose(y_valid, (0, 2, 3, 1))
 
-            valid_loss, valid_logits, _, valid_acc = sess.run(
-                [loss, logits, train, accuracy], {inputs: x_valid, labels: y_valid})
-            print("validation loss: %s, accuracy: %s " % (valid_loss, valid_acc))
+            valid_loss, valid_logits, _ = sess.run(
+                [loss, logits, train], {inputs: x_valid, labels: y_valid})
+            print("validation loss: %s" % valid_loss)
     if epoch % F.save_interval_epoch is 0:
-        saver.save(sess, F.save_path)
+        saver.save(sess, F.checkpoint_path)
         # before = curr_logits[0, :, :, 0].flatten()
         # after = curr_logits[0, :, :, 1].flatten()
         # print(before)

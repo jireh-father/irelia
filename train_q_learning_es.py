@@ -32,6 +32,9 @@ red_win_cnt = 0
 
 for i in range(num_episodes):
     blue_state = env.reset()
+    print(blue_state)
+    env.convert_state_map()
+    sys.exit()
     env.print_map(blue_state, common.BLUE)
     blue_reward_all = 0
     red_reward_all = 0
