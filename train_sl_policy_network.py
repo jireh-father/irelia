@@ -114,7 +114,7 @@ for epoch in range(F.max_epoch):
             curr_loss, curr_logits, _, result_equal = sess.run(
                 [loss, logits, train, pred_equal],
                 {inputs: x_train, labels: y_train})
-        accuracy = np.mean(np.sum(pred_equal, 1) // 2)
+        accuracy = np.mean(np.sum(result_equal, 1) // 2)
 
         if i % F.print_interval_steps is 0:
             print("Train epoch %d:%d loss: %s, accuracy: %d" % (epoch, i, curr_loss, accuracy))
@@ -132,7 +132,7 @@ for epoch in range(F.max_epoch):
 
             valid_loss, valid_logits, _, summary, result_equal = sess.run(
                 [loss, logits, train, valid_merged, pred_equal], {inputs: x_valid, labels: y_valid})
-            accuracy = np.mean(np.sum(pred_equal, 1) // 2)
+            accuracy = np.mean(np.sum(result_equal, 1) // 2)
             valid_writer.add_summary(summary, (i * (epoch + 1)))
             print("Valid epoch %d:%d  loss: %s, accuracy: %d" % (epoch, i, valid_loss, accuracy))
         if epoch < 1 and i % F.validation_interval_steps is 0:
