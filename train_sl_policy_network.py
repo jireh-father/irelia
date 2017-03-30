@@ -88,7 +88,9 @@ for epoch in range(F.max_epoch):
             valid_loss, valid_logits, _ = sess.run(
                 [loss, logits, train], {inputs: x_valid, labels: y_valid})
             print("validation loss: %s" % valid_loss)
-    if epoch % F.save_interval_epoch is 0:
+        if epoch < 1 and i % F.validation_interval_steps is 0:
+            saver.save(sess, F.checkpoint_path)
+    if epoch > 0 and epoch % F.save_interval_epoch is 0:
         saver.save(sess, F.checkpoint_path)
         # before = curr_logits[0, :, :, 0].flatten()
         # after = curr_logits[0, :, :, 1].flatten()
