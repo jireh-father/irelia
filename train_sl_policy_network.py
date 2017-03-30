@@ -3,7 +3,6 @@ from util import neural_network as nn
 import numpy as np
 import os
 from util import gibo_csv_reader as reader
-from tensorflow.contrib.tensorboard.plugins import projector
 
 F = tf.app.flags.FLAGS
 
@@ -48,13 +47,6 @@ labels = tf.placeholder(tf.float16, [None, 2, height * width], name='labels')
 logits, end_points = nn.sl_policy_network(inputs, F.num_repeat_layers, F.num_filters,
                                           data_format=F.data_format)
 
-embedding_var = tf.reshape(logits, [-1, 180], name='embedding')
-
-# embedding_var = tf.Variable(tf.random_normal([10000, 200]), name='word_embedding')
-config = projector.ProjectorConfig()
-embedding = config.embeddings.add()
-embedding.tensor_name = embedding_var.name
-
 with tf.variable_scope('cross_entropy'):
     cross_entropy = tf.nn.softmax_cross_entropy_with_logits(logits=logits, labels=labels)
     loss = tf.reduce_mean(cross_entropy)
@@ -89,9 +81,7 @@ merged = tf.summary.merge_all()
 train_writer = tf.summary.FileWriter(F.summaries_dir + '/train', sess.graph)
 valid_writer = tf.summary.FileWriter(F.summaries_dir + '/valid')
 
-projector.visualize_embeddings(train_writer, config)
-
-saver = tf.train.Saver([embedding_var])
+saver = tf.train.Saver()
 if os.path.isfile(F.checkpoint_path):
     saver.restore(sess, F.checkpoint_path)
 
