@@ -3,6 +3,7 @@ from util import neural_network as nn
 import numpy as np
 import os
 from util import gibo_csv_reader as reader
+from tensorflow.contrib.tensorboard.plugins import projector
 
 F = tf.app.flags.FLAGS
 
@@ -39,6 +40,21 @@ else:
 logits, end_points = nn.sl_policy_network(inputs, F.num_repeat_layers, F.num_filters,
                                           data_format=F.data_format)
 
+embedding_var = tf.reshape(logits, [-1, 180], name='embedding')
+config = projector.ProjectorConfig()
+embedding = config.embeddings.add()
+embedding.tensor_name = embedding_var.name
+
+# save last activation feature map
+x_min = tf.reduce_min(end_points['OriginalLogits'])
+x_max = tf.reduce_max(end_points['OriginalLogits'])
+logits_0_to_1 = (end_points['OriginalLogits'] - x_min) / (x_max - x_min)
+logits_0_to_255_uint8 = tf.image.convert_image_dtype(logits_0_to_1, dtype=tf.uint8)
+transposed_logits = tf.transpose(logits_0_to_255_uint8, perm=[0, 2, 3, 1])
+before, after = tf.split(transposed_logits, 2, 3)
+tf.summary.image('last_activation_before', before, 64)
+tf.summary.image('last_activation_after', after, 64)
+
 with tf.variable_scope('cross_entropy'):
     cross_entropy = tf.nn.softmax_cross_entropy_with_logits(logits=logits, labels=labels)
     loss = tf.reduce_mean(cross_entropy)
@@ -57,6 +73,8 @@ sess.run(init)
 merged = tf.summary.merge_all()
 train_writer = tf.summary.FileWriter(F.summaries_dir + '/train', sess.graph)
 valid_writer = tf.summary.FileWriter(F.summaries_dir + '/valid')
+
+projector.visualize_embeddings(train_writer, config)
 
 saver = tf.train.Saver()
 if os.path.isfile(F.checkpoint_path):

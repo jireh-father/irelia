@@ -56,11 +56,8 @@ def sl_policy_network(inputs=None, num_repeat_layers=11, num_filters=192,
                                      dtype=dtype)
         net = tf.nn.conv2d(net, filters, strides=[1, 1, 1, 1], padding='SAME', data_format=data_format)
         logits = net + biases
+        end_points['OriginalLogits'] = logits
         if data_format is 'NCHW':
-            transposed_logits = tf.transpose(logits, perm=[0, 2, 3, 1])
-            before, after = tf.split(transposed_logits, 2, 3)
-            tf.summary.image('last_activation_before', before, 64)
-            tf.summary.image('last_activation_fater', after, 64)
             logits = tf.reshape(logits, [-1, 2, 90])
         else:
             logits = tf.reshape(logits, [-1, 180])
