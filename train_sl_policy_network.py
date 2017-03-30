@@ -122,10 +122,10 @@ for epoch in range(F.max_epoch):
                 [loss, logits, train, end_points['Predictions'], merged], {inputs: x_train, labels: y_train})
             train_writer.add_summary(summary, i * (epoch + 1))
         else:
-            curr_loss, curr_logits, _, pred, a, b, c = sess.run(
-                [loss, logits, train, end_points['Predictions'], argmax, pred_equal, accuracy],
+            curr_loss, curr_logits, _, pred, a, b, c, d = sess.run(
+                [loss, logits, train, end_points['Predictions'], argmax, tf.argmax(labels, 2), pred_equal, accuracy],
                 {inputs: x_train, labels: y_train})
-            print(a, b, c)
+            print(a[0], b[0], c[0], d)
 
         if i % F.print_interval_steps is 0:
             print("Train epoch %d:%d loss: %s" % (epoch, i, curr_loss))
