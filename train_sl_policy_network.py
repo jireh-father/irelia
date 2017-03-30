@@ -63,8 +63,6 @@ with tf.variable_scope('cross_entropy'):
 # accuracy
 argmax = tf.argmax(end_points['Predictions'], 2)
 pred_equal = tf.equal(argmax, tf.argmax(labels, 2))
-accuracy = tf.reduce_mean(tf.cast(pred_equal, tf.float16))
-tf.summary.scalar('accuracy', accuracy)
 
 # train
 with tf.name_scope('train'):
@@ -119,17 +117,17 @@ for epoch in range(F.max_epoch):
             x_train = np.transpose(x_train, (0, 2, 3, 1))
 
         if i % F.save_summary_interval_steps is 0:
-            curr_loss, curr_logits, _, pred, summary = sess.run(
-                [loss, logits, train, end_points['Predictions'], merged], {inputs: x_train, labels: y_train})
-            train_writer.add_summary(summary, i * (epoch + 1))
+            curr_loss, curr_logits, _, result_equal, summary = sess.run(
+                [loss, logits, train, pred_equal, merged], {inputs: x_train, labels: y_train})
+            train_writer.add_summary(summary, (i * (epoch + 1)))
         else:
-            curr_loss, curr_logits, _, pred, a, b, c, d = sess.run(
-                [loss, logits, train, end_points['Predictions'], argmax, tf.argmax(labels, 2), pred_equal, accuracy],
+            curr_loss, curr_logits, _, result_equal = sess.run(
+                [loss, logits, train, pred_equal],
                 {inputs: x_train, labels: y_train})
-            print(a[0], b[0], c[0], d)
+        accuracy = np.mean(np.sum(pred_equal, 1) // 2)
 
         if i % F.print_interval_steps is 0:
-            print("Train epoch %d:%d loss: %s" % (epoch, i, curr_loss))
+            print("Train epoch %d:%d loss: %s, accuracy: %d" % (epoch, i, curr_loss, accuracy))
 
             # print(curr_logits[0])
             # print(pred[0])
@@ -142,10 +140,11 @@ for epoch in range(F.max_epoch):
             if F.data_format is not 'NCHW':
                 x_valid = np.transpose(x_valid, (0, 2, 3, 1))
 
-            valid_loss, valid_logits, _, summary = sess.run(
-                [loss, logits, train, valid_merged], {inputs: x_valid, labels: y_valid})
-            valid_writer.add_summary(summary, i * (epoch + 1))
-            print("Valid epoch %d:%d  loss: %s" % (epoch, i, valid_loss))
+            valid_loss, valid_logits, _, summary, result_equal = sess.run(
+                [loss, logits, train, valid_merged, pred_equal], {inputs: x_valid, labels: y_valid})
+            accuracy = np.mean(np.sum(pred_equal, 1) // 2)
+            valid_writer.add_summary(summary, (i * (epoch + 1)))
+            print("Valid epoch %d:%d  loss: %s, accuracy: %d" % (epoch, i, valid_loss, accuracy))
         if epoch < 1 and i % F.validation_interval_steps is 0:
             saver.save(sess, F.checkpoint_path)
     if epoch > 0 and epoch % F.save_model_interval_epoch is 0:
