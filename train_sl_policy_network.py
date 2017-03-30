@@ -72,11 +72,13 @@ for epoch in range(F.max_epoch):
             x_train = np.transpose(x_train, (0, 2, 3, 1))
             y_train = np.transpose(y_train, (0, 2, 3, 1))
 
-        curr_loss, curr_logits, _ = sess.run(
-            [loss, logits, train], {inputs: x_train, labels: y_train})
+        curr_loss, curr_logits, _, pred = sess.run(
+            [loss, logits, train, end_points['Predictions']], {inputs: x_train, labels: y_train})
 
         if i % F.print_interval_steps is 0:
             print("train loss: %s" % curr_loss)
+            print(curr_logits[0])
+            print(pred[0])
         if i % F.validation_interval_steps is 0:
             rand_valid_indices = np.random.choice(valid_indices, size=F.batch_size)
             x_valid = valid_inputs[rand_valid_indices]
