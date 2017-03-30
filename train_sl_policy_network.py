@@ -25,10 +25,10 @@ num_input_feature = 3
 
 if F.data_format is 'NCHW':
     inputs = tf.placeholder(tf.float16, [None, num_input_feature, height, width], name='inputs')
-    labels = tf.placeholder(tf.float16, [None, 2, height, width], name='labels')
+    labels = tf.placeholder(tf.float16, [None, 2, height * width], name='labels')
 else:
     inputs = tf.placeholder(tf.float16, [None, height, width, num_input_feature], name='inputs')
-    labels = tf.placeholder(tf.float16, [None, height, width, 2], name='labels')
+    labels = tf.placeholder(tf.float16, [None, height * width * 2], name='labels')
 
 logits, end_points = nn.sl_policy_network(inputs, F.num_repeat_layers, F.num_filters,
                                           data_format=F.data_format)
