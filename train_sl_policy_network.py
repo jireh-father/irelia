@@ -34,7 +34,7 @@ logits, end_points = nn.sl_policy_network(inputs, F.num_repeat_layers, F.num_fil
                                           data_format=F.data_format)
 
 with tf.variable_scope('cross_entropy'):
-    cross_entropy = tf.nn.softmax_cross_entropy_with_logits(logits=logits, labels=labels)
+    cross_entropy = tf.nn.softmax_cross_entropy_with_logits(logits=logits, labels=labels, dim=3)
     loss = tf.reduce_mean(cross_entropy)
 
 # train
@@ -79,6 +79,8 @@ for epoch in range(F.max_epoch):
             print("train loss: %s" % curr_loss)
             print(curr_logits[0])
             print(pred[0])
+            print(np.sum(pred[0][0]))
+            print(np.sum(pred[0][1]))
         if i % F.validation_interval_steps is 0:
             rand_valid_indices = np.random.choice(valid_indices, size=F.batch_size)
             x_valid = valid_inputs[rand_valid_indices]
