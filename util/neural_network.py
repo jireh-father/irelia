@@ -61,7 +61,7 @@ def sl_policy_network(inputs=None, num_repeat_layers=11, num_filters=192,
         # else:
         #     logits = tf.reshape(logits, [-1, 180])
         end_points['Logits'] = logits
-        end_points['Predictions'] = tf.nn.softmax(logits, name='Predictions')
+        end_points['Predictions'] = tf.nn.softmax(logits, name='Predictions', dim=3)
 
     return logits, end_points
 
