@@ -117,20 +117,19 @@ for epoch in range(F.max_epoch):
         if F.data_format is not 'NCHW':
             x_train = np.transpose(x_train, (0, 2, 3, 1))
 
-        argmax = tf.argmax(end_points['Predictions'], 2)
-        pred_equal = tf.equal(argmax, tf.argmax(labels, 2))
-        accuracy = tf.reduce_mean(tf.cast(pred_equal, tf.float16))
-
         if i % F.save_summary_interval_steps is 0:
             curr_loss, curr_logits, _, pred, summary = sess.run(
                 [loss, logits, train, end_points['Predictions'], merged], {inputs: x_train, labels: y_train})
             train_writer.add_summary(summary, i * (epoch + 1))
         else:
-            curr_loss, curr_logits, _, pred = sess.run(
-                [loss, logits, train, end_points['Predictions']], {inputs: x_train, labels: y_train})
+            curr_loss, curr_logits, _, pred, a, b, c = sess.run(
+                [loss, logits, train, end_points['Predictions'], argmax, pred_equal, accuracy],
+                {inputs: x_train, labels: y_train})
+            print(a, b, c)
 
         if i % F.print_interval_steps is 0:
             print("Train epoch %d:%d loss: %s" % (epoch, i, curr_loss))
+
             # print(curr_logits[0])
             # print(pred[0])
             # print(np.sum(pred[0][0]))
