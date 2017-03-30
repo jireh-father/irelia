@@ -14,7 +14,7 @@ tf.app.flags.DEFINE_integer('num_repeat_layers', 11, 'The number of cnn repeat l
 tf.app.flags.DEFINE_float('learning_rate', 0.01, 'learning_rate.')
 tf.app.flags.DEFINE_string('data_path', '/home/igseo/data/korean_chess/records.csv', 'training data path')
 tf.app.flags.DEFINE_string('data_format', 'NCHW', 'cnn data format')
-tf.app.flags.DEFINE_string('checkpoint_path', '/home/igseo/data/korean_chess/train_model/sl_policy_network.ckpt',
+tf.app.flags.DEFINE_string('checkpoint_path', '/home/igseo/data/korean_chess/train_log/sl_policy_network.ckpt',
                            'checkpoint path')
 tf.app.flags.DEFINE_string('summaries_dir', '/home/igseo/data/korean_chess/train_log',
                            'summary save dir')
