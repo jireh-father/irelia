@@ -25,16 +25,18 @@ num_input_feature = 3
 
 if F.data_format is 'NCHW':
     inputs = tf.placeholder(tf.float16, [None, num_input_feature, height, width], name='inputs')
-    labels = tf.placeholder(tf.float16, [None, 2, height, width], name='labels')
+    # labels = tf.placeholder(tf.float16, [None, 2, height, width], name='labels')
+    labels = tf.placeholder(tf.float16, [None, 2, height * width], name='labels')
 else:
     inputs = tf.placeholder(tf.float16, [None, height, width, num_input_feature], name='inputs')
-    labels = tf.placeholder(tf.float16, [None, height, width, 2], name='labels')
+    # labels = tf.placeholder(tf.float16, [None, height, width, 2], name='labels')
+    labels = tf.placeholder(tf.float16, [None, height * width * 2], name='labels')
 
 logits, end_points = nn.sl_policy_network(inputs, F.num_repeat_layers, F.num_filters,
                                           data_format=F.data_format)
 
 with tf.variable_scope('cross_entropy'):
-    cross_entropy = tf.nn.softmax_cross_entropy_with_logits(logits=logits, labels=labels, dim=3)
+    cross_entropy = tf.nn.softmax_cross_entropy_with_logits(logits=logits, labels=labels)
     loss = tf.reduce_mean(cross_entropy)
 
 # train
@@ -70,7 +72,8 @@ for epoch in range(F.max_epoch):
         y_train = train_labels[rand_train_indices]
         if F.data_format is not 'NCHW':
             x_train = np.transpose(x_train, (0, 2, 3, 1))
-            y_train = np.transpose(y_train, (0, 2, 3, 1))
+            # y_train = np.transpose(y_train, (0, 2, 3, 1))
+            y_train = np.transpose(y_train, (0, 2, 1))
 
         curr_loss, curr_logits, _, pred = sess.run(
             [loss, logits, train, end_points['Predictions']], {inputs: x_train, labels: y_train})
@@ -87,7 +90,8 @@ for epoch in range(F.max_epoch):
             y_valid = valid_labels[rand_valid_indices]
             if F.data_format is not 'NCHW':
                 x_valid = np.transpose(x_valid, (0, 2, 3, 1))
-                y_valid = np.transpose(y_valid, (0, 2, 3, 1))
+                # y_valid = np.transpose(y_valid, (0, 2, 3, 1))
+                y_valid = np.transpose(y_valid, (0, 2, 1))
 
             valid_loss, valid_logits, _ = sess.run(
                 [loss, logits, train], {inputs: x_valid, labels: y_valid})

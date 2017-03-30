@@ -21,8 +21,8 @@ def load_train(data_path, validation_size=10000):
 
     labels = data.iloc[:, 3 * 10 * 9:].values
     labels = labels.astype(np.uint8)
-    # labels = labels.reshape(-1, 2, 90)
-    labels = labels.reshape(-1, 2, 10, 9)
+    labels = labels.reshape(-1, 2, 90)
+    # labels = labels.reshape(-1, 2, 10, 9)
 
     validation_input_feature_maps = input_feature_maps[:validation_size]
     validation_labels = labels[:validation_size]
