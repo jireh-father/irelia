@@ -105,7 +105,7 @@ for epoch in range(F.max_epoch):
         if i % F.save_summary_interval_steps is 0:
             curr_loss, curr_logits, _, pred, summary = sess.run(
                 [loss, logits, train, end_points['Predictions'], merged], {inputs: x_train, labels: y_train})
-            train_writer.add_summary(summary, i)
+            train_writer.add_summary(summary, i * (epoch + 1))
         else:
             curr_loss, curr_logits, _, pred = sess.run(
                 [loss, logits, train, end_points['Predictions']], {inputs: x_train, labels: y_train})
@@ -127,7 +127,7 @@ for epoch in range(F.max_epoch):
 
             valid_loss, valid_logits, _, summary = sess.run(
                 [loss, logits, train, merged], {inputs: x_valid, labels: y_valid})
-            valid_writer.add_summary(summary, i)
+            valid_writer.add_summary(summary, i * (epoch + 1))
             print("validation loss: %s" % valid_loss)
         if epoch < 1 and i % F.validation_interval_steps is 0:
             saver.save(sess, F.checkpoint_path)
