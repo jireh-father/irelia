@@ -109,7 +109,7 @@ for epoch in range(F.max_epoch):
         if i % F.save_summary_interval_steps is 0:
             curr_loss, curr_logits, _, result_equal, summary = sess.run(
                 [loss, logits, train, pred_equal, merged], {inputs: x_train, labels: y_train})
-            train_writer.add_summary(summary, (i * (epoch + 1)))
+            train_writer.add_summary(summary, (i + 1) * (epoch + 1) - 1)
         else:
             curr_loss, curr_logits, _, result_equal = sess.run(
                 [loss, logits, train, pred_equal],
@@ -117,7 +117,7 @@ for epoch in range(F.max_epoch):
         accuracy = np.mean(np.sum(result_equal, 1) // 2)
 
         if i % F.print_interval_steps is 0:
-            print("Train epoch %d:%d loss: %s, accuracy: %f" % (epoch, i, curr_loss, accuracy))
+            print("Train epoch %3d:%7d loss: %10s, accuracy: %10f" % (epoch, i, curr_loss, accuracy))
 
             # print(curr_logits[0])
             # print(pred[0])
@@ -133,8 +133,8 @@ for epoch in range(F.max_epoch):
             valid_loss, valid_logits, _, summary, result_equal = sess.run(
                 [loss, logits, train, valid_merged, pred_equal], {inputs: x_valid, labels: y_valid})
             accuracy = np.mean(np.sum(result_equal, 1) // 2)
-            valid_writer.add_summary(summary, (i * (epoch + 1)))
-            print("Valid epoch %d:%d  loss: %s, accuracy: %f" % (epoch, i, valid_loss, accuracy))
+            valid_writer.add_summary(summary, (i + 1) * (epoch + 1) - 1)
+            print("Valid epoch %3d:%7d  loss: %10s, accuracy: %10f" % (epoch, i, valid_loss, accuracy))
         if epoch < 1 and i % F.validation_interval_steps is 0:
             saver.save(sess, F.checkpoint_path)
     if epoch > 0 and epoch % F.save_model_interval_epoch is 0:
