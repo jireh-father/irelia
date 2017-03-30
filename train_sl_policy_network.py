@@ -46,16 +46,6 @@ config = projector.ProjectorConfig()
 embedding = config.embeddings.add()
 embedding.tensor_name = embedding_var.name
 
-# save last activation feature map
-x_min = tf.reduce_min(end_points['OriginalLogits'])
-x_max = tf.reduce_max(end_points['OriginalLogits'])
-logits_0_to_1 = (end_points['OriginalLogits'] - x_min) / (x_max - x_min)
-logits_0_to_255_uint8 = tf.image.convert_image_dtype(logits_0_to_1, dtype=tf.uint8)
-transposed_logits = tf.transpose(logits_0_to_255_uint8, perm=[0, 2, 3, 1])
-before, after = tf.split(transposed_logits, 2, 3)
-tf.summary.image('last_activation_before', before, F.last_activation_summary_image_cnt)
-tf.summary.image('last_activation_after', after, F.last_activation_summary_image_cnt)
-
 with tf.variable_scope('cross_entropy'):
     cross_entropy = tf.nn.softmax_cross_entropy_with_logits(logits=logits, labels=labels)
     loss = tf.reduce_mean(cross_entropy)
@@ -66,6 +56,17 @@ with tf.name_scope('train'):
     optimizer = tf.train.RMSPropOptimizer(F.learning_rate, decay=0.9, momentum=0.9, epsilon=1.0)
     # train = tf.train.MomentumOptimizer(learning_rate, momentum).minimize(cost)
     train = optimizer.minimize(loss)
+valid_merged = tf.summary.merge_all()
+
+# save last activation feature map
+x_min = tf.reduce_min(end_points['OriginalLogits'])
+x_max = tf.reduce_max(end_points['OriginalLogits'])
+logits_0_to_1 = (end_points['OriginalLogits'] - x_min) / (x_max - x_min)
+logits_0_to_255_uint8 = tf.image.convert_image_dtype(logits_0_to_1, dtype=tf.uint8)
+transposed_logits = tf.transpose(logits_0_to_255_uint8, perm=[0, 2, 3, 1])
+before, after = tf.split(transposed_logits, 2, 3)
+tf.summary.image('last_activation_before', before, F.last_activation_summary_image_cnt)
+tf.summary.image('last_activation_after', after, F.last_activation_summary_image_cnt)
 
 init = tf.global_variables_initializer()
 sess = tf.InteractiveSession()
@@ -127,7 +128,7 @@ for epoch in range(F.max_epoch):
                 y_valid = np.transpose(y_valid, (0, 2, 1))
 
             valid_loss, valid_logits, _, summary = sess.run(
-                [loss, logits, train, merged], {inputs: x_valid, labels: y_valid})
+                [loss, logits, train, valid_merged], {inputs: x_valid, labels: y_valid})
             valid_writer.add_summary(summary, i * (epoch + 1))
             print("validation loss: %s" % valid_loss)
         if epoch < 1 and i % F.validation_interval_steps is 0:
