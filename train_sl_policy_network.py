@@ -13,9 +13,13 @@ tf.app.flags.DEFINE_integer('num_repeat_layers', 11, 'The number of cnn repeat l
 tf.app.flags.DEFINE_float('learning_rate', 0.01, 'learning_rate.')
 tf.app.flags.DEFINE_string('data_path', '/home/igseo/data/korean_chess/records.csv', 'training data path')
 tf.app.flags.DEFINE_string('data_format', 'NCHW', 'cnn data format')
-tf.app.flags.DEFINE_string('checkpoint_path', '/home/igseo/data/korean_chess/train/sl_policy_network.ckpt',
-                           'cnn data format')
-tf.app.flags.DEFINE_integer('save_interval_epoch', 1, 'Save Interval by Epoch.')
+tf.app.flags.DEFINE_string('checkpoint_path', '/home/igseo/data/korean_chess/train_model/sl_policy_network.ckpt',
+                           'checkpoint path')
+tf.app.flags.DEFINE_string('summaries_dir', '/home/igseo/data/korean_chess/train_log',
+                           'summary save dir')
+
+tf.app.flags.DEFINE_integer('save_summary_interval_steps', 100, 'Save summary Interval by Epoch.')
+tf.app.flags.DEFINE_integer('save_model_interval_epoch', 1, 'Save model Interval by Epoch.')
 tf.app.flags.DEFINE_integer('print_interval_steps', 10, 'Print Interval by steps.')
 tf.app.flags.DEFINE_integer('validation_interval_steps', 30, 'Validation Interval by steps.')
 
@@ -38,6 +42,7 @@ logits, end_points = nn.sl_policy_network(inputs, F.num_repeat_layers, F.num_fil
 with tf.variable_scope('cross_entropy'):
     cross_entropy = tf.nn.softmax_cross_entropy_with_logits(logits=logits, labels=labels)
     loss = tf.reduce_mean(cross_entropy)
+    tf.summary.scalar('loss', loss)
 
 # train
 with tf.name_scope('train'):
@@ -48,6 +53,10 @@ with tf.name_scope('train'):
 init = tf.global_variables_initializer()
 sess = tf.InteractiveSession()
 sess.run(init)
+
+merged = tf.summary.merge_all()
+train_writer = tf.summary.FileWriter(F.summaries_dir + '/train', sess.graph)
+valid_writer = tf.summary.FileWriter(F.summaries_dir + '/valid')
 
 saver = tf.train.Saver()
 if os.path.isfile(F.checkpoint_path):
@@ -75,8 +84,13 @@ for epoch in range(F.max_epoch):
             # y_train = np.transpose(y_train, (0, 2, 3, 1))
             y_train = np.transpose(y_train, (0, 2, 1))
 
-        curr_loss, curr_logits, _, pred = sess.run(
-            [loss, logits, train, end_points['Predictions']], {inputs: x_train, labels: y_train})
+        if i % F.save_summary_interval_steps is 0:
+            curr_loss, curr_logits, _, pred, summary = sess.run(
+                [loss, logits, train, end_points['Predictions'], merged], {inputs: x_train, labels: y_train})
+            train_writer.add_summary(summary, i)
+        else:
+            curr_loss, curr_logits, _, pred = sess.run(
+                [loss, logits, train, end_points['Predictions']], {inputs: x_train, labels: y_train})
 
         if i % F.print_interval_steps is 0:
             print("train loss: %s" % curr_loss)
@@ -93,12 +107,13 @@ for epoch in range(F.max_epoch):
                 # y_valid = np.transpose(y_valid, (0, 2, 3, 1))
                 y_valid = np.transpose(y_valid, (0, 2, 1))
 
-            valid_loss, valid_logits, _ = sess.run(
-                [loss, logits, train], {inputs: x_valid, labels: y_valid})
+            valid_loss, valid_logits, _, summary = sess.run(
+                [loss, logits, train, merged], {inputs: x_valid, labels: y_valid})
+            valid_writer.add_summary(summary, i)
             print("validation loss: %s" % valid_loss)
         if epoch < 1 and i % F.validation_interval_steps is 0:
             saver.save(sess, F.checkpoint_path)
-    if epoch > 0 and epoch % F.save_interval_epoch is 0:
+    if epoch > 0 and epoch % F.save_model_interval_epoch is 0:
         saver.save(sess, F.checkpoint_path)
         # before = curr_logits[0, :, :, 0].flatten()
         # after = curr_logits[0, :, :, 1].flatten()
@@ -109,7 +124,8 @@ for epoch in range(F.max_epoch):
         # print(after[sort_key])
         # print(curr_logits[0, :, :, 1])
         # print(curr_logits[0][:, 1])
-
+train_writer.close()
+valid_writer.close()
 # x_train = [[[[.6], [.4], [.2], [.3], [0], [.3], [.4], [.2], [.6]],
 #             [[0], [0], [0], [0], [1], [0], [0], [0], [0]],
 #             [[0], [.5], [0], [0], [0], [0], [0], [.5], [0]],
