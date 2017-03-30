@@ -41,7 +41,8 @@ else:
 logits, end_points = nn.sl_policy_network(inputs, F.num_repeat_layers, F.num_filters,
                                           data_format=F.data_format)
 
-embedding_var = tf.reshape(logits, [-1, 180], name='embedding')
+# embedding_var = tf.reshape(logits, [-1, 180], name='embedding')
+embedding_var = tf.Variable(tf.random_normal([10000, 200]), name='word_embedding')
 config = projector.ProjectorConfig()
 embedding = config.embeddings.add()
 embedding.tensor_name = embedding_var.name
