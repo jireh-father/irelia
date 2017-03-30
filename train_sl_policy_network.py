@@ -23,6 +23,7 @@ tf.app.flags.DEFINE_integer('save_summary_interval_steps', 100, 'Save summary In
 tf.app.flags.DEFINE_integer('save_model_interval_epoch', 1, 'Save model Interval by Epoch.')
 tf.app.flags.DEFINE_integer('print_interval_steps', 10, 'Print Interval by steps.')
 tf.app.flags.DEFINE_integer('validation_interval_steps', 30, 'Validation Interval by steps.')
+tf.app.flags.DEFINE_integer('last_activation_summary_image_cnt', 4, 'last_activation_summary_image_cnt')
 
 width = 9
 height = 10
@@ -52,8 +53,8 @@ logits_0_to_1 = (end_points['OriginalLogits'] - x_min) / (x_max - x_min)
 logits_0_to_255_uint8 = tf.image.convert_image_dtype(logits_0_to_1, dtype=tf.uint8)
 transposed_logits = tf.transpose(logits_0_to_255_uint8, perm=[0, 2, 3, 1])
 before, after = tf.split(transposed_logits, 2, 3)
-tf.summary.image('last_activation_before', before, 64)
-tf.summary.image('last_activation_after', after, 64)
+tf.summary.image('last_activation_before', before, F.last_activation_summary_image_cnt)
+tf.summary.image('last_activation_after', after, F.last_activation_summary_image_cnt)
 
 with tf.variable_scope('cross_entropy'):
     cross_entropy = tf.nn.softmax_cross_entropy_with_logits(logits=logits, labels=labels)
