@@ -10,7 +10,7 @@ F = tf.app.flags.FLAGS
 tf.app.flags.DEFINE_integer('num_repeat_layers', 11, 'The number of cnn repeat layers.')
 tf.app.flags.DEFINE_integer('num_filters', 192, 'The number of cnn filters.')
 tf.app.flags.DEFINE_string('data_format', 'NCHW', 'cnn data format')
-tf.app.flags.DEFINE_string('checkpoint_path', '/home/igseo/data/korean_chess/train/sl_policy_network.ckpt',
+tf.app.flags.DEFINE_string('checkpoint_path', '/home/igseo/data/korean_chess/train_log/sl_policy_network.ckpt',
                            'cnn data format')
 tf.app.flags.DEFINE_string('state',
                            'r6,r4,r2,r3,1,r3,r2,r4,r6,4,r7,5,r5,5,r5,1,r1,1,r1,1,r1,1,r1,1,r1,18,b1,1,b1,1,b1,1,b1,1,b1,1,b5,5,b5,5,b7,4,b6,b2,b4,b3,1,b3,b4,b2,b6',
@@ -35,8 +35,7 @@ sess = tf.InteractiveSession()
 sess.run(init)
 
 saver = tf.train.Saver()
-if os.path.isfile(F.checkpoint_path):
-    saver.restore(sess, F.checkpoint_path)
+saver.restore(sess, F.checkpoint_path)
 
 x_train = common.convert_state_feature_map(F.state)
 if F.data_format is not 'NCHW':
