@@ -117,7 +117,7 @@ for epoch in range(F.max_epoch):
         accuracy = np.mean(np.sum(result_equal, 1) // 2)
 
         if i % F.print_interval_steps is 0:
-            print("Train epoch %d:%d loss: %s, accuracy: %d" % (epoch, i, curr_loss, accuracy))
+            print("Train epoch %d:%d loss: %s, accuracy: %f" % (epoch, i, curr_loss, accuracy))
 
             # print(curr_logits[0])
             # print(pred[0])
@@ -134,7 +134,7 @@ for epoch in range(F.max_epoch):
                 [loss, logits, train, valid_merged, pred_equal], {inputs: x_valid, labels: y_valid})
             accuracy = np.mean(np.sum(result_equal, 1) // 2)
             valid_writer.add_summary(summary, (i * (epoch + 1)))
-            print("Valid epoch %d:%d  loss: %s, accuracy: %d" % (epoch, i, valid_loss, accuracy))
+            print("Valid epoch %d:%d  loss: %s, accuracy: %f" % (epoch, i, valid_loss, accuracy))
         if epoch < 1 and i % F.validation_interval_steps is 0:
             saver.save(sess, F.checkpoint_path)
     if epoch > 0 and epoch % F.save_model_interval_epoch is 0:
