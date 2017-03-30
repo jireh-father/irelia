@@ -82,8 +82,7 @@ train_writer = tf.summary.FileWriter(F.summaries_dir + '/train', sess.graph)
 valid_writer = tf.summary.FileWriter(F.summaries_dir + '/valid')
 
 saver = tf.train.Saver()
-if os.path.isfile(F.checkpoint_path):
-    saver.restore(sess, F.checkpoint_path)
+saver.restore(sess, F.checkpoint_path)
 
 if not os.path.isdir(os.path.dirname(F.checkpoint_path)):
     os.makedirs(os.path.dirname(F.checkpoint_path))
