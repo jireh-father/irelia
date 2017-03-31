@@ -469,6 +469,10 @@ class Core(Env):
         if action not in self.state_links[source_state]:
             self.state_links[source_state][action] = target_state
 
+    @staticmethod
+    def reverse_state_key(state):
+        return ','.join(list(reversed(state.split(','))))
+
     def reverse_state_key(self, state):
         return ','.join(list(reversed(state.split(','))))
 
@@ -555,6 +559,17 @@ class Core(Env):
         # return False
         # return np.argmax(Q[state] + np.random.randn(1, len(action_list)) / (i + 1))
         raise Exception("coudn't find record action\n" + json.dumps(action_list) + "\n" + json.dumps(record))
+
+    @staticmethod
+    def get_action_list(state_key, color='b'):
+        if color is 'r':
+            # reverse state
+            state_key = Core.reverse_state_key(state_key)
+        else:
+            state_key = state_key
+
+        action_list = Core.get_actions(Core.convert_state_map(state_key), color)
+
 
     def get_action_list(self, state, is_red=False):
         if is_red:
