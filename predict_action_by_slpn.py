@@ -46,6 +46,8 @@ before_list = np.argsort(-pred[0][0])
 after_list = np.argsort(-pred[0][1])
 print(before_list)
 print(after_list)
+print(pred[0][0][before_list])
+print(pred[0][1][after_list])
 print(result)
 # x_train = [[[[.6], [.4], [.2], [.3], [0], [.3], [.4], [.2], [.6]],
 #             [[0], [0], [0], [0], [1], [0], [0], [0], [0]],
