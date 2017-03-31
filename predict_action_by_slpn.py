@@ -40,8 +40,9 @@ saver.restore(sess, F.checkpoint_path)
 x_train = common.convert_state_feature_map(F.state)
 if F.data_format is not 'NCHW':
     x_train = np.transpose(x_train, (0, 2, 3, 1))
-result = sess.run(argmax, {inputs: x_train})
+result, pred = sess.run([argmax, end_points['Predictions']], {inputs: x_train})
 
+print(pred)
 print(result)
 
 # x_train = [[[[.6], [.4], [.2], [.3], [0], [.3], [.4], [.2], [.6]],
