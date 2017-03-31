@@ -42,11 +42,11 @@ if F.data_format is not 'NCHW':
     x_train = np.transpose(x_train, (0, 2, 3, 1))
 result, pred = sess.run([argmax, end_points['Predictions']], {inputs: x_train})
 
-before_list = np.argsort(-result[0][0])
-after_list = np.argsort(-result[0][0])
+before_list = np.argsort(-pred[0][0])
+after_list = np.argsort(-pred[0][1])
 print(before_list)
 print(after_list)
-print(pred)
+print(result)
 # x_train = [[[[.6], [.4], [.2], [.3], [0], [.3], [.4], [.2], [.6]],
 #             [[0], [0], [0], [0], [1], [0], [0], [0], [0]],
 #             [[0], [.5], [0], [0], [0], [0], [0], [.5], [0]],
