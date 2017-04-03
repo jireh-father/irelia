@@ -16,6 +16,8 @@ tf.app.flags.DEFINE_string('state',
                            'r6,r4,r2,r3,1,r3,r2,r4,r6,4,r7,5,r5,5,r5,1,r1,1,r1,1,r1,1,r1,1,r1,18,b1,1,b1,1,b1,1,b1,1,b1,1,b5,5,b5,5,b7,4,b6,b2,b4,b3,1,b3,b4,b2,b6',
                            'current state')
 
+tf.app.flags.DEFINE_string('color', 'b', 'current turn')
+
 width = 9
 height = 10
 num_input_feature = 3
@@ -37,7 +39,7 @@ sess.run(init)
 saver = tf.train.Saver()
 saver.restore(sess, F.checkpoint_path)
 
-x_train = common.convert_state_feature_map(F.state)
+x_train = common.convert_state_feature_map(F.state, F.color)
 if F.data_format is not 'NCHW':
     x_train = np.transpose(x_train, (0, 2, 3, 1))
 result, pred = sess.run([argmax, end_points['Predictions']], {inputs: x_train})
@@ -48,6 +50,8 @@ print(before_list)
 print(after_list)
 print(pred[0][0][before_list])
 print(pred[0][1][after_list])
+for position in after_list:
+
 print(result)
 # x_train = [[[[.6], [.4], [.2], [.3], [0], [.3], [.4], [.2], [.6]],
 #             [[0], [0], [0], [0], [1], [0], [0], [0], [0]],

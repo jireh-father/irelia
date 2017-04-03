@@ -3,6 +3,7 @@ from util import neural_network as nn
 import numpy as np
 import os
 from util import gibo_csv_reader as reader
+import glob
 
 F = tf.app.flags.FLAGS
 
@@ -13,7 +14,7 @@ tf.app.flags.DEFINE_integer('num_repeat_layers', 11, 'The number of cnn repeat l
 tf.app.flags.DEFINE_float('learning_rate', 0.01, 'learning_rate.')
 tf.app.flags.DEFINE_string('data_path', '/home/igseo/data/korean_chess/records.csv', 'training data path')
 tf.app.flags.DEFINE_string('data_format', 'NCHW', 'cnn data format')
-tf.app.flags.DEFINE_string('checkpoint_path', '/home/igseo/data/korean_chess/train_log/sl_policy_network.ckpt',
+tf.app.flags.DEFINE_string('checkpoint_path', '/home/igseo/data/korean_chess/train_log/sl_policy_network',
                            'checkpoint path')
 tf.app.flags.DEFINE_string('summaries_dir', '/home/igseo/data/korean_chess/train_log',
                            'summary save dir')
@@ -82,7 +83,8 @@ train_writer = tf.summary.FileWriter(F.summaries_dir + '/train', sess.graph)
 valid_writer = tf.summary.FileWriter(F.summaries_dir + '/valid')
 
 saver = tf.train.Saver()
-saver.restore(sess, F.checkpoint_path)
+if glob.glob(F.checkpoint_path + '*'):
+    saver.restore(sess, F.checkpoint_path + '.ckpt')
 
 if not os.path.isdir(os.path.dirname(F.checkpoint_path)):
     os.makedirs(os.path.dirname(F.checkpoint_path))
