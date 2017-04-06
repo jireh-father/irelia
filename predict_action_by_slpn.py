@@ -4,6 +4,7 @@ import numpy as np
 import os
 from util import gibo_csv_reader as reader
 from core import game
+import operator
 
 F = tf.app.flags.FLAGS
 
@@ -50,24 +51,26 @@ print(before_list)
 print(after_list)
 print(pred[0][0][before_list])
 print(pred[0][1][after_list])
-actions_hash_map = game.get_actions_hash_map(F.state, F.color)
-result_hash_map = {}
+actions_dict = game.get_actions_hash_map(F.state, F.color)
+result_dict = {}
 for after_position in after_list:
-    after_value = pred[0][1][after_position]
-    after_x, after_y = game.convert_one_dim_pos_to_two_dim_pos(after_position)
+    to_value = pred[0][1][after_position]
+    to_x, to_y = game.convert_one_dim_pos_to_two_dim_pos(after_position)
     for before_position in before_list:
         if before_list[before_position] is False:
             continue
         before_value = pred[0][0][before_position]
-        before_x, before_y = game.convert_one_dim_pos_to_two_dim_pos(before_position)
-        pos_key = game.build_pos_key(before_x, before_y, after_x, after_y)
-        if pos_key in actions_hash_map:
-            result_hash_map[pos_key] = before_value + after_value
+        x, y = game.convert_one_dim_pos_to_two_dim_pos(before_position)
+        pos_key = game.build_pos_key(x, y, to_x, to_y)
+        if pos_key in actions_dict:
+            result_dict[pos_key] = before_value + to_value
             before_list[before_position] = False
             break
 
+result_dict = sorted(result_dict.items(), key=operator.itemgetter(1))
+result_dict.reverse()
 print(result)
-print(result_hash_map)
+print(result_dict)
 # x_train = [[[[.6], [.4], [.2], [.3], [0], [.3], [.4], [.2], [.6]],
 #             [[0], [0], [0], [0], [1], [0], [0], [0], [0]],
 #             [[0], [.5], [0], [0], [0], [0], [0], [.5], [0]],
