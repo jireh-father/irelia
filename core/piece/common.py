@@ -9,6 +9,6 @@ def add_action_to_list(x, y, to_x, to_y, list, color, is_hash_map):
         to_y = 9 - to_y
     action = {'x': x, 'y': y, 'to_x': to_x, 'to_y': to_y}
     if is_hash_map:
-        list["%d_%d_%d_%d" % (x, y, to_x, to_y)] = action
+        list["%d_%d_%d_%d" % (x, y, to_x, to_y)] = True  # action
     else:
         list.append(action)

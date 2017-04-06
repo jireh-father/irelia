@@ -4,6 +4,12 @@ from __future__ import print_function
 
 import sqlite3
 import sys
+from core import game
+
+state_key = 'r6,r4,r2,r3,1,r3,r2,r4,r6,4,r7,5,r5,5,r5,1,r1,1,r1,1,r1,1,r1,1,r1,18,b1,1,b1,1,b1,1,b1,1,b1,1,b5,5,b5,5,b7,4,b6,b2,b4,b3,1,b3,b4,b2,b6'
+ret = game.get_actions_hash_map(state_key, 'r')
+print(ret)
+sys.exit()
 
 conn = sqlite3.connect('q_red.db')
 

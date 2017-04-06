@@ -9,12 +9,10 @@ def get_actions(state_map, x, y, color=Constant.BLUE, is_hash_map=False):
 
     side = piece[0]
 
-    if color is Constant.BLUE:
-        action_list = []
-    else:
+    if is_hash_map:
         action_list = {}
-
-    piece_type = Constant.CANNON
+    else:
+        action_list = []
 
     # 대각선 오른쪽 전진 길 체크
     if (y == 9 and x == 3) or (y == 2 and x == 3):
@@ -96,7 +94,6 @@ def get_actions(state_map, x, y, color=Constant.BLUE, is_hash_map=False):
         if step_stone_y > Constant.TOP_WALL and step_stone_y < y:
             next_of_step_stone_y = step_stone_y - 1
             step = 1
-            add_step = y - step_stone_y
             while next_of_step_stone_y >= Constant.TOP_WALL:
                 # 포이거나 우리편이면 정지
                 if game.is_cannon(state_map, x, next_of_step_stone_y) or \
@@ -128,7 +125,6 @@ def get_actions(state_map, x, y, color=Constant.BLUE, is_hash_map=False):
         if step_stone_x < Constant.RIGHT_WALL and step_stone_x > x:
             next_of_step_stone_x = step_stone_x + 1
             step = 1
-            add_step = step_stone_x - x
             while next_of_step_stone_x <= Constant.RIGHT_WALL:
                 # 포이거나 우리편이면 정지
                 if game.is_cannon(state_map, next_of_step_stone_x, y) or \
@@ -161,7 +157,6 @@ def get_actions(state_map, x, y, color=Constant.BLUE, is_hash_map=False):
         if step_stone_x > Constant.LEFT_WALL and step_stone_x < x:
             next_of_step_stone_x = step_stone_x - 1
             step = 1
-            add_step = x - step_stone_x
             while next_of_step_stone_x >= Constant.LEFT_WALL:
                 # 포이거나 우리편이면 정지
                 if game.is_cannon(state_map, next_of_step_stone_x, y) or \
@@ -195,7 +190,6 @@ def get_actions(state_map, x, y, color=Constant.BLUE, is_hash_map=False):
         if step_stone_y < Constant.BOTTOM_WALL and step_stone_y > y:
             next_of_step_stone_y = step_stone_y + 1
             step = 1
-            add_step = step_stone_y - y
             while next_of_step_stone_y <= Constant.BOTTOM_WALL:
                 # 포이거나 우리편이면 정지
                 if game.is_cannon(state_map, x, next_of_step_stone_y) or \

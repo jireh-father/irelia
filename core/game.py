@@ -90,3 +90,11 @@ def convert_state_feature_map(state_key, color='b'):
     result = np.array(blue_feature_map + red_feature_map + color_feature_map)
     result = result.astype(np.float16)
     return result.reshape(-1, 3, 10, 9)
+
+
+def convert_one_dim_pos_to_two_dim_pos(position):
+    return position % 9, position // 9
+
+
+def build_pos_key(x, y, to_x, to_y):
+    return "%d_%d_%d_%d" % (x, y, to_x, to_y)
