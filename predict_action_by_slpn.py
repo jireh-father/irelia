@@ -3,7 +3,6 @@ from util import neural_network as nn
 import numpy as np
 import os
 from util import gibo_csv_reader as reader
-from env.korean_chess import common
 from core import game
 
 F = tf.app.flags.FLAGS
@@ -40,7 +39,7 @@ sess.run(init)
 saver = tf.train.Saver()
 saver.restore(sess, F.checkpoint_path)
 
-x_train = common.convert_state_feature_map(F.state, F.color)
+x_train = game.convert_state_feature_map(F.state, F.color)
 if F.data_format is not 'NCHW':
     x_train = np.transpose(x_train, (0, 2, 3, 1))
 result, pred = sess.run([argmax, end_points['Predictions']], {inputs: x_train})
