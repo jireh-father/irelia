@@ -32,38 +32,6 @@ def convert_state_map(state_key):
     return result
 
 
-def is_empty_space(state_map, x, y):
-    return state_map[y][x] is 0
-
-
-def is_our_side(state_map, x, y, side):
-    return state_map[y][x] != 0 and state_map[y][x][0] == side
-
-
-def is_enemy(state_map, x, y, side):
-    return state_map[y][x] != 0 and state_map[y][x][0] != side
-
-
-def is_checkmate_try(state_map, to_x, to_y, side):
-    return state_map[to_y][to_x][1] == Constant.KING and state_map[to_y][to_x][0] != side
-
-
-def is_checkmate(state_map, x, y, to_x, to_y, side):
-    return False
-
-
-def is_stalemate():
-    return False
-
-
-def is_cannon(state_map, x, y):
-    return state_map[y][x] is not 0 and int(state_map[y][x][1]) is Constant.CANNON
-
-
-def is_piece(state_map, x, y):
-    return state_map[y][x] is not 0
-
-
 def reverse_state_key(state):
     return ','.join(list(reversed(state.split(','))))
 
