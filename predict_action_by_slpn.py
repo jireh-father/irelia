@@ -78,4 +78,6 @@ e = np.exp(np.array(value_list) / 1.0)
 probabilities = e / np.sum(e)
 
 sample = np.random.choice(key_list, 1, p=probabilities)
+print(value_list)
+print(probabilities)
 print(sample[0])
