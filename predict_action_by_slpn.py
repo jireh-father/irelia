@@ -74,5 +74,8 @@ print(result_dict)
 key_list = [x[0] for x in result_dict]
 value_list = [x[1] for x in result_dict]
 
-sample = np.random.choice(key_list, 1, p=value_list)
+e = np.exp(np.array(value_list) / 1.0)
+probabilities = e / np.sum(e)
+
+sample = np.random.choice(key_list, 1, p=probabilities)
 print(sample[0])
