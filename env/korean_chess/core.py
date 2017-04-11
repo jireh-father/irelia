@@ -13,7 +13,6 @@ import sqlite3
 import time
 
 import numpy as np
-from elasticsearch import Elasticsearch as ES
 
 from env.korean_chess import common
 from env.env import Env
