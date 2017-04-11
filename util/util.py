@@ -1,5 +1,7 @@
 from optparse import OptionParser
-from util import constant
+
+
+# from util import constant
 
 
 def parse_args():

@@ -569,7 +569,6 @@ class Core(Env):
 
         action_list = Core.get_actions(Core.convert_state_map(state_key), color)
 
-
     def get_action_list(self, state, is_red=False):
         if is_red:
             # reverse state
