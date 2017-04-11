@@ -1,3 +1,7 @@
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+
 from env.korean_chess.core import Core
 from flask import Flask, render_template
 from flask import request
