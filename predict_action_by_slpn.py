@@ -2,7 +2,6 @@ import tensorflow as tf
 from util import neural_network as nn
 import numpy as np
 import os
-from util import gibo_csv_reader as reader
 from core import game
 import operator
 
