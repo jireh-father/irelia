@@ -2,34 +2,13 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import tensorflow as tf
-from util import neural_network as nn
 from core import game
 import numpy as np
 import operator
 
 
-def sampling_action(state_key, color, checkpoint_path, data_format='NCHW', choice_best=False):
-    width = 9
-    height = 10
-    num_input_feature = 3
-
-    if data_format == 'NCHW':
-        inputs = tf.placeholder(tf.float16, [None, num_input_feature, height, width], name='inputs')
-    else:
-        inputs = tf.placeholder(tf.float16, [None, height, width, num_input_feature], name='inputs')
-
-    logits, end_points = nn.sl_policy_network(inputs, 11, 192, data_format=data_format)
-
-    argmax = tf.argmax(end_points['Predictions'], 2)
-
-    init = tf.global_variables_initializer()
-    sess = tf.Session()
-    sess.run(init)
-
-    saver = tf.train.Saver()
-    saver.restore(sess, checkpoint_path)
-
+def sampling_action(state_key, color, data_format='NCHW', choice_best=False, sess=None, argmax=None,
+                    end_points=None, inputs=None):
     x_train = game.convert_state_feature_map(state_key, color, data_format)
     result, pred = sess.run([argmax, end_points['Predictions']], {inputs: x_train})
 
@@ -65,7 +44,5 @@ def sampling_action(state_key, color, checkpoint_path, data_format='NCHW', choic
     probabilities = np_value_list / sum
 
     sample = np.random.choice(key_list, 1, p=probabilities)
-
-    sess.close()
 
     return sample[0]

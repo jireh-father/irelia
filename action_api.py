@@ -8,7 +8,33 @@ from flask import request
 import json
 import requests
 
-from util import sl_policy_network
+import imp
+
+try:
+    imp.find_module('util.sl_policy_network')
+    from util import sl_policy_network
+    import tensorflow as tf
+    from util import neural_network as nn
+
+    data_format = 'NHWC'
+    width = 9
+    height = 10
+    num_input_feature = 3
+
+    inputs = tf.placeholder(tf.float16, [None, height, width, num_input_feature], name='inputs')
+
+    logits, end_points = nn.sl_policy_network(inputs, 11, 192, data_format=data_format)
+
+    argmax = tf.argmax(end_points['Predictions'], 2)
+
+    init = tf.global_variables_initializer()
+    sess = tf.Session()
+    sess.run(init)
+
+    saver = tf.train.Saver()
+    saver.restore(sess, '/home/model/korean_chess/sl_policy_network.ckpt')
+except ImportError:
+    1
 
 app = Flask(__name__)
 
@@ -72,9 +98,8 @@ def action_by_slpn():
     sample_action = None
     for i in range(retry_cnt):
         try:
-            sample_action = sl_policy_network.sampling_action(state_key, color,
-                                                              '/home/model/korean_chess/sl_policy_network.ckpt', 'NHWC',
-                                                              True)
+            sample_action = sl_policy_network.sampling_action(state_key, color, 'NHWC', True, sess, argmax, end_points,
+                                                              inputs)
             break
         except Exception as e:
             print('exception: ' + str(e))
