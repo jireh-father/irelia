@@ -23,7 +23,7 @@ def sl_policy_network(inputs=None, num_repeat_layers=11, num_filters=192,
     end_points = {}
 
     # layer 1
-    with tf.variable_scope("conv1"):
+    with tf.variable_scope("conv1", reuse=True):
         filters = tf.get_variable("filter1", shape=[5, 5, num_input_feature, num_filters], dtype=dtype,
                                   initializer=filter_initializer)
 
@@ -34,7 +34,7 @@ def sl_policy_network(inputs=None, num_repeat_layers=11, num_filters=192,
     # repeat layers
     for layer_no in range(num_repeat_layers):
         layer_no += 2
-        with tf.variable_scope("conv" + str(layer_no)):
+        with tf.variable_scope("conv" + str(layer_no), reuse=True):
             filters = tf.get_variable("filter" + str(layer_no), shape=[3, 3, num_filters, num_filters], dtype=dtype,
                                       initializer=filter_initializer)
 
@@ -43,7 +43,7 @@ def sl_policy_network(inputs=None, num_repeat_layers=11, num_filters=192,
             end_points['conv' + str(layer_no)] = net
 
     # layer 13 (output)
-    with tf.variable_scope("conv13"):
+    with tf.variable_scope("conv13", reuse=True):
         filters = tf.get_variable("filter13", shape=[1, 1, num_filters, num_output_filter], dtype=dtype,
                                   initializer=filter_initializer)
         if data_format is 'NCHW':
