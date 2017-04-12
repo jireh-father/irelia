@@ -54,11 +54,11 @@ def sampling_action(state_key, color, checkpoint_path, data_format='NCHW', choic
         return False
     result_dict = sorted(result_dict.items(), key=operator.itemgetter(1))
     result_dict.reverse()
-    if choice_best:
-        for key in result_dict:
-            return key
+
     key_list = [x[0] for x in result_dict]
     value_list = [x[1] for x in result_dict]
+    if choice_best:
+        return key_list[0]
 
     np_value_list = np.array(value_list)
     sum = np.sum(np_value_list)
