@@ -83,10 +83,12 @@ def action_by_slpn():
     else:
         action_list = sample_action.split('_')
 
-        return json.dumps({'x': action_list[0],
-                           'y': action_list[1],
-                           'to_x': action_list[2],
-                           'to_y': action_list[3]})
+        result = json.dumps({'x': 8 - action_list[0],
+                             'y': 9 - action_list[1],
+                             'to_x': 8 - action_list[2],
+                             'to_y': 9 - action_list[3]})
+        print(result)
+        return result
 
 
 if __name__ == "__main__":
