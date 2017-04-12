@@ -69,14 +69,16 @@ def action_by_slpn():
     color = request.args.get('color')
 
     retry_cnt = 3
+    sample_action = None
     for i in range(retry_cnt):
         try:
-            action = sl_policy_network.sampling_action(state_key, color,
-                                                       '/home/model/korean_chess/sl_policy_network.ckpt')
+            sample_action = sl_policy_network.sampling_action(state_key, color,
+                                                              '/home/model/korean_chess/sl_policy_network.ckpt')
             break
         except Exception as e:
-            1
-    if not action:
+            print('exception: ' + str(e))
+    if not sample_action:
+        print('nothing action')
         json.dumps({'error': True})
     else:
         action_list = action.split('_')
