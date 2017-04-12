@@ -8,8 +8,6 @@ from flask import request
 import json
 import requests
 
-import imp
-
 try:
     from util import sl_policy_network
     import tensorflow as tf
