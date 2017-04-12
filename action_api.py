@@ -35,6 +35,8 @@ def action():
 
     state_map = json.loads(state_map)
     state_key = Core.convert_state_key(state_map)
+    if side == 'b':
+        state_key = Core.reverse_state_key(state_key)
     response = requests.get('ec2-52-79-229-138.ap-northeast-2.compute.amazonaws.com:5000/action_by_slpn',
                             {'state_key': state_key, 'color': side},
                             timeout=12)
