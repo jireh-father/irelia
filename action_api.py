@@ -42,8 +42,8 @@ def action():
                             timeout=12)
     if response.status_code != 200:
         return json.dumps(
-            {'error': True, 'msg': 'another server request error', 'response': json.loads(response.json())})
-    return response.json()
+            {'error': True, 'msg': 'another server request error', 'response': json.loads(response.text)})
+    return response.text
 
 
 @app.route("/actions")
