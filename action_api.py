@@ -11,7 +11,6 @@ import requests
 import imp
 
 try:
-    imp.find_module('util.sl_policy_network')
     from util import sl_policy_network
     import tensorflow as tf
     from util import neural_network as nn
