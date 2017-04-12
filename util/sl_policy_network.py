@@ -9,7 +9,7 @@ import numpy as np
 import operator
 
 
-def sampling_action(state_key, color, checkpoint_path, data_format='NCHW'):
+def sampling_action(state_key, color, checkpoint_path, data_format='NCHW', choice_best=False):
     width = 9
     height = 10
     num_input_feature = 3
@@ -54,6 +54,9 @@ def sampling_action(state_key, color, checkpoint_path, data_format='NCHW'):
         return False
     result_dict = sorted(result_dict.items(), key=operator.itemgetter(1))
     result_dict.reverse()
+    if choice_best:
+        for key in result_dict:
+            return key
     key_list = [x[0] for x in result_dict]
     value_list = [x[1] for x in result_dict]
 
@@ -62,4 +65,7 @@ def sampling_action(state_key, color, checkpoint_path, data_format='NCHW'):
     probabilities = np_value_list / sum
 
     sample = np.random.choice(key_list, 1, p=probabilities)
+
+    sess.close()
+
     return sample[0]

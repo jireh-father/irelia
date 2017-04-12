@@ -73,7 +73,8 @@ def action_by_slpn():
     for i in range(retry_cnt):
         try:
             sample_action = sl_policy_network.sampling_action(state_key, color,
-                                                              '/home/model/korean_chess/sl_policy_network.ckpt', 'NHWC')
+                                                              '/home/model/korean_chess/sl_policy_network.ckpt', 'NHWC',
+                                                              True)
             break
         except Exception as e:
             print('exception: ' + str(e))
