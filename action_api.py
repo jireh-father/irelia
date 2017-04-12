@@ -79,14 +79,14 @@ def action_by_slpn():
             print('exception: ' + str(e))
     if not sample_action:
         print('nothing action')
-        json.dumps({'error': True})
+        return json.dumps({'error': True})
     else:
         action_list = action.split('_')
 
-        json.dumps({'x': action_list[0],
-                    'y': action_list[1],
-                    'to_x': action_list[2],
-                    'to_y': action_list[3]})
+        return json.dumps({'x': action_list[0],
+                           'y': action_list[1],
+                           'to_x': action_list[2],
+                           'to_y': action_list[3]})
 
 
 if __name__ == "__main__":
