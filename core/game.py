@@ -57,10 +57,8 @@ def convert_state_feature_map(state_key, color='b', data_format='NCHW'):
 
     result = np.array(blue_feature_map + red_feature_map + color_feature_map)
     result = result.astype(np.float16)
-    if data_format == 'NCHW':
-        return result.reshape(-1, 3, 10, 9)
-    else:
-        return result.reshape(-1, 10, 9, 3)
+
+    return result.reshape(-1, 3, 10, 9)
 
 
 def convert_one_dim_pos_to_two_dim_pos(position):

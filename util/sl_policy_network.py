@@ -9,7 +9,9 @@ import operator
 
 def sampling_action(state_key, color, data_format='NCHW', choice_best=False, sess=None, argmax=None,
                     end_points=None, inputs=None):
-    x_train = game.convert_state_feature_map(state_key, color, data_format)
+    x_train = game.convert_state_feature_map(state_key, color)
+    if data_format is 'NHWC':
+        x_train = np.transpose(x_train, (0, 2, 3, 1))
     result, pred = sess.run([argmax, end_points['Predictions']], {inputs: x_train})
 
     from_list = np.argsort(-pred[0][0])
