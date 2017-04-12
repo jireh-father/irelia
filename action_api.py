@@ -81,7 +81,7 @@ def action_by_slpn():
         print('nothing action')
         return json.dumps({'error': True})
     else:
-        action_list = action.split('_')
+        action_list = sample_action.split('_')
 
         return json.dumps({'x': action_list[0],
                            'y': action_list[1],
