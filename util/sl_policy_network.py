@@ -30,7 +30,7 @@ def sampling_action(state_key, color, checkpoint_path, data_format='NCHW'):
     saver = tf.train.Saver()
     saver.restore(sess, checkpoint_path)
 
-    x_train = game.convert_state_feature_map(state_key, color)
+    x_train = game.convert_state_feature_map(state_key, color, data_format)
     result, pred = sess.run([argmax, end_points['Predictions']], {inputs: x_train})
 
     from_list = np.argsort(-pred[0][0])

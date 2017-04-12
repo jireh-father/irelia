@@ -36,7 +36,7 @@ def reverse_state_key(state):
     return ','.join(list(reversed(state.split(','))))
 
 
-def convert_state_feature_map(state_key, color='b'):
+def convert_state_feature_map(state_key, color='b', data_format='NCHW'):
     blue_feature_map = []
     red_feature_map = []
     for piece in state_key.split(','):
@@ -57,7 +57,10 @@ def convert_state_feature_map(state_key, color='b'):
 
     result = np.array(blue_feature_map + red_feature_map + color_feature_map)
     result = result.astype(np.float16)
-    return result.reshape(-1, 3, 10, 9)
+    if data_format == 'NCHW':
+        return result.reshape(-1, 3, 10, 9)
+    else:
+        return result.reshape(-1, 10, 9, 3)
 
 
 def convert_one_dim_pos_to_two_dim_pos(position):
