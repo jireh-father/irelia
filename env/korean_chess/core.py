@@ -224,7 +224,7 @@ class Core(Env):
 
     def action(self, state_key, action_key, is_red=False):
         if is_red:
-            state = self.state_list[self.reverse_state_key(state_key)]
+            state = self.state_list[Core.reverse_state_key(state_key)]
         else:
             state = self.state_list[state_key]
         action = state['action_list'][action_key]
@@ -305,7 +305,7 @@ class Core(Env):
                                           'action_list': Core.get_actions(state_map, side), 'side': side}
 
         if side is common.RED:
-            return self.reverse_state_key(state_key)
+            return Core.reverse_state_key(state_key)
         else:
             return state_key
 
@@ -320,7 +320,7 @@ class Core(Env):
         #     os.system('clear')
         # sys.stdout.flush()
         # if side is util.RED:
-        #     state = self.reverse_state_key(state)
+        #     state = Core.reverse_state_key(state)
         #     map = Core.reverse_state_map(self.state_list[state]['state_map'])
         # else:
         #     map = self.state_list[state]['state_map']
@@ -472,9 +472,6 @@ class Core(Env):
     def reverse_state_key(state):
         return ','.join(list(reversed(state.split(','))))
 
-    def reverse_state_key(self, state):
-        return ','.join(list(reversed(state.split(','))))
-
     def get_action_es(self, state_key, side):
         if side == 'b':
             db_name = './q_blue.db'
@@ -539,7 +536,7 @@ class Core(Env):
     def get_action_with_record(self, Q, state, record, is_red=False):
         if is_red:
             # reverse state
-            action_list = self.state_list[self.reverse_state_key(state)]['action_list']
+            action_list = self.state_list[Core.reverse_state_key(state)]['action_list']
         else:
             action_list = self.state_list[state]['action_list']
 
