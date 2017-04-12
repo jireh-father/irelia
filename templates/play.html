@@ -206,10 +206,10 @@
                 alert('sorry unknown error..');
                 return;
              }
-             response.x = 8 -response.x;
-              response.to_x = 8 -response.to_x;
-              response.y = 9 -response.y;
-              response.to_y = 9 -response.to_y;
+             response.x = response.x;
+              response.to_x = response.to_x;
+              response.y = response.y;
+              response.to_y = response.to_y;
              step(response, window.color == 'b' ? 'r' : 'b');
             checkGameState();
             get_actions();
@@ -341,6 +341,7 @@
         while(reverse_arr.length) reversed_map.push(reverse_arr.splice(0,9));
         return reversed_map;
     }
+
 
 
 
