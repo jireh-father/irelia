@@ -9,11 +9,10 @@ import numpy as np
 import operator
 
 
-def sampling_action(state_key, color, checkpoint_path):
+def sampling_action(state_key, color, checkpoint_path, data_format='NCHW'):
     width = 9
     height = 10
     num_input_feature = 3
-    data_format = 'NCHW'
 
     inputs = tf.placeholder(tf.float16, [None, num_input_feature, height, width], name='inputs')
 
