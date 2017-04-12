@@ -14,7 +14,10 @@ def sampling_action(state_key, color, checkpoint_path, data_format='NCHW'):
     height = 10
     num_input_feature = 3
 
-    inputs = tf.placeholder(tf.float16, [None, num_input_feature, height, width], name='inputs')
+    if data_format == 'NCHW':
+        inputs = tf.placeholder(tf.float16, [None, num_input_feature, height, width], name='inputs')
+    else:
+        inputs = tf.placeholder(tf.float16, [None, height, width, num_input_feature], name='inputs')
 
     logits, end_points = nn.sl_policy_network(inputs, 11, 192, data_format=data_format)
 
