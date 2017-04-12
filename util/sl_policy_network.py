@@ -24,7 +24,7 @@ def sampling_action(state_key, color, checkpoint_path, data_format='NCHW', choic
     argmax = tf.argmax(end_points['Predictions'], 2)
 
     init = tf.global_variables_initializer()
-    sess = tf.InteractiveSession()
+    sess = tf.Session()
     sess.run(init)
 
     saver = tf.train.Saver()
