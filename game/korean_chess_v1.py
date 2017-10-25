@@ -12,27 +12,22 @@ import numpy as np
 import numbers
 
 from env.korean_chess_piece import piece_factory
-from env import korean_chess_util as kcu
+from game import korean_chess_util as c
 import operator
 import json
-import sqlite3
-from elasticsearch import Elasticsearch as ES
 
 
-class KoreanChessV1():
-    PIECE_LIST = {'r1': '졸(홍)', 'r2': '상(홍)', 'r3': '사(홍)', 'r4': '마(홍)', 'r5': '포(홍)', 'r6': '차(홍)', 'r7': '궁(홍)',
-                  'b1': '졸(청)', 'b2': '상(청)', 'b3': '사(청)', 'b4': '마(청)', 'b5': '포(청)', 'b6': '차(청)', 'b7': '궁(청)',
-                  0: '------'}
+class KoreanChessV1:
+    PIECE_MAP_KOR = {c.R_SD: '졸(홍)', c.R_SG: '상(홍)', c.R_GD: '사(홍)', c.R_HS: '마(홍)', c.R_CN: '포(홍)', c.R_CR: '차(홍)',
+                     c.R_KG: '궁(홍)',
+                     'b1': '졸(청)', 'b2': '상(청)', 'b3': '사(청)', 'b4': '마(청)', 'b5': '포(청)', 'b6': '차(청)', 'b7': '궁(청)',
+                     0: '------'}
 
-    state_list = {}
-    state_links = {}
-    history = []
-    rand_position_list = ['masangmasang', 'masangsangma', 'sangmasangma', 'sangmamasang']
-    default_state_map = [
-        ['r6', 0, 0, 'r3', 0, 'r3', 0, 0, 'r6'],
-        [0, 0, 0, 0, 'r7', 0, 0, 0, 0],
-        [0, 'r5', 0, 0, 0, 0, 0, 'r5', 0],
-        ['r1', 0, 'r1', 0, 'r1', 0, 'r1', 0, 'r1'],
+    default_state = [
+        [c.R_CR, 0, 0, c.R_GD, 0, c.R_GD, 0, 0, c.R_CR],
+        [0, 0, 0, 0, c.R_KG, 0, 0, 0, 0],
+        [0, c.R_CN, 0, 0, 0, 0, 0, c.R_CN, 0],
+        [c.R_SD, 0, c.R_SD, 0, c.R_SD, 0, c.R_SD, 0, c.R_SD],
         [0, 0, 0, 0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0, 0, 0, 0],
         ['b1', 0, 'b1', 0, 'b1', 0, 'b1', 0, 'b1'],
@@ -41,37 +36,42 @@ class KoreanChessV1():
         ['b6', 0, 0, 'b3', 0, 'b3', 0, 0, 'b6'],
     ]
 
-    POSITION_TYPE_LIST = {
-        'masangmasang': [
+    POSITION_TYPE_LIST = [
+        # 마상마상
+        [
             ['b6', 'b4', 'b2', 'b3', 0, 'b3', 'b4', 'b2', 'b6'],
-            ['r6', 'r2', 'r4', 'r3', 0, 'r3', 'r2', 'r4', 'r6'],
+            [c.R_CR, c.R_SG, c.R_HS, c.R_GD, 0, c.R_GD, c.R_SG, c.R_HS, c.R_CR],
         ],
-        'masangsangma': [
+        # 마상상마
+        [
             ['b6', 'b4', 'b2', 'b3', 0, 'b3', 'b2', 'b4', 'b6'],
-            ['r6', 'r4', 'r2', 'r3', 0, 'r3', 'r2', 'r4', 'r6'],
+            [c.R_CR, c.R_HS, c.R_SG, c.R_GD, 0, c.R_GD, c.R_SG, c.R_HS, c.R_CR],
         ],
-        'sangmasangma': [
+        # 상마상마
+        [
             ['b6', 'b2', 'b4', 'b3', 0, 'b3', 'b2', 'b4', 'b6'],
-            ['r6', 'r4', 'r2', 'r3', 0, 'r3', 'r4', 'r2', 'r6'],
+            [c.R_CR, c.R_HS, c.R_SG, c.R_GD, 0, c.R_GD, c.R_HS, c.R_SG, c.R_CR],
         ],
-        'sangmamasang': [
+        # 상마마상
+        [
             ['b6', 'b2', 'b4', 'b3', 0, 'b3', 'b4', 'b2', 'b6'],
-            ['r6', 'r2', 'r4', 'r3', 0, 'r3', 'r4', 'r2', 'r6'],
+            [c.R_CR, c.R_SG, c.R_HS, c.R_GD, 0, c.R_GD, c.R_HS, c.R_SG, c.R_CR],
         ],
-    }
+    ]
 
     REWARD_LIST = {
-        kcu.SOLDIER: 1,
-        kcu.SANG: 2,
-        kcu.GUARDIAN: 3,
-        kcu.HORSE: 4,
-        kcu.CANNON: 5,
-        kcu.CAR: 6,
-        kcu.KING: 46,
+        c.SOLDIER: 2,
+        c.SANG: 3,
+        c.GUARDIAN: 3,
+        c.HORSE: 5,
+        c.CANNON: 7,
+        c.CAR: 13,
+        c.KING: 73,
     }
 
     def __init__(self, properties):
         self.current_state = ""
+        self.properties = properties
 
     @staticmethod
     def compress_state_key(state_key):
@@ -200,7 +200,7 @@ class KoreanChessV1():
         # 기존 지점 0으로 세팅
         state_map[y][x] = 0
 
-        is_done = reward == KoreanChess.REWARD_LIST[kcu.KING] or KoreanChess.is_draw(state_map)
+        is_done = reward == KoreanChess.REWARD_LIST[c.KING] or KoreanChess.is_draw(state_map)
 
         # state_map 결과는 무조건 reverse해서 보내라
         return KoreanChess.reverse_state_map(state_map), reward, is_done, KoreanChess.is_draw(state_map)
@@ -218,30 +218,25 @@ class KoreanChessV1():
         return result_map
 
     def reset(self):
-        if self.properties['init_state']:
-            default_map = self.properties['init_state']
-            side = self.properties['init_side'] if self.properties['init_side'] else 'b'
+        side = c.BLUE
+        if "position_type" not in self.properties or self.properties['position_type'] == 'random':
+            blue_rand_position = random.randint(0, 3)
+            red_rand_position = random.randint(0, 3)
+            position_type_list = [blue_rand_position, red_rand_position]
         else:
-            side = kcu.BLUE
-            if not self.properties['position_type'] or self.properties['position_type'] == 'random':
-                before_rand_position = random.randint(0, 3)
-                after_rand_position = random.randint(0, 3)
-                position_type_list = [KoreanChess.rand_position_list[before_rand_position],
-                                      KoreanChess.rand_position_list[after_rand_position]]
-            else:
-                position_type_list = self.properties['position_type']
+            position_type_list = self.properties['position_type']
 
-            default_map = copy.deepcopy(KoreanChess.default_state_map)
+        default_state = copy.deepcopy(KoreanChessV1.default_state)
 
-            for i, position_type in enumerate(position_type_list):
-                if position_type not in KoreanChess.POSITION_TYPE_LIST:
-                    raise Exception('position_type is invalid : ' + position_type)
+        for i, position_type in enumerate(position_type_list):
+            if position_type not in KoreanChessV1.POSITION_TYPE_LIST:
+                raise Exception('position_type is invalid : ' + position_type)
 
-                line_idx = -1 if i == 0 else 0
+            line_idx = -1 if i == 0 else 0
 
-                default_map[line_idx] = KoreanChess.POSITION_TYPE_LIST[position_type][i]
+            default_state[line_idx] = KoreanChess.POSITION_TYPE_LIST[position_type][i]
 
-        state_key = self.create_state(default_map, side)
+        state_key = self.create_state(default_state, side)
 
         # self.print_map(state_key, side)
 
@@ -256,7 +251,7 @@ class KoreanChessV1():
             self.state_list[state_key] = {'state_map': state_map,
                                           'action_list': KoreanChess.get_actions(state_map, side), 'side': side}
 
-        if side is kcu.RED:
+        if side is c.RED:
             return KoreanChess.reverse_state_key(state_key)
         else:
             return state_key
@@ -310,7 +305,7 @@ class KoreanChessV1():
         else:
             os.system('clear')
         # sys.stdout.flush()
-        if side is kcu.RED:
+        if side is c.RED:
             state = KoreanChess.reverse_state_key(state)
             map = KoreanChess.reverse_state_map(self.state_list[state]['state_map'])
         else:
@@ -359,13 +354,13 @@ class KoreanChessV1():
                 if piece is 0:
                     continue
                 # todo: 상하고 마하고 구현해면 빼
-                if piece[1] is not kcu.KING and piece[1] is not kcu.GUARDIAN:
+                if piece[1] is not c.KING and piece[1] is not c.GUARDIAN:
                     return False
                     # todo: 포만 남았을경우 못넘는경우면 비긴걸로 계산
         return True
 
     def step(self, action, state_key, is_red=False, use_es=False):
-        opposite_side = kcu.BLUE if is_red else kcu.RED
+        opposite_side = c.BLUE if is_red else c.RED
 
         if action is False:
             if is_red is False:
@@ -514,7 +509,7 @@ class KoreanChessV1():
         else:
             state_key = state
         if state_key not in self.state_list:
-            self.create_state(KoreanChess.convert_state_map(state_key), kcu.RED if is_red else kcu.BLUE)
+            self.create_state(KoreanChess.convert_state_map(state_key), c.RED if is_red else c.BLUE)
         action_list = self.state_list[state_key]['action_list']
         return action_list
 
