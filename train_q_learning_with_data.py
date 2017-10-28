@@ -85,7 +85,7 @@ for i in range(num_episodes):
 
         blue_state = env.reset()
 
-        env.print_map(blue_state, kcu.BLUE)
+        env.print_env(blue_state, kcu.BLUE)
         blue_reward_all = 0
         red_reward_all = 0
         blue_done = False
@@ -104,7 +104,7 @@ for i in range(num_episodes):
                         blue_reward = KoreanChess.REWARD_LIST[kcu.KING]
                 else:
                     break
-                env.print_map(red_state, kcu.RED, str(i) + ':' + str(k), j, blue_reward_all, red_reward_all,
+                env.print_env(red_state, kcu.RED, str(i) + ':' + str(k), j, blue_reward_all, red_reward_all,
                               kcu.BLUE if blue_done else False,
                               is_draw, blue_win_cnt, red_win_cnt, Q1=Q_blue, Q2=Q_red, file=record_file_name,
                               line=record_file_line)
@@ -137,7 +137,7 @@ for i in range(num_episodes):
                         red_reward = KoreanChess.REWARD_LIST[kcu.KING]
                 else:
                     break
-                env.print_map(next_blue_state, kcu.BLUE, str(i) + ':' + str(k), j, blue_reward_all, red_reward_all,
+                env.print_env(next_blue_state, kcu.BLUE, str(i) + ':' + str(k), j, blue_reward_all, red_reward_all,
                               kcu.RED if red_done else False,
                               is_draw, blue_win_cnt, red_win_cnt, Q1=Q_blue, Q2=Q_red, file=record_file_name,
                               line=record_file_line)

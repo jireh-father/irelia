@@ -57,7 +57,7 @@ red_win_cnt = 0
 
 for i in range(num_episodes):
     blue_state = env.reset()
-    env.print_map(blue_state, kcu.BLUE)
+    env.print_env(blue_state, kcu.BLUE)
     blue_reward_all = 0
     red_reward_all = 0
     blue_done = False
@@ -72,7 +72,7 @@ for i in range(num_episodes):
 
         blue_action = env.get_action(Q_blue, blue_state, i)
         red_state, blue_reward, blue_done, is_draw = env.step(blue_action, blue_state)
-        env.print_map(red_state, kcu.RED, i, j, blue_reward_all, red_reward_all, kcu.BLUE if blue_done else False,
+        env.print_env(red_state, kcu.RED, i, j, blue_reward_all, red_reward_all, kcu.BLUE if blue_done else False,
                       is_draw, blue_win_cnt, red_win_cnt, Q1=Q_blue, Q2=Q_red)
         if blue_action is False and red_action is False:
             break
@@ -94,7 +94,7 @@ for i in range(num_episodes):
 
         red_action = env.get_action(Q_red, red_state, i, True)
         next_blue_state, red_reward, red_done, is_draw = env.step(red_action, red_state, True)
-        env.print_map(next_blue_state, kcu.BLUE, i, j, blue_reward_all, red_reward_all, kcu.RED if red_done else False,
+        env.print_env(next_blue_state, kcu.BLUE, i, j, blue_reward_all, red_reward_all, kcu.RED if red_done else False,
                       is_draw, blue_win_cnt, red_win_cnt, Q1=Q_blue, Q2=Q_red)
 
         if blue_action is False and red_action is False:

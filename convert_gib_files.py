@@ -41,8 +41,8 @@ def parse_record(tmp_records):
             x = 8 - x
             to_y = 9 - to_y
             to_x = 8 - to_x
-        # print({'x': x, 'y': y, 'to_x': to_x, 'to_y': to_y})
-        result.append({'x': x, 'y': y, 'to_x': to_x, 'to_y': to_y})
+        # print({'from_x': x, 'from_y': y, 'to_x': to_x, 'to_y': to_y})
+        result.append({'from_x': x, 'from_y': y, 'to_x': to_x, 'to_y': to_y})
     return result
 
 

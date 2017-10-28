@@ -8,7 +8,7 @@ class Game(object):
     env_class_map = {'KoreanChess-v1': KoreanChessV1}
 
     @staticmethod
-    def make(game_id, properties):
+    def make(game_id, properties=None):
         if not game_id:
             raise Exception('game id is not exist.')
         if game_id not in Game.env_class_map:

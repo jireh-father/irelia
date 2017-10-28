@@ -2,6 +2,7 @@
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
+import copy
 
 KING = 7
 SOLDIER = 1
@@ -54,6 +55,20 @@ LEFT_WALL = 0
 RIGHT_WALL = 8
 TOP_WALL = 0
 BOTTOM_WALL = 9
+
+
+def reverse_state(state):
+    state = copy.deepcopy(state)
+    state.reverse()
+    reversed_state = []
+    for line in state:
+        line.reverse()
+        reversed_state.append(line)
+    return reversed_state
+
+
+def reverse_action(from_x, from_y, to_x, to_y):
+    return 8 - from_x, 9 - from_y, 8 - to_x, 9 - to_y
 
 
 def is_empty_space(state_map, x, y):

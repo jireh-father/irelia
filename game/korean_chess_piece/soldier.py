@@ -19,33 +19,31 @@ def get_actions(state_map, x, y):
             not kcu.is_our_side(state_map, x + 1, y - 1, side):
         # and not kcu.is_losing_way(state_map, x, y, x + 1, y - 1, side):
         action_list.append(
-            {'x': x, 'y': y, 'to_x': x + 1, 'to_y': y - 1, 'direction': kcu.DIAGONAL_FORWARD_RIGHT1, 'step': 1,
-             'piece_type': piece_type})
+            {'from_x': x, 'from_y': y, 'to_x': x + 1, 'to_y': y - 1})
 
     # 대각선 왼쪽 길 체크
     if ((y == 1 and x == 4) or (y == 2 and x == 5)) and \
             not kcu.is_our_side(state_map, x - 1, y - 1, side):
         # and not kcu.is_losing_way(state_map, x, y, x - 1, y - 1, side):
         action_list.append(
-            {'x': x, 'y': y, 'to_x': x - 1, 'to_y': y - 1, 'direction': kcu.DIAGONAL_FORWARD_LEFT1, 'step': 1,
-             'piece_type': piece_type})
+            {'from_x': x, 'from_y': y, 'to_x': x - 1, 'to_y': y - 1})
 
     # 전진 길 체크
     if y != 0 and not kcu.is_our_side(state_map, x, y - 1, side):
         # and not kcu.is_losing_way(state_map, x, y, x, y - 1, side):
         action_list.append(
-            {'x': x, 'y': y, 'to_x': x, 'to_y': y - 1, 'direction': kcu.FORWARD, 'step': 1, 'piece_type': piece_type})
+            {'from_x': x, 'from_y': y, 'to_x': x, 'to_y': y - 1})
 
     # 오른쪽 길 체크
     if x != 8 and not kcu.is_our_side(state_map, x + 1, y, side):
         # and   not kcu.is_losing_way(state_map, x, y, x + 1, y, side):
         action_list.append(
-            {'x': x, 'y': y, 'to_x': x + 1, 'to_y': y, 'direction': kcu.RIGHT, 'step': 1, 'piece_type': piece_type})
+            {'from_x': x, 'from_y': y, 'to_x': x + 1, 'to_y': y})
 
     # 왼쪽 길 체크
     if x != 0 and not kcu.is_our_side(state_map, x - 1, y, side):
         # and   not kcu.is_losing_way(state_map, x, y, x - 1, y, side):
         action_list.append(
-            {'x': x, 'y': y, 'to_x': x - 1, 'to_y': y, 'direction': kcu.LEFT, 'step': 1, 'piece_type': piece_type})
+            {'from_x': x, 'from_y': y, 'to_x': x - 1, 'to_y': y})
 
     return action_list

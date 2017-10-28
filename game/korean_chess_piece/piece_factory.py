@@ -10,26 +10,32 @@ from env.korean_chess_piece import horse
 from env.korean_chess_piece import king
 from env.korean_chess_piece import sang
 from env.korean_chess_piece import soldier
-from env import korean_chess_util
+from env import korean_chess_util as u
 
 import copy
 
+PIECE_MAP = {u.KING: king, u.CANNON: cannon, u.CAR: car, u.GUARDIAN: guardian, u.HORSE: horse,
+             u.SANG: sang, u.SOLDIER: soldier}
+
+
+def get_piece(piece_num):
+    return PIECE_MAP[piece_num]
 
 def get_actions(state_map, x, y):
     piece_num = int(state_map[y][x][1])
-    if piece_num == korean_chess_util.KING:
+    if piece_num == u.KING:
         return king.get_actions(state_map, x, y)
-    elif piece_num == korean_chess_util.SOLDIER:
+    elif piece_num == u.SOLDIER:
         return soldier.get_actions(state_map, x, y)
-    elif piece_num == korean_chess_util.SANG:
+    elif piece_num == u.SANG:
         return sang.get_actions(state_map, x, y)
-    elif piece_num == korean_chess_util.GUARDIAN:
+    elif piece_num == u.GUARDIAN:
         return guardian.get_actions(state_map, x, y)
-    elif piece_num == korean_chess_util.HORSE:
+    elif piece_num == u.HORSE:
         return horse.get_actions(state_map, x, y)
-    elif piece_num == korean_chess_util.CANNON:
+    elif piece_num == u.CANNON:
         return cannon.get_actions(state_map, x, y)
-    elif piece_num == korean_chess_util.CAR:
+    elif piece_num == u.CAR:
         return car.get_actions(state_map, x, y)
 
 
@@ -39,19 +45,19 @@ def reverse_state_map(state_map):
 
 def action(state_map, action):
     copy_state_map = copy.deepcopy(state_map)
-    if action['piece_type'] == korean_chess_util.KING:
+    if action['piece_type'] == u.KING:
         new_state_map, reward, is_done = king.action(copy_state_map, action)
-    elif action['piece_type'] == korean_chess_util.SOLDIER:
+    elif action['piece_type'] == u.SOLDIER:
         new_state_map, reward, is_done = soldier.action(copy_state_map, action)
-    elif action['piece_type'] == korean_chess_util.SANG:
+    elif action['piece_type'] == u.SANG:
         new_state_map, reward, is_done = sang.action(copy_state_map, action)
-    elif action['piece_type'] == korean_chess_util.GUARDIAN:
+    elif action['piece_type'] == u.GUARDIAN:
         new_state_map, reward, is_done = guardian.action(copy_state_map, action)
-    elif action['piece_type'] == korean_chess_util.HORSE:
+    elif action['piece_type'] == u.HORSE:
         new_state_map, reward, is_done = horse.action(copy_state_map, action)
-    elif action['piece_type'] == korean_chess_util.CANNON:
+    elif action['piece_type'] == u.CANNON:
         new_state_map, reward, is_done = cannon.action(copy_state_map, action)
-    elif action['piece_type'] == korean_chess_util.CAR:
+    elif action['piece_type'] == u.CAR:
         new_state_map, reward, is_done = car.action(copy_state_map, action)
 
     # state_map 결과는 무조건 reverse해서 보내라

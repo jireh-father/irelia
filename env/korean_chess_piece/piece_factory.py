@@ -10,9 +10,11 @@ from env.korean_chess_piece import horse
 from env.korean_chess_piece import king
 from env.korean_chess_piece import sang
 from env.korean_chess_piece import soldier
-from env import korean_chess_util
+from env import korean_chess_util as u
 
 import copy
+
+
 
 
 def get_actions(state_map, x, y):

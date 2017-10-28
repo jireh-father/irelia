@@ -192,9 +192,9 @@ class KoreanChess(Env):
         state_map = copy.deepcopy(state['state_map'])
         to_x = action['to_x']
         to_y = action['to_y']
-        x = action['x']
-        y = action['y']
-        self.history.append({'x': x, 'y': y, 'to_x': to_x, 'to_y': to_y})
+        x = action['from_x']
+        y = action['from_y']
+        self.history.append({'from_x': x, 'from_y': y, 'to_x': to_x, 'to_y': to_y})
 
         # reward 계산
         to_value = state_map[to_y][to_x]
@@ -485,8 +485,8 @@ class KoreanChess(Env):
                 q_action_list = self.get_action_list(q_state, is_red)
                 q_action = q_action_list[q_max_action_no]
                 for i, action in enumerate(action_list):
-                    if action['x'] == q_action['x'] \
-                            and action['y'] == q_action['y'] \
+                    if action['from_x'] == q_action['from_x'] \
+                            and action['from_y'] == q_action['from_y'] \
                             and action['to_x'] == q_action['to_x'] \
                             and action['to_y'] == q_action['to_y']:
                         return i
@@ -504,8 +504,8 @@ class KoreanChess(Env):
             Q[state] = np.zeros(len(action_list))
 
         for i, action in enumerate(action_list):
-            if action['x'] == record['x'] \
-                    and action['y'] == record['y'] \
+            if action['from_x'] == record['from_x'] \
+                    and action['from_y'] == record['from_y'] \
                     and action['to_x'] == record['to_x'] \
                     and action['to_y'] == record['to_y']:
                 return i
@@ -529,7 +529,7 @@ class KoreanChess(Env):
 
     @staticmethod
     def build_action_key(action):
-        return str(action['x']) + ':' + str(action['y']) + ':' + str(action['to_x']) + ':' + str(action['to_y'])
+        return str(action['from_x']) + ':' + str(action['from_y']) + ':' + str(action['to_x']) + ':' + str(action['to_y'])
 
     def get_action_test(self, Q, state, is_red=False):
         action_list = self.get_action_list(state, is_red)
@@ -552,8 +552,8 @@ class KoreanChess(Env):
                 q_action_list = self.get_action_list(q_state, is_red)
                 q_action = q_action_list[q_max_action_no]
                 for i, action in enumerate(action_list):
-                    if action['x'] == q_action['x'] \
-                            and action['y'] == q_action['y'] \
+                    if action['from_x'] == q_action['from_x'] \
+                            and action['from_y'] == q_action['from_y'] \
                             and action['to_x'] == q_action['to_x'] \
                             and action['to_y'] == q_action['to_y']:
                         return i

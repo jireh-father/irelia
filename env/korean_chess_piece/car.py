@@ -24,9 +24,7 @@ def get_actions(state_map, x, y):
             if not kcu.is_our_side(state_map, moving_x, moving_y, side):
                 # if not kcu.is_losing_way(state_map, x, y, moving_x, moving_y, side):
                 action_list.append(
-                    {'x': x, 'y': y, 'to_x': moving_x, 'to_y': moving_y, 'direction': kcu.DIAGONAL_FORWARD_RIGHT1,
-                     'step': step,
-                     'piece_type': piece_type})
+                    {'from_x': x, 'from_y': y, 'to_x': moving_x, 'to_y': moving_y})
                 if kcu.is_enemy(state_map, moving_x, moving_y, side):
                     break
             else:
@@ -39,9 +37,7 @@ def get_actions(state_map, x, y):
         if not kcu.is_our_side(state_map, x + 1, y - 1, side):
             # if not kcu.is_losing_way(state_map, x, y, x + 1, y - 1, side):
             action_list.append(
-                {'x': x, 'y': y, 'to_x': x + 1, 'to_y': y - 1, 'direction': kcu.DIAGONAL_FORWARD_RIGHT1,
-                 'step': 1,
-                 'piece_type': piece_type})
+                {'from_x': x, 'from_y': y, 'to_x': x + 1, 'to_y': y - 1})
 
     # 대각선 왼쪽 전진 길 체크
     if (y == 9 and x == 5) or (y == 2 and x == 5):
@@ -52,9 +48,7 @@ def get_actions(state_map, x, y):
             if not kcu.is_our_side(state_map, moving_x, moving_y, side):
                 # if not kcu.is_losing_way(state_map, x, y, moving_x, moving_y, side):
                 action_list.append(
-                    {'x': x, 'y': y, 'to_x': moving_x, 'to_y': moving_y, 'direction': kcu.DIAGONAL_FORWARD_LEFT1,
-                     'step': step,
-                     'piece_type': piece_type})
+                    {'from_x': x, 'from_y': y, 'to_x': moving_x, 'to_y': moving_y})
                 if kcu.is_enemy(state_map, moving_x, moving_y, side):
                     break
             else:
@@ -67,8 +61,7 @@ def get_actions(state_map, x, y):
         if not kcu.is_our_side(state_map, x - 1, y - 1, side):
             # if not kcu.is_losing_way(state_map, x, y, x - 1, y - 1, side):
             action_list.append(
-                {'x': x, 'y': y, 'to_x': x - 1, 'to_y': y - 1, 'direction': kcu.DIAGONAL_FORWARD_LEFT1, 'step': 1,
-                 'piece_type': piece_type})
+                {'from_x': x, 'from_y': y, 'to_x': x - 1, 'to_y': y - 1})
 
     # 대각선 오른쪽 후진 길 체크
     if (y == 7 and x == 3) or (y == 0 and x == 3):
@@ -79,9 +72,7 @@ def get_actions(state_map, x, y):
             if not kcu.is_our_side(state_map, moving_x, moving_y, side):
                 # if not kcu.is_losing_way(state_map, x, y, moving_x, moving_y, side):
                 action_list.append(
-                    {'x': x, 'y': y, 'to_x': moving_x, 'to_y': moving_y, 'direction': kcu.DIAGONAL_BACKWARD_RIGHT1,
-                     'step': step,
-                     'piece_type': piece_type})
+                    {'from_x': x, 'from_y': y, 'to_x': moving_x, 'to_y': moving_y})
                 if kcu.is_enemy(state_map, moving_x, moving_y, side):
                     break
             else:
@@ -94,9 +85,7 @@ def get_actions(state_map, x, y):
         if not kcu.is_our_side(state_map, x + 1, y + 1, side):
             # if not kcu.is_losing_way(state_map, x, y, x + 1, y + 1, side):
             action_list.append(
-                {'x': x, 'y': y, 'to_x': x + 1, 'to_y': y + 1, 'direction': kcu.DIAGONAL_BACKWARD_RIGHT1,
-                 'step': 1,
-                 'piece_type': piece_type})
+                {'from_x': x, 'from_y': y, 'to_x': x + 1, 'to_y': y + 1})
 
     # 대각선 왼쪽 후진 길 체크
     if (y == 7 and x == 5) or (y == 0 and x == 5):
@@ -107,9 +96,7 @@ def get_actions(state_map, x, y):
             if not kcu.is_our_side(state_map, moving_x, moving_y, side):
                 # if not kcu.is_losing_way(state_map, x, y, moving_x, moving_y, side):
                 action_list.append(
-                    {'x': x, 'y': y, 'to_x': moving_x, 'to_y': moving_y, 'direction': kcu.DIAGONAL_BACKWARD_LEFT1,
-                     'step': step,
-                     'piece_type': piece_type})
+                    {'from_x': x, 'from_y': y, 'to_x': moving_x, 'to_y': moving_y})
                 if kcu.is_enemy(state_map, moving_x, moving_y, side):
                     break
             else:
@@ -122,9 +109,7 @@ def get_actions(state_map, x, y):
         if not kcu.is_our_side(state_map, x - 1, y + 1, side):
             # if not kcu.is_losing_way(state_map, x, y, x - 1, y + 1, side):
             action_list.append(
-                {'x': x, 'y': y, 'to_x': x -1, 'to_y': y + 1, 'direction': kcu.DIAGONAL_BACKWARD_LEFT1,
-                 'step': 1,
-                 'piece_type': piece_type})
+                {'from_x': x, 'from_y': y, 'to_x': x -1, 'to_y': y + 1})
 
     # 전진 길 체크
     if y > 0:
@@ -134,8 +119,7 @@ def get_actions(state_map, x, y):
             if not kcu.is_our_side(state_map, x, moving_y, side):
                 # if not kcu.is_losing_way(state_map, x, y, x, moving_y, side):
                 action_list.append(
-                    {'x': x, 'y': y, 'to_x': x, 'to_y': moving_y, 'direction': kcu.FORWARD, 'step': step,
-                     'piece_type': piece_type})
+                    {'from_x': x, 'from_y': y, 'to_x': x, 'to_y': moving_y})
                 if kcu.is_enemy(state_map, x, moving_y, side):
                     break
             else:
@@ -151,8 +135,7 @@ def get_actions(state_map, x, y):
             if not kcu.is_our_side(state_map, moving_x, y, side):
                 # if not kcu.is_losing_way(state_map, x, y, moving_x, y, side):
                 action_list.append(
-                    {'x': x, 'y': y, 'to_x': moving_x, 'to_y': y, 'direction': kcu.RIGHT, 'step': step,
-                     'piece_type': piece_type})
+                    {'from_x': x, 'from_y': y, 'to_x': moving_x, 'to_y': y})
                 if kcu.is_enemy(state_map, moving_x, y, side):
                     break
             else:
@@ -168,8 +151,7 @@ def get_actions(state_map, x, y):
             if not kcu.is_our_side(state_map, moving_x, y, side):
                 # if not kcu.is_losing_way(state_map, x, y, moving_x, y, side):
                 action_list.append(
-                    {'x': x, 'y': y, 'to_x': moving_x, 'to_y': y, 'direction': kcu.LEFT, 'step': step,
-                     'piece_type': piece_type})
+                    {'from_x': x, 'from_y': y, 'to_x': moving_x, 'to_y': y})
                 if kcu.is_enemy(state_map, moving_x, y, side):
                     break
             else:
@@ -185,8 +167,7 @@ def get_actions(state_map, x, y):
             if not kcu.is_our_side(state_map, x, moving_y, side):
                 # if not kcu.is_losing_way(state_map, x, y, x, moving_y, side):
                 action_list.append(
-                    {'x': x, 'y': y, 'to_x': x, 'to_y': moving_y, 'direction': kcu.BACKWARD, 'step': step,
-                     'piece_type': piece_type})
+                    {'from_x': x, 'from_y': y, 'to_x': x, 'to_y': moving_y})
 
                 if kcu.is_enemy(state_map, x, moving_y, side):
                     break

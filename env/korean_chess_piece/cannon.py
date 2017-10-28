@@ -29,9 +29,7 @@ def get_actions(state_map, x, y):
             if kcu.is_empty_space(state_map, next_of_step_stone_x, next_of_step_stone_y) \
               or kcu.is_enemy(state_map, next_of_step_stone_x, next_of_step_stone_y, side):
                 action_list.append(
-                    {'x': x, 'y': y, 'to_x': next_of_step_stone_x, 'to_y': next_of_step_stone_y,
-                     'direction': kcu.DIAGONAL_FORWARD_RIGHT1, 'step': 2,
-                     'piece_type': piece_type})
+                    {'from_x': x, 'from_y': y, 'to_x': next_of_step_stone_x, 'to_y': next_of_step_stone_y})
 
     # 대각선 왼쪽 전진 길 체크
     if (y == 9 and x == 5) or (y == 2 and x == 5):
@@ -46,9 +44,7 @@ def get_actions(state_map, x, y):
             if kcu.is_empty_space(state_map, next_of_step_stone_x, next_of_step_stone_y) \
               or kcu.is_enemy(state_map, next_of_step_stone_x, next_of_step_stone_y, side):
                 action_list.append(
-                    {'x': x, 'y': y, 'to_x': next_of_step_stone_x, 'to_y': next_of_step_stone_y,
-                     'direction': kcu.DIAGONAL_FORWARD_LEFT1, 'step': 2,
-                     'piece_type': piece_type})
+                    {'from_x': x, 'from_y': y, 'to_x': next_of_step_stone_x, 'to_y': next_of_step_stone_y})
 
     # 대각선 오른쪽 후진 길 체크
     if (y == 7 and x == 3) or (y == 0 and x == 3):
@@ -63,9 +59,7 @@ def get_actions(state_map, x, y):
             if kcu.is_empty_space(state_map, next_of_step_stone_x, next_of_step_stone_y) \
               or kcu.is_enemy(state_map, next_of_step_stone_x, next_of_step_stone_y, side):
                 action_list.append(
-                    {'x': x, 'y': y, 'to_x': next_of_step_stone_x, 'to_y': next_of_step_stone_y,
-                     'direction': kcu.DIAGONAL_BACKWARD_RIGHT1, 'step': 2,
-                     'piece_type': piece_type})
+                    {'from_x': x, 'from_y': y, 'to_x': next_of_step_stone_x, 'to_y': next_of_step_stone_y})
 
     # 대각선 왼쪽 후진 길 체크
     if (y == 7 and x == 5) or (y == 0 and x == 5):
@@ -80,9 +74,7 @@ def get_actions(state_map, x, y):
             if kcu.is_empty_space(state_map, next_of_step_stone_x, next_of_step_stone_y) \
               or kcu.is_enemy(state_map, next_of_step_stone_x, next_of_step_stone_y, side):
                 action_list.append(
-                    {'x': x, 'y': y, 'to_x': next_of_step_stone_x, 'to_y': next_of_step_stone_y,
-                     'direction': kcu.DIAGONAL_BACKWARD_LEFT1, 'step': 2,
-                     'piece_type': piece_type})
+                    {'from_x': x, 'from_y': y, 'to_x': next_of_step_stone_x, 'to_y': next_of_step_stone_y})
 
     # 전진 길 체크
     if y > kcu.TOP_WALL + 1:
@@ -111,8 +103,7 @@ def get_actions(state_map, x, y):
                     break
 
                 action_list.append(
-                    {'x': x, 'y': y, 'to_x': x, 'to_y': next_of_step_stone_y,
-                     'direction': kcu.FORWARD, 'step': step + add_step, 'piece_type': piece_type})
+                    {'from_x': x, 'from_y': y, 'to_x': x, 'to_y': next_of_step_stone_y})
 
                 if kcu.is_enemy(state_map, x, next_of_step_stone_y, side):
                     break
@@ -147,8 +138,7 @@ def get_actions(state_map, x, y):
                     break
 
                 action_list.append(
-                    {'x': x, 'y': y, 'to_x': next_of_step_stone_x, 'to_y': y, 'direction': kcu.RIGHT,
-                     'step': step + add_step, 'piece_type': piece_type})
+                    {'from_x': x, 'from_y': y, 'to_x': next_of_step_stone_x, 'to_y': y})
 
                 if kcu.is_enemy(state_map, next_of_step_stone_x, y, side):
                     break
@@ -183,8 +173,7 @@ def get_actions(state_map, x, y):
                     break
 
                 action_list.append(
-                    {'x': x, 'y': y, 'to_x': next_of_step_stone_x, 'to_y': y, 'direction': kcu.LEFT,
-                     'step': step + add_step, 'piece_type': piece_type})
+                    {'from_x': x, 'from_y': y, 'to_x': next_of_step_stone_x, 'to_y': y})
 
                 if kcu.is_enemy(state_map, next_of_step_stone_x, y, side):
                     break
@@ -219,8 +208,7 @@ def get_actions(state_map, x, y):
                     break
 
                 action_list.append(
-                    {'x': x, 'y': y, 'to_x': x, 'to_y': next_of_step_stone_y,
-                     'direction': kcu.BACKWARD, 'step': step + add_step, 'piece_type': piece_type})
+                    {'from_x': x, 'from_y': y, 'to_x': x, 'to_y': next_of_step_stone_y})
 
                 if kcu.is_enemy(state_map, x, next_of_step_stone_y, side):
                     break
