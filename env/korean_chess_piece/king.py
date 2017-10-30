@@ -3,7 +3,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from env import korean_chess_util as kcu
+from game import korean_chess_constant as kcu
 
 
 def get_actions(state, from_x, from_y):

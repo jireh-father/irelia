@@ -13,7 +13,7 @@ import numbers
 
 from env.env import Env
 from env.korean_chess_piece import piece_factory
-from env import korean_chess_util as kcu
+from game import korean_chess_constant as kcu
 import operator
 import json
 import sqlite3

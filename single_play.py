@@ -1,4 +1,6 @@
 from game.game import Game
+import traceback
+
 
 env = Game.make("KoreanChess-v1")
 
@@ -28,9 +30,11 @@ for i in range(100):
 
     try:
         new_state, reward, done, _ = env.step({"from_x": from_x, "from_y": from_y, "to_x": to_x, "to_y": to_y})
+
         if done:
             print("The End")
             break
 
     except Exception as e:
         print(e.message)
+        traceback.print_exc()
