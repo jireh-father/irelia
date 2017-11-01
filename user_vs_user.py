@@ -1,8 +1,16 @@
 from game.game import Game
 import traceback
+from game import korean_chess_constant as c
 
-
-env = Game.make("KoreanChess-v1")
+init_state = [[[0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9],
+              [[0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9],
+              [[1] * 9, [1] * 9, [1] * 9, [1] * 9, [1] * 9, [1] * 9, [1] * 9, [1] * 9, [1] * 9, [1] * 9]]
+init_state[1][1][3] = c.KING
+init_state[0][8][5] = c.KING
+init_state[0][6][4] = c.CAR
+init_state[0][5][4] = c.CAR
+env = Game.make("KoreanChess-v1", {"init_state": init_state})
+# env = Game.make("KoreanChess-v1")
 
 env.reset()
 
