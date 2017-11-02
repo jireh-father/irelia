@@ -18,45 +18,8 @@ def reverse_state(state, is_copy=True):
     return reversed_state
 
 
-def reverse_action(from_x, from_y, to_x, to_y):
-    return 8 - from_x, 9 - from_y, 8 - to_x, 9 - to_y
-
-
 def copy_state(state):
     return copy.deepcopy(state)
-
-
-def validate_action(action, state, turn, next_turn):
-    to_x = action['to_x']
-    to_y = action['to_y']
-    from_x = action['from_x']
-    from_y = action['from_y']
-
-    # check the piece is empty
-    piece_num = int(state[from_y][from_x][-1])
-    if piece_num == 0:
-        return False
-
-    # check the piece is current turn.
-    if state[from_y][from_x][0] != turn:
-        return False
-
-    actions = get_actions(state, from_x, from_y, turn)
-
-    if not actions:
-        return False
-
-    # check there is a valid action.
-    invalid_cnt = 0
-    for tmp_action in actions:
-        if tmp_action["to_x"] != to_x or tmp_action["to_y"] != to_y:
-            invalid_cnt += 1
-
-    if invalid_cnt == len(actions):
-        return False
-
-    # check this action gets my own checkmate.
-    return not is_check(current_state, from_x, from_y, to_x, to_y, next_turn)
 
 
 def decode_state(state, turn):
@@ -77,6 +40,46 @@ def decode_state(state, turn):
     return new_state
 
 
+def validate_action(action, state, turn, next_turn):
+    to_x = action['to_x']
+    to_y = action['to_y']
+    from_x = action['from_x']
+    from_y = action['from_y']
+
+    # check the piece is empty
+    if state[from_y][from_x] == 0:
+        raise Exception("this piece is empty")
+        # return False
+
+    # check the piece is current turn.
+    if state[from_y][from_x][0] != turn:
+        raise Exception("this piece is a opponent piece.")
+        # return False
+
+    actions = get_actions(state, from_x, from_y, turn)
+
+    if not actions:
+        raise Exception("this piece has no any actions.")
+        # return False
+
+    # check there is a valid action.
+    invalid_cnt = 0
+    for tmp_action in actions:
+        if tmp_action["to_x"] != to_x or tmp_action["to_y"] != to_y:
+            invalid_cnt += 1
+
+    if invalid_cnt == len(actions):
+        raise Exception("this action differs from any actions.")
+        # return False
+
+    # check this action gets my own check.
+    check = is_check(state, from_x, from_y, to_x, to_y, next_turn)
+    if check:
+        raise Exception("this action causes opponent's check")
+        # return False
+    return True
+
+
 def encode_state(state):
     new_state = [[0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9]
     for i, line in enumerate(state[0]):
@@ -93,59 +96,46 @@ def is_check(state, from_x, from_y, to_x, to_y, turn):
     state = copy_state(state)
     state[to_y][to_x] = state[from_y][from_x]
     state[from_y][from_x] = 0
-    state = reverse_state(state)
     for y, line in enumerate(state):
         for x, piece_num in enumerate(line):
             if piece_num == 0 or piece_num[0] != turn:
                 continue
-            piece = piece_factory.get_piece(int(piece_num[1]))
-
-            actions = piece.get_actions(state, x, y)
+            actions = get_actions(state, x, y, turn)
             for action in actions:
                 if state[action["to_y"]][action["to_x"]] != 0 \
-                        and int(state[action["to_y"]][action["to_x"]][1]) == c.KING \
-                        and state[action["to_y"]][action["to_x"]][0] != turn:
+                  and int(state[action["to_y"]][action["to_x"]][1]) == c.KING \
+                  and state[action["to_y"]][action["to_x"]][0] != turn:
                     return True
     return False
 
 
 def is_checkmate(state, turn):
-    if turn == c.BLUE:
-        r_state = reverse_state(state, False)
-        subject_turn = c.RED
-    else:
-        r_state = copy_state(state)
-        subject_turn = c.BLUE
-    subject_actions = []
-    for y, line in enumerate(r_state):
-        for x, piece_num in enumerate(line):
-            if piece_num != 0 and piece_num[0] != turn:
-                piece = piece_factory.get_piece(int(piece_num[1]))
-                subject_actions += piece.get_actions(r_state, x, y, )
-    state = reverse_state(r_state, False)
-    for subject_action in subject_actions:
-        to_x = subject_action['to_x']
-        to_y = subject_action['to_y']
-        from_x = subject_action['from_x']
-        from_y = subject_action['from_y']
+    opponent_turn = c.RED if turn == c.BLUE else c.BLUE
+    # get opponent actions
+    opponent_actions = get_all_actions(state, opponent_turn)
+    state = copy_state(state)
+    # check opponent's defending move
+    for opponent_action in opponent_actions:
+        to_x = opponent_action['to_x']
+        to_y = opponent_action['to_y']
+        from_x = opponent_action['from_x']
+        from_y = opponent_action['from_y']
+        # move opponent
         old = state[to_y][to_x]
         state[to_y][to_x] = state[from_y][from_x]
         state[from_y][from_x] = 0
-        for y, line in enumerate(state):
-            for x, piece_num in enumerate(line):
-                if piece_num != 0 and piece_num[0] == turn:
-                    piece = piece_factory.get_piece(int(piece_num[1]))
-                    actions = piece.get_actions(state, x, y)
-                    check_cnt = 0
-                    for action in actions:
-                        if is_check(state, action["from_x"], action["from_y"], action["to_x"], action["to_y"], turn):
-                            check_cnt += 1
-                    if check_cnt == 0:
-                        return False
-
+        # get my actions after opponent's moving
+        next_my_actions = get_all_actions(state, turn)
+        # count my check
+        check_cnt = 0
+        for action in next_my_actions:
+            if is_check(state, action["from_x"], action["from_y"], action["to_x"], action["to_y"], turn):
+                check_cnt += 1
+        if check_cnt == 0:
+            return False
+        # get back to previous state
         state[from_y][from_x] = state[to_y][to_x]
         state[to_y][to_x] = old
-
     return True
 
 
@@ -161,23 +151,40 @@ def is_draw(state):
     return True
 
 
+def reverse_actions(actions):
+    for action in actions:
+        action["from_x"] = 8 - action["from_x"]
+        action["from_y"] = 9 - action["from_y"]
+        action["to_x"] = 8 - action["to_x"]
+        action["to_y"] = 9 - action["to_y"]
+    return actions
+
+
 def get_all_actions(state, turn):
     if turn == c.RED:
         state = reverse_state(state)
-    action_list = []
+    actions = []
     for y, line in enumerate(state):
         for x, piece_num in enumerate(line):
             if piece_num == 0 or piece_num[0] != turn:
                 continue
 
             piece = piece_factory.get_piece(int(piece_num[1]))
-            action_list += [reverse_action() for action in piece.get_actions(state, x, y)]
-    return action_list
+            actions += piece.get_actions(state, x, y)
+    if turn == c.RED:
+        return reverse_actions(actions)
+    return actions
 
 
 def get_actions(state, x, y, turn):
+    if state[y][x] == 0 or state[y][x][0] != turn:
+        return None
+    piece = piece_factory.get_piece(int(state[y][x][1]))
     if turn == c.RED:
         state = reverse_state(state)
-    piece = piece_factory.get_piece(int(state[y][x][1]))
-
-    return piece.get_actions(state, x, y)
+        x = 8 - x
+        y = 9 - y
+    actions = piece.get_actions(state, x, y)
+    if turn == c.RED:
+        return reverse_actions(actions)
+    return actions

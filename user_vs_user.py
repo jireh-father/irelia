@@ -1,6 +1,7 @@
 from game.game import Game
 import traceback
 from game import korean_chess_constant as c
+from builtins import input
 
 init_state = [[[0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9],
               [[0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9],
@@ -16,22 +17,22 @@ env.reset()
 
 for i in range(100):
     while True:
-        from_x = raw_input("from X number : ")
+        from_x = input("from X number : ")
         if from_x.isdigit():
             from_x = int(from_x)
             break
     while True:
-        from_y = raw_input("from Y number : ")
+        from_y = input("from Y number : ")
         if from_y.isdigit():
             from_y = int(from_y)
             break
     while True:
-        to_x = raw_input("to X number : ")
+        to_x = input("to X number : ")
         if to_x.isdigit():
             to_x = int(to_x)
             break
     while True:
-        to_y = raw_input("to Y number : ")
+        to_y = input("to Y number : ")
         if to_y.isdigit():
             to_y = int(to_y)
             break
@@ -44,5 +45,5 @@ for i in range(100):
             break
 
     except Exception as e:
-        print(e.message)
+        print(e)
         traceback.print_exc()

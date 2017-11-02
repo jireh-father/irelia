@@ -15,7 +15,12 @@ class KoreanChessV1:
     PIECE_MAP_KOR = \
         {c.R_SD: '졸(홍)', c.R_SG: '상(홍)', c.R_GD: '사(홍)', c.R_HS: '마(홍)', c.R_CN: '포(홍)', c.R_CR: '차(홍)', c.R_KG: '궁(홍)',
          c.B_SD: '졸(청)', c.B_SG: '상(청)', c.B_GD: '사(청)', c.B_HS: '마(청)', c.B_CN: '포(청)', c.B_CR: '차(청)', c.B_KG: '궁(청)',
-         0: '-----'}
+         0: '------'}
+
+    PIECE_MAP_KOR_NO_COLOR = \
+        {c.R_SD: '졸(V)', c.R_SG: '상(V)', c.R_GD: '사(V)', c.R_HS: '마(V)', c.R_CN: '포(V)', c.R_CR: '차(V)', c.R_KG: '궁(V)',
+         c.B_SD: '졸(V)', c.B_SG: '상(V)', c.B_GD: '사(V)', c.B_HS: '마(V)', c.B_CN: '포(V)', c.B_CR: '차(V)', c.B_KG: '궁(V)',
+         0: '------'}
 
     default_state = [
         [c.R_CR, 0, 0, c.R_GD, 0, c.R_GD, 0, 0, c.R_CR],
@@ -60,14 +65,17 @@ class KoreanChessV1:
         self.next_turn = None
         self.red_score = None
         self.blue_score = None
+        self.interval = None
 
     def reset(self):
+        if self.properties and "interval" in self.properties:
+            self.interval = self.properties["interval"]
         if self.properties and "init_state" in self.properties:
             self.current_state, self.current_turn = u.encode_state(self.properties["init_state"])
             self.next_turn = c.RED if self.current_turn == c.BLUE else c.BLUE
         else:
             if not self.properties or (
-                            "position_type" not in self.properties or self.properties['position_type'] == 'random'):
+                      "position_type" not in self.properties or self.properties['position_type'] == 'random'):
                 # random position
                 blue_rand_position = random.randint(0, 3)
                 red_rand_position = random.randint(0, 3)
@@ -133,11 +141,17 @@ class KoreanChessV1:
         is_draw = u.is_draw(self.current_state)
         # reverse 랑 액션쪽 하는거 다 바꾸기 그리고 내편 상대편으로 각 기능 다 시뮬레이션 해보기
 
-        # todo: repeat limit
-        # todo: count, win or lose by count
-        # todo: turn count limit
-
         # todo: 장군했는데 상대가 왕이 먹히는 수를 두는지 체크하는거 추가
+        # todo: repeat limit(반복수)
+        # todo: count, win or lose by count(점수에 의한 승부 정리)
+        # todo: turn count limit
+        # todo: 빅장
+        # todo: 먹힌말 print
+        # todo: 이기고 진거 print
+
+        # todo: test 포 넘기는거 안됐음
+        # todo: test 차 뒤로 넘어간거 외통수 아닌데 외통수로 인식
+
         # done?
         done = is_checkmate or (reward == c.REWARD_LIST[c.KING] or is_draw)
 
@@ -147,14 +161,14 @@ class KoreanChessV1:
         self.next_turn = old_turn
 
         # print env
-        self.print_env(is_check, is_checkmate)
+        self.print_env(is_check, is_checkmate, to_x, to_y)
 
         # decode and return state
         return u.decode_state(self.current_state, self.current_turn), reward, done, is_check
 
-    def print_env(self, is_check=False, is_checkmate=False, interval=0):
-        if interval > 0:
-            time.sleep(0.5)
+    def print_env(self, is_check=False, is_checkmate=False, to_x=10, to_y=10):
+        if self.interval > 0:
+            time.sleep(self.interval)
         if self.current_turn == c.BLUE:
             print("%s %s" % ("BLUE", "Turn"))
         else:
@@ -162,7 +176,11 @@ class KoreanChessV1:
         print("Score [ BLUE : %f ] [ RED : %f ]" % (self.blue_score, self.red_score))
         print("Y  X " + KoreanChessV1.PIECE_MAP_KOR[0].join(["%d" % col_idx for col_idx in range(0, 9)]))
         for i, line in enumerate(self.current_state):
-            line = [KoreanChessV1.PIECE_MAP_KOR[piece] for piece in line]
+            if to_y == i:
+                line = [KoreanChessV1.PIECE_MAP_KOR_NO_COLOR[piece] if j == to_x else
+                        KoreanChessV1.PIECE_MAP_KOR[piece] for j, piece in enumerate(line)]
+            else:
+                line = [KoreanChessV1.PIECE_MAP_KOR[piece] for piece in line]
             print("%d %s" % (i, ' '.join(line)))
 
         if is_check:
@@ -171,5 +189,5 @@ class KoreanChessV1:
                 print("Checkmate!!")
         print('======================================================')
 
-    def get_actions(self):
+    def get_all_actions(self):
         return u.get_all_actions(self.current_state, self.current_turn)
