@@ -66,6 +66,7 @@ class KoreanChessV1:
         self.red_score = None
         self.blue_score = None
         self.interval = None
+        self.current_step = None
 
     def reset(self):
         if self.properties and "interval" in self.properties:
@@ -75,7 +76,7 @@ class KoreanChessV1:
             self.next_turn = c.RED if self.current_turn == c.BLUE else c.BLUE
         else:
             if not self.properties or (
-                      "position_type" not in self.properties or self.properties['position_type'] == 'random'):
+                            "position_type" not in self.properties or self.properties['position_type'] == 'random'):
                 # random position
                 blue_rand_position = random.randint(0, 3)
                 red_rand_position = random.randint(0, 3)
@@ -101,6 +102,7 @@ class KoreanChessV1:
         # set scores
         self.blue_score = c.get_score(self.current_state, self.current_turn)
         self.red_score = c.get_score(self.current_state, self.next_turn)
+        self.current_step = 0
 
         # print environment
         self.print_env()
@@ -131,11 +133,14 @@ class KoreanChessV1:
         # move
         self.current_state[to_y][to_x] = self.current_state[from_y][from_x]
         self.current_state[from_y][from_x] = 0
+        self.current_step += 1
 
         # checkmate? 외통수
         is_checkmate = False
         if is_check:
             is_checkmate = u.is_checkmate(self.current_state, self.current_turn)
+            if is_checkmate:
+                reward += c.KING
 
         # draw?
         is_draw = u.is_draw(self.current_state)
@@ -153,7 +158,7 @@ class KoreanChessV1:
         # todo: test 차 뒤로 넘어간거 외통수 아닌데 외통수로 인식
 
         # done?
-        done = is_checkmate or (reward == c.REWARD_LIST[c.KING] or is_draw)
+        done = reward >= c.REWARD_LIST[c.KING] or is_draw
 
         # change turn
         old_turn = self.current_turn
@@ -170,9 +175,9 @@ class KoreanChessV1:
         if self.interval > 0:
             time.sleep(self.interval)
         if self.current_turn == c.BLUE:
-            print("%s %s" % ("BLUE", "Turn"))
+            print("%s %s : %d" % ("BLUE", "Turn", self.current_step))
         else:
-            print("%s %s" % ("RED", "Turn"))
+            print("%s %s : %d" % ("RED", "Turn", self.current_step))
         print("Score [ BLUE : %f ] [ RED : %f ]" % (self.blue_score, self.red_score))
         print("Y  X " + KoreanChessV1.PIECE_MAP_KOR[0].join(["%d" % col_idx for col_idx in range(0, 9)]))
         for i, line in enumerate(self.current_state):

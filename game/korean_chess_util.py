@@ -75,7 +75,7 @@ def validate_action(action, state, turn, next_turn):
     # check this action gets my own check.
     check = is_check(state, from_x, from_y, to_x, to_y, next_turn)
     if check:
-        raise Exception("this action causes opponent's check")
+        raise Exception("this action causes opponent's check %d %d %d %d" % (from_x, from_y, to_x, to_y,))
         # return False
     return True
 
@@ -103,8 +103,8 @@ def is_check(state, from_x, from_y, to_x, to_y, turn):
             actions = get_actions(state, x, y, turn)
             for action in actions:
                 if state[action["to_y"]][action["to_x"]] != 0 \
-                  and int(state[action["to_y"]][action["to_x"]][1]) == c.KING \
-                  and state[action["to_y"]][action["to_x"]][0] != turn:
+                        and int(state[action["to_y"]][action["to_x"]][1]) == c.KING \
+                        and state[action["to_y"]][action["to_x"]][0] != turn:
                     return True
     return False
 
@@ -124,14 +124,22 @@ def is_checkmate(state, turn):
         old = state[to_y][to_x]
         state[to_y][to_x] = state[from_y][from_x]
         state[from_y][from_x] = 0
+        for line in state:
+            print(line)
         # get my actions after opponent's moving
         next_my_actions = get_all_actions(state, turn)
         # count my check
         check_cnt = 0
         for action in next_my_actions:
-            if is_check(state, action["from_x"], action["from_y"], action["to_x"], action["to_y"], turn):
+            print("try", action)
+            if state[action["to_y"]][action["to_x"]] != 0 and int(state[action["to_y"]][action["to_x"]][1]) == c.KING:
+                # if is_check(state, action["from_x"], action["from_y"], action["to_x"], action["to_y"], turn):
+                print("check")
                 check_cnt += 1
+            else:
+                print("not check")
         if check_cnt == 0:
+            print("not checkmate")
             return False
         # get back to previous state
         state[from_y][from_x] = state[to_y][to_x]
@@ -140,15 +148,30 @@ def is_checkmate(state, turn):
 
 
 def is_draw(state):
-    for line in state:
-        for piece in line:
+    other_piece_list = []
+    for y, line in enumerate(state):
+        for x, piece in enumerate(line):
             if piece == 0:
                 continue
-            # todo: 상하고 마하고 구현해면 빼
-            if piece[1] != c.KING and piece[1] != c.GUARDIAN:
-                return False
+            if int(piece[1]) != c.KING and int(piece[1]) != c.GUARDIAN:
+                other_piece_list.append([x, y])
+
                 # todo: 포만 남았을경우 못넘는경우면 비긴걸로 계산
-    return True
+    cannon_cnt = 0
+    disable_cannon_cnt = 0
+    for other_piece in other_piece_list:
+        if int(state[other_piece[1]][other_piece[0]][1]) != c.CANNON:
+            return False
+        else:
+            cannon_cnt += 1
+            actions = get_actions(state, other_piece[0], other_piece[1], state[other_piece[1]][other_piece[0]][0])
+            if not actions:
+                disable_cannon_cnt += 1
+
+    if cannon_cnt == disable_cannon_cnt:
+        return True
+    else:
+        return False
 
 
 def reverse_actions(actions):
