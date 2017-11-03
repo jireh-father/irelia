@@ -40,7 +40,7 @@ def decode_state(state, turn):
     return new_state
 
 
-def validate_action(action, state, turn, next_turn):
+def validate_action(action, state, turn, next_turn, use_check=True):
     to_x = action['to_x']
     to_y = action['to_y']
     from_x = action['from_x']
@@ -71,6 +71,9 @@ def validate_action(action, state, turn, next_turn):
     if invalid_cnt == len(actions):
         raise Exception("this action differs from any actions.")
         # return False
+
+    if not use_check:
+        return True
 
     # check this action gets my own check.
     check = is_check(state, from_x, from_y, to_x, to_y, next_turn)
@@ -103,8 +106,8 @@ def is_check(state, from_x, from_y, to_x, to_y, turn):
             actions = get_actions(state, x, y, turn)
             for action in actions:
                 if state[action["to_y"]][action["to_x"]] != 0 \
-                        and int(state[action["to_y"]][action["to_x"]][1]) == c.KING \
-                        and state[action["to_y"]][action["to_x"]][0] != turn:
+                  and int(state[action["to_y"]][action["to_x"]][1]) == c.KING \
+                  and state[action["to_y"]][action["to_x"]][0] != turn:
                     return True
     return False
 
@@ -124,20 +127,20 @@ def is_checkmate(state, turn):
         old = state[to_y][to_x]
         state[to_y][to_x] = state[from_y][from_x]
         state[from_y][from_x] = 0
-        for line in state:
-            print(line)
+        # for line in state:
+        #     print(line)
         # get my actions after opponent's moving
         next_my_actions = get_all_actions(state, turn)
         # count my check
         check_cnt = 0
         for action in next_my_actions:
-            print("try", action)
+            # print("try", action)
             if state[action["to_y"]][action["to_x"]] != 0 and int(state[action["to_y"]][action["to_x"]][1]) == c.KING:
                 # if is_check(state, action["from_x"], action["from_y"], action["to_x"], action["to_y"], turn):
-                print("check")
+                # print("check")
                 check_cnt += 1
-            else:
-                print("not check")
+                # else:
+                #     print("not check")
         if check_cnt == 0:
             print("not checkmate")
             return False

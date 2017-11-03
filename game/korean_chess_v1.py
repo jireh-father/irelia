@@ -67,16 +67,29 @@ class KoreanChessV1:
         self.blue_score = None
         self.interval = None
         self.current_step = None
+        self.use_check = None
+        self.red_catch_list = []
+        self.blue_catch_list = []
+        self.limit_step = None
 
     def reset(self):
-        if self.properties and "interval" in self.properties:
-            self.interval = self.properties["interval"]
+        self.interval = 0
+        self.use_check = True
+        self.limit_step = None
+        if self.properties:
+            if "interval" in self.properties:
+                self.interval = self.properties["interval"]
+            if "use_check" in self.properties:
+                self.use_check = self.properties["use_check"]
+            if "limit_step" in self.properties:
+                self.limit_step = self.properties["limit_step"]
+
         if self.properties and "init_state" in self.properties:
             self.current_state, self.current_turn = u.encode_state(self.properties["init_state"])
             self.next_turn = c.RED if self.current_turn == c.BLUE else c.BLUE
         else:
             if not self.properties or (
-                            "position_type" not in self.properties or self.properties['position_type'] == 'random'):
+                      "position_type" not in self.properties or self.properties['position_type'] == 'random'):
                 # random position
                 blue_rand_position = random.randint(0, 3)
                 red_rand_position = random.randint(0, 3)
@@ -111,7 +124,7 @@ class KoreanChessV1:
 
     def step(self, action):
         # validate action
-        if not u.validate_action(action, self.current_state, self.current_turn, self.next_turn):
+        if not u.validate_action(action, self.current_state, self.current_turn, self.next_turn, self.use_check):
             raise Exception("Invalid action :%s" % action)
         to_x = action['to_x']
         to_y = action['to_y']
@@ -126,8 +139,10 @@ class KoreanChessV1:
         reward = 0 if to_piece == 0 else c.REWARD_LIST[int(to_piece[1])]
         if reward > 0 and reward < c.REWARD_LIST[c.KING]:
             if self.current_turn == c.BLUE:
+                self.blue_catch_list.append(to_piece)
                 self.red_score -= reward
             else:
+                self.red_catch_list.append(to_piece)
                 self.blue_score -= reward
 
         # move
@@ -146,19 +161,15 @@ class KoreanChessV1:
         is_draw = u.is_draw(self.current_state)
         # reverse 랑 액션쪽 하는거 다 바꾸기 그리고 내편 상대편으로 각 기능 다 시뮬레이션 해보기
 
-        # todo: 장군했는데 상대가 왕이 먹히는 수를 두는지 체크하는거 추가
+        # todo: 먹힌말 print
+        # todo: turn count limit
         # todo: repeat limit(반복수)
         # todo: count, win or lose by count(점수에 의한 승부 정리)
-        # todo: turn count limit
         # todo: 빅장
-        # todo: 먹힌말 print
-        # todo: 이기고 진거 print
-
-        # todo: test 포 넘기는거 안됐음
-        # todo: test 차 뒤로 넘어간거 외통수 아닌데 외통수로 인식
+        # todo: 장군, 가능한 actions, 외통수 등 기능 테스트
 
         # done?
-        done = reward >= c.REWARD_LIST[c.KING] or is_draw
+        done = reward >= c.REWARD_LIST[c.KING]
 
         # change turn
         old_turn = self.current_turn
@@ -166,12 +177,13 @@ class KoreanChessV1:
         self.next_turn = old_turn
 
         # print env
-        self.print_env(is_check, is_checkmate, to_x, to_y)
+        self.print_env(is_check, is_checkmate, to_x, to_y, done, is_draw)
 
         # decode and return state
-        return u.decode_state(self.current_state, self.current_turn), reward, done, is_check
+        is_game_over = (done or is_draw or self.current_step >= self.limit_step)
+        return u.decode_state(self.current_state, self.current_turn), reward, is_game_over, is_check
 
-    def print_env(self, is_check=False, is_checkmate=False, to_x=10, to_y=10):
+    def print_env(self, is_check=False, is_checkmate=False, to_x=10, to_y=10, done=False, is_draw=False):
         if self.interval > 0:
             time.sleep(self.interval)
         if self.current_turn == c.BLUE:
@@ -192,6 +204,16 @@ class KoreanChessV1:
             print("Check!!")
             if is_checkmate:
                 print("Checkmate!!")
+        if done:
+            if self.next_turn == c.BLUE:
+                print("BLUE WIN")
+            else:
+                print("RED WIN")
+        if is_draw:
+            print("draw!!")
+
+        if self.current_step >= self.limit_step:
+            print("")
         print('======================================================')
 
     def get_all_actions(self):
