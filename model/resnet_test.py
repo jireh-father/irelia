@@ -347,3 +347,20 @@ def imagenet_resnet_v2(resnet_size, num_classes, data_format=None):
     params = model_params[resnet_size]
     return imagenet_resnet_v2_generator(
         params['block'], params['layers'], num_classes, data_format)
+
+
+model = imagenet_resnet_v2(
+    18, 456)
+inputs = tf.random_uniform([1, 224, 224, 3])
+output = model(inputs, is_training=True)
+
+with tf.Session() as sess:
+    # # `sess.graph` provides access to the graph used in a `tf.Session`.
+    writer = tf.summary.FileWriter("./test", sess.graph)
+    #
+    #     # Perform your computation...
+    #     # for i in range(1000):
+    #     sess.run(model)
+    #     # ...
+    #
+    writer.close()
