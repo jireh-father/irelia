@@ -155,14 +155,13 @@ class KoreanChessV1:
         if is_check:
             is_checkmate = u.is_checkmate(self.current_state, self.current_turn)
             if is_checkmate:
-                reward += c.KING
+                reward = c.KING
 
         # draw?
         is_draw = u.is_draw(self.current_state)
         # reverse 랑 액션쪽 하는거 다 바꾸기 그리고 내편 상대편으로 각 기능 다 시뮬레이션 해보기
 
         # todo: 먹힌말 print
-        # todo: turn count limit
         # todo: repeat limit(반복수)
         # todo: count, win or lose by count(점수에 의한 승부 정리)
         # todo: 빅장

@@ -78,7 +78,7 @@ def block_layer(inputs, filters, blocks, strides, is_training, data_format):
     return inputs
 
 
-def model(inputs, is_training=True, blocks=2, num_classes=90, data_format=None):
+def model(inputs, blocks=2, is_training=True, data_format=None):
     if data_format is None:
         data_format = (
             'channels_first' if tf.test.is_built_with_cuda() else 'channels_last')
@@ -95,31 +95,52 @@ def model(inputs, is_training=True, blocks=2, num_classes=90, data_format=None):
         strides=1, is_training=is_training,
         data_format=data_format)
 
-    value_net_inputs = conv2d_fixed_padding(
+    inputs = conv2d_fixed_padding(
         inputs=inputs, filters=1, kernel_size=1, strides=1,
-        data_format=data_format, is_training=is_training, name="value_conv")
-    value_net_inputs = tf.reshape(value_net_inputs, [-1, num_classes], name="value_reshape")
-    value_net_inputs = tf.layers.dense(inputs=value_net_inputs, units=64, name="value_dense1")
+        data_format=data_format, is_training=is_training, name="last_conv")
 
-    value_net_inputs = tf.nn.relu(value_net_inputs, name="value_relu")
+    return inputs
+    # value_net_inputs = conv2d_fixed_padding(
+    #     inputs=inputs, filters=1, kernel_size=1, strides=1,
+    #     data_format=data_format, is_training=is_training, name="value_conv")
+    # value_net_inputs = tf.reshape(value_net_inputs, [-1, num_classes], name="value_reshape")
+    # value_net_inputs = tf.layers.dense(inputs=value_net_inputs, units=64, name="value_dense1")
+    #
+    # value_net_inputs = tf.nn.relu(value_net_inputs, name="value_relu")
+    #
+    # value_net_inputs = tf.layers.dense(inputs=value_net_inputs, units=1, name="value_dense2")
+    #
+    # value_net_inputs = tf.nn.tanh(value_net_inputs, name="value_tanh")
+    # # value_net_inputs = tf.reshape(value_net_inputs, [-1], name="value_scalar_reshape")
+    #
+    # policy_net_inputs = conv2d_fixed_padding(
+    #     inputs=inputs, filters=2, kernel_size=1, strides=1,
+    #     data_format=data_format, is_training=is_training, name="policy_conv")
+    # policy_net_inputs = tf.reshape(policy_net_inputs, [-1, num_classes * 2], name="policy_reshape")
+    # policy_net_inputs = tf.layers.dense(inputs=policy_net_inputs, units=num_classes, name="policy_dense")
+    #
+    # return value_net_inputs, policy_net_inputs
 
-    value_net_inputs = tf.layers.dense(inputs=value_net_inputs, units=1, name="value_dense2")
 
-    value_net_inputs = tf.nn.tanh(value_net_inputs, name="value_tanh")
-
-    # value_net_inputs = tf.reshape(value_net_inputs, [-1], name="value_scalar_reshape")
-
-    policy_net_inputs = conv2d_fixed_padding(
-        inputs=inputs, filters=2, kernel_size=1, strides=1,
-        data_format=data_format, is_training=is_training, name="policy_conv")
-    policy_net_inputs = tf.reshape(policy_net_inputs, [-1, num_classes * 2], name="policy_reshape")
-    policy_net_inputs = tf.layers.dense(inputs=policy_net_inputs, units=num_classes, name="policy_dense")
-
-    return value_net_inputs, policy_net_inputs
-
-
-# inputs = tf.random_uniform([1, 10, 9, 2])
-# value_net_inputs, policy_net_inputs = model(inputs)
+# inputs = tf.random_uniform([-1, 10, 9, 2])
+# X = tf.placeholder(tf.float32, shape=[None, 10, 9, 2])
+# Y = tf.placeholder(tf.float32, shape=[None, 1])
+# Y_classification = tf.placeholder(tf.float32, shape=[None, 90])
+# value_net_inputs, policy_net_inputs = model(X)
+# print("policy", policy_net_inputs)
+# mse = Y * tf.log(value_net_inputs) + (1 - Y) * tf.log(1 - value_net_inputs)
+# print(mse)
+# print("d", tf.nn.softmax_cross_entropy_with_logits(
+#     logits=value_net_inputs, labels=Y_classification))
+# cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(
+#     logits=value_net_inputs, labels=Y_classification))
+# optimizer = tf.train.AdamOptimizer(learning_rate=0.01).minimize(cost)
+#
+# cost = -tf.reduce_mean(mse)
+# print(cost)
+#
+# train = tf.train.GradientDescentOptimizer(learning_rate=0.01).minimize(cost)
+#
 # print(value_net_inputs, policy_net_inputs)
 #
 # # g = tf.get_default_graph()

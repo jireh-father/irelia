@@ -5,6 +5,7 @@ from __future__ import print_function
 import copy
 from game.korean_chess_piece import piece_factory
 from game import korean_chess_constant as c
+import numpy as np
 
 
 def reverse_state(state, is_copy=True):
@@ -37,7 +38,7 @@ def decode_state(state, turn):
     else:
         new_state.append([[0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9])
 
-    return new_state
+    return np.array(new_state)
 
 
 def validate_action(action, state, turn, next_turn, use_check=True):
