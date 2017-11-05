@@ -9,7 +9,6 @@ from game.game import Game
 from model import resnet
 import json
 
-
 np.random.seed(2)
 tf.set_random_seed(2)  # reproducible
 
@@ -86,6 +85,7 @@ class Actor(object):
         s = s[np.newaxis, :]
         feed_dict = {self.s: s, self.a_from: a_from, self.a_to: a_to, self.td_error: td}
         _, exp_v = self.sess.run([self.train_op, self.exp_v], feed_dict)
+        print("actor loss(-) : %f" % exp_v)
         return exp_v
 
     def choose_action(self, s):
@@ -110,6 +110,11 @@ class Actor(object):
         for i, p in enumerate(actions_probs):
             actions_probs[i] = 1 * (p / total_p)
         rand_idx = np.random.choice(np.arange(len(actions_probs)), p=actions_probs)  # return a int
+
+        print("choose action")
+        print("action p", actions_probs)
+        print("actions", actions)
+        print("choose action idx", rand_idx, actions[rand_idx])
 
         return actions[rand_idx]
 
@@ -155,8 +160,9 @@ class Critic(object):
         s, s_ = s[np.newaxis, :], s_[np.newaxis, :]
 
         v_ = self.sess.run(self.v, {self.s: s_})
-        td_error, _ = self.sess.run([self.td_error, self.train_op],
-                                    {self.s: s, self.v_: v_, self.r: r})
+        td_error, _, loss = self.sess.run([self.td_error, self.train_op, self.loss],
+                                          {self.s: s, self.v_: v_, self.r: r})
+        print("critic td_error : %f, loss : %f" % (td_error, loss))
         return td_error
 
 
@@ -179,14 +185,17 @@ for i_episode in range(MAX_EPISODE):
     s_blue_ = env.reset()
     track_r = []
     state_list = [s_blue_.tolist()]
+    action_list = []
     r_red = None
     s_blue = None
     s_red = None
     while True:
 
         a = actor.choose_action(s_blue_)
+        action_list.append(a)
 
         s_red_, r_blue, done, _ = env.step(a)
+        print("reward", r_blue)
 
         a = encode_action(a)
         state_list.append(s_red_.tolist())
@@ -209,8 +218,10 @@ for i_episode in range(MAX_EPISODE):
         s_blue = s_blue_
 
         a = actor.choose_action(s_red_)
+        action_list.append(a)
         s_red_ = reverse_state(s_red_)
         s_blue_, r_red, done, _ = env.step(a)
+        print("reward", r_red)
         a = encode_action(a)
         state_list.append(s_blue_.tolist())
         if s_red is not None:
@@ -225,5 +236,5 @@ for i_episode in range(MAX_EPISODE):
             break
 
         s_red = s_red_
-    output.write(json.dumps(state_list) + "\n")
+    output.write(json.dumps({"action": action_list, "state": state_list}) + "\n")
 output.close()
