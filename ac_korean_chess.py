@@ -8,17 +8,23 @@ import tensorflow as tf
 from game.game import Game
 from model import resnet
 import json
+import os
+
+FLAGS = tf.app.flags.FLAGS
 
 np.random.seed(2)
 tf.set_random_seed(2)  # reproducible
 
 # Superparameters
-OUTPUT_GRAPH = True
-MAX_EPISODE = 3000
+MAX_EPISODE = 100000
 MAX_EP_STEPS = 200  # maximum time step in one episode
 GAMMA = 0.9  # reward discount in TD error
 LR_A = 0.001  # learning rate for actor
 LR_C = 0.01  # learning rate for critic
+
+checkpoint_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "checkpoint", "model.ckpt")
+if checkpoint_path and not os.path.exists(os.path.dirname(checkpoint_path)):
+    os.mkdir(os.path.dirname(checkpoint_path))
 
 env = Game.make("KoreanChess-v1", {"use_check": False, "limit_step": MAX_EP_STEPS})
 
@@ -73,10 +79,10 @@ class Actor(object):
                 name='acts_prob'
             )
 
+
             with tf.variable_scope('exp_v'):
                 log_prob = tf.log(self.acts_prob[0, self.a_from] + self.acts_prob[0, self.a_to])
                 self.exp_v = tf.reduce_mean(log_prob * self.td_error)  # advantage (TD_error) guided loss
-
             with tf.variable_scope('train'):
                 self.train_op = tf.train.AdamOptimizer(lr).minimize(-self.exp_v)  # minimize(-exp_v) = maximize(exp_v)
 
@@ -93,7 +99,6 @@ class Actor(object):
         s = s[np.newaxis, :]
 
         probs = self.sess.run(self.acts_prob, {self.s: s})  # get probabilities for all actions
-
         # 현재 상태에서 가능한 모든 액션 가져오기
         actions = env.get_all_actions()
         # 모든 액션을 인코하여 새로운 리스트로 만듦 to : [[from, to]]
@@ -102,6 +107,7 @@ class Actor(object):
             encoded_actions.append(encode_action(action))
         # 모든 액션리스트의 인덱스와 같은 리스트를 만들어서 확률값 저장장
         actions_probs = []
+        print(encoded_actions)
         for encoded_action in encoded_actions:
             actions_probs.append(probs[0, encoded_action[0]] + probs[0, encoded_action[1]])
         # 확률 최대 1값이 되도록 정규화
@@ -126,6 +132,7 @@ class Critic(object):
         self.s = input_ph
         self.v_ = tf.placeholder(tf.float32, [1, 1], "v_next")
         self.r = tf.placeholder(tf.float32, None, 'r')
+        self.merged = None
 
         with tf.variable_scope('Critic'):
             l1 = tf.layers.dense(
@@ -160,8 +167,9 @@ class Critic(object):
         s, s_ = s[np.newaxis, :], s_[np.newaxis, :]
 
         v_ = self.sess.run(self.v, {self.s: s_})
-        td_error, _, loss = self.sess.run([self.td_error, self.train_op, self.loss],
-                                          {self.s: s, self.v_: v_, self.r: r})
+        td_error, _, loss = self.sess.run(
+            [self.td_error, self.train_op, self.loss],
+            {self.s: s, self.v_: v_, self.r: r})
         print("critic td_error : %f, loss : %f" % (td_error, loss))
         return td_error
 
@@ -174,12 +182,16 @@ actor = Actor(sess, input=conv_logits, input_ph=ph_state, n_actions=N_A, lr=LR_A
 critic = Critic(sess, input=conv_logits, input_ph=ph_state,
                 lr=LR_C)  # we need a good teacher, so the teacher should learn faster than the actor
 
-sess.run(tf.global_variables_initializer())
+init_op = tf.global_variables_initializer()
+saver = tf.train.Saver()
 
-if OUTPUT_GRAPH:
-    tf.summary.FileWriter("logs/", sess.graph)
+if checkpoint_path:
+    if os.path.exists(checkpoint_path):
+        saver.restore(sess, checkpoint_path)
+    tf.summary.FileWriter(os.path.dirname(checkpoint_path), sess.graph)
+    output = open(os.path.join(os.path.dirname(checkpoint_path), "history.txt"), "w+")
 
-output = open("train_history.txt", "w+")
+sess.run(init_op)
 
 for i_episode in range(MAX_EPISODE):
     s_blue_ = env.reset()
@@ -236,5 +248,9 @@ for i_episode in range(MAX_EPISODE):
             break
 
         s_red = s_red_
-    output.write(json.dumps({"action": action_list, "state": state_list}) + "\n")
-output.close()
+    if checkpoint_path:
+        output.write(json.dumps({"action": action_list, "state": state_list}) + "\n")
+if checkpoint_path:
+    output.close()
+    result = saver.save(sess, checkpoint_path)
+print("Model saved in file: %s" % result)
