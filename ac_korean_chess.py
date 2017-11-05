@@ -221,7 +221,7 @@ for i_episode in range(MAX_EPISODE):
             break
 
         if s_blue is not None:
-            r = r_red - r_blue
+            r = r_blue - r_red
             track_r.append(r)
 
             td_error = critic.learn(s_blue, r, s_blue_)  # gradient = grad[r + gamma * V(s_) - V(s)]
@@ -237,7 +237,7 @@ for i_episode in range(MAX_EPISODE):
         a = encode_action(a)
         state_list.append(s_blue_.tolist())
         if s_red is not None:
-            r = r_blue - r_red
+            r = r_red - r_blue
             track_r.append(r)
 
             td_error = critic.learn(s_red, r, s_red_)  # gradient = grad[r + gamma * V(s_) - V(s)]
