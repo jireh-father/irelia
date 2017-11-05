@@ -155,7 +155,7 @@ class KoreanChessV1:
         if is_check:
             is_checkmate = u.is_checkmate(self.current_state, self.current_turn)
             if is_checkmate:
-                reward = c.KING
+                reward = c.REWARD_LIST[c.KING]
 
         # draw?
         is_draw = u.is_draw(self.current_state)

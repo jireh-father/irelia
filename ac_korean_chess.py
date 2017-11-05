@@ -107,7 +107,6 @@ class Actor(object):
             encoded_actions.append(encode_action(action))
         # 모든 액션리스트의 인덱스와 같은 리스트를 만들어서 확률값 저장장
         actions_probs = []
-        print(encoded_actions)
         for encoded_action in encoded_actions:
             actions_probs.append(probs[0, encoded_action[0]] + probs[0, encoded_action[1]])
         # 확률 최대 1값이 되도록 정규화
@@ -246,6 +245,7 @@ for i_episode in range(MAX_EPISODE):
         if done:
             print_episode(track_r)
             break
+        print_episode(track_r)
 
         s_red = s_red_
     if checkpoint_path:
