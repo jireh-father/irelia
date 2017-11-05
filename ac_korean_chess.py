@@ -16,7 +16,7 @@ tf.set_random_seed(2)  # reproducible
 # Superparameters
 OUTPUT_GRAPH = True
 MAX_EPISODE = 3000
-MAX_EP_STEPS = 400  # maximum time step in one episode
+MAX_EP_STEPS = 200  # maximum time step in one episode
 GAMMA = 0.9  # reward discount in TD error
 LR_A = 0.001  # learning rate for actor
 LR_C = 0.01  # learning rate for critic
@@ -162,7 +162,7 @@ class Critic(object):
 
 sess = tf.Session()
 ph_state = tf.placeholder(tf.float32, [1, 10, 9, 3], "state")
-conv_logits = resnet.model(ph_state, blocks=40, data_format="channels_last")
+conv_logits = resnet.model(ph_state, blocks=2, data_format="channels_last")
 conv_logits = tf.reshape(conv_logits, [-1, N_F], name="reshape")
 actor = Actor(sess, input=conv_logits, input_ph=ph_state, n_actions=N_A, lr=LR_A)
 critic = Critic(sess, input=conv_logits, input_ph=ph_state,

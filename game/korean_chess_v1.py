@@ -109,7 +109,7 @@ class KoreanChessV1:
 
                 line_idx = -1 if i == 0 else 0
 
-                current_state[line_idx] = KoreanChessV1.POSITION_TYPE_LIST[position_type][i]
+                current_state[line_idx] = copy.deepcopy(KoreanChessV1.POSITION_TYPE_LIST[position_type][i])
             self.current_state = current_state
 
         # set scores

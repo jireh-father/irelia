@@ -143,7 +143,7 @@ def is_checkmate(state, turn):
                 # else:
                 #     print("not check")
         if check_cnt == 0:
-            print("not checkmate")
+            # print("not checkmate")
             return False
         # get back to previous state
         state[from_y][from_x] = state[to_y][to_x]
