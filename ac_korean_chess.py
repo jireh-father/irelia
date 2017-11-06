@@ -176,7 +176,7 @@ class Critic(object):
 
 sess = tf.Session()
 ph_state = tf.placeholder(tf.float32, [1, 10, 9, 3], "state")
-conv_logits = resnet.model(ph_state, blocks=2, data_format="channels_last")
+conv_logits = resnet.model(ph_state, blocks=20, data_format="channels_last")
 conv_logits = tf.reshape(conv_logits, [-1, N_F], name="reshape")
 actor = Actor(sess, input=conv_logits, input_ph=ph_state, n_actions=N_A, lr=LR_A)
 critic = Critic(sess, input=conv_logits, input_ph=ph_state,
@@ -258,12 +258,13 @@ for i_episode in range(MAX_EPISODE):
             actor.learn(s_red, a_red[0], a_red[1], td_error)  # true_gradient = grad[logPi(s,a) * td_error]
             print_episode(track_r)
             break
-        print_episode(track_r)
 
         """ red : back up old state """
         s_red = s_red_
     if checkpoint_path:
         output.write(json.dumps({"action": action_list, "state": state_list}) + "\n")
+        if i_episode != 0 and i_episode % 500 == 0:
+            result = saver.save(sess, checkpoint_path)
 if checkpoint_path:
     output.close()
     result = saver.save(sess, checkpoint_path)
