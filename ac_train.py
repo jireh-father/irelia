@@ -218,7 +218,6 @@ for i_episode in range(MAX_EPISODE):
 
         """ red: train"""
         if r_red is not None:
-            # todo: check reverse state
             td_error = critic.learn(s_red, r_red - r_blue, s_red_)  # gradient = grad[r + gamma * V(s_) - V(s)]
             actor.learn(s_red, a_red[0], a_red[1], td_error)  # true_gradient = grad[logPi(s,a) * td_error]
 
@@ -235,7 +234,6 @@ for i_episode in range(MAX_EPISODE):
         s_blue = s_blue_
 
         """ red : get a action """
-        # todo: check action because reverse state
         a_red = actor.choose_action(s_red_)
         action_list.append(a_red)
 
