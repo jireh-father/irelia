@@ -9,6 +9,7 @@ from game.game import Game
 from model import resnet
 import json
 import os
+import copy
 
 FLAGS = tf.app.flags.FLAGS
 
@@ -39,10 +40,11 @@ def print_episode(track_r):
     #     running_reward = ep_rs_sum
     # else:
     #     running_reward = running_reward * 0.95 + ep_rs_sum * 0.05
-    print("episode:", i_episode, "  reward:", int(ep_rs_sum))
+    print("episode:", i_episode, "  reward:", ep_rs_sum)
 
 
 def reverse_state(state):
+    state = copy.deepcopy(state)
     np.flipud(np.fliplr(state[1]))
     return np.array([np.flipud(np.fliplr(state[1])), np.flipud(np.fliplr(state[0])), state[2]])
 
@@ -78,7 +80,6 @@ class Actor(object):
                 bias_initializer=tf.constant_initializer(0.1),  # biases
                 name='acts_prob'
             )
-
 
             with tf.variable_scope('exp_v'):
                 log_prob = tf.log(self.acts_prob[0, self.a_from] + self.acts_prob[0, self.a_to])
@@ -201,52 +202,65 @@ for i_episode in range(MAX_EPISODE):
     s_blue = None
     s_red = None
     while True:
+        """ blue: get a action """
+        a_blue = actor.choose_action(s_blue_)
+        action_list.append(a_blue)
 
-        a = actor.choose_action(s_blue_)
-        action_list.append(a)
-
-        s_red_, r_blue, done, _ = env.step(a)
+        """ blue: step """
+        s_red_, r_blue, done, _ = env.step(a_blue)
         print("reward", r_blue)
-
-        a = encode_action(a)
+        track_r.append(r_blue)
+        # blue : encode action for train
+        a_blue = encode_action(a_blue)
         state_list.append(s_red_.tolist())
+        """ red: reverse step for same training """
+        s_red_ = reverse_state(s_red_)
 
+        """ red: train"""
+        if r_red is not None:
+            # todo: check reverse state
+            td_error = critic.learn(s_red, r_red - r_blue, s_red_)  # gradient = grad[r + gamma * V(s_) - V(s)]
+            actor.learn(s_red, a_red[0], a_red[1], td_error)  # true_gradient = grad[logPi(s,a) * td_error]
+
+        """ blue: if win ( done ) """
         if done:
-            track_r.append(r_blue)
-
+            """ blue : train """
             td_error = critic.learn(s_blue, r_blue, s_blue_)  # gradient = grad[r + gamma * V(s_) - V(s)]
-            actor.learn(s_blue, a[0], a[1], td_error)  # true_gradient = grad[logPi(s,a) * td_error]
+            actor.learn(s_blue, a_blue[0], a_blue[1], td_error)  # true_gradient = grad[logPi(s,a) * td_error]
             print_episode(track_r)
+
             break
 
-        if s_blue is not None:
-            r = r_blue - r_red
-            track_r.append(r)
-
-            td_error = critic.learn(s_blue, r, s_blue_)  # gradient = grad[r + gamma * V(s_) - V(s)]
-            actor.learn(s_blue, a[0], a[1], td_error)  # true_gradient = grad[logPi(s,a) * td_error]
-
+        """ blue : back up old state """
         s_blue = s_blue_
 
-        a = actor.choose_action(s_red_)
-        action_list.append(a)
-        s_red_ = reverse_state(s_red_)
-        s_blue_, r_red, done, _ = env.step(a)
+        """ red : get a action """
+        # todo: check action because reverse state
+        a_red = actor.choose_action(s_red_)
+        action_list.append(a_red)
+
+        """ red : step """
+        s_blue_, r_red, done, _ = env.step(a_red)
         print("reward", r_red)
-        a = encode_action(a)
+        track_r.append(r_red)
+        # red: encode action for train
+        a_red = encode_action(a_red)
         state_list.append(s_blue_.tolist())
-        if s_red is not None:
-            r = r_red - r_blue
-            track_r.append(r)
 
-            td_error = critic.learn(s_red, r, s_red_)  # gradient = grad[r + gamma * V(s_) - V(s)]
-            actor.learn(s_red, a[0], a[1], td_error)  # true_gradient = grad[logPi(s,a) * td_error]
+        """ blue : train """
+        td_error = critic.learn(s_blue, r_blue - r_red, s_blue_)  # gradient = grad[r + gamma * V(s_) - V(s)]
+        actor.learn(s_blue, a_blue[0], a_blue[1], td_error)  # true_gradient = grad[logPi(s,a) * td_error]
 
+        """ red: if win ( done ) """
         if done:
+            """ red: train """
+            td_error = critic.learn(s_red, r_red, s_red_)  # gradient = grad[r + gamma * V(s_) - V(s)]
+            actor.learn(s_red, a_red[0], a_red[1], td_error)  # true_gradient = grad[logPi(s,a) * td_error]
             print_episode(track_r)
             break
         print_episode(track_r)
 
+        """ red : back up old state """
         s_red = s_red_
     if checkpoint_path:
         output.write(json.dumps({"action": action_list, "state": state_list}) + "\n")
