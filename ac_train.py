@@ -45,7 +45,6 @@ def print_episode(track_r):
 
 def reverse_state(state):
     state = copy.deepcopy(state)
-    np.flipud(np.fliplr(state[1]))
     return np.array([np.flipud(np.fliplr(state[1])), np.flipud(np.fliplr(state[0])), state[2]])
 
 
@@ -100,8 +99,9 @@ class Actor(object):
         s = s[np.newaxis, :]
 
         probs = self.sess.run(self.acts_prob, {self.s: s})  # get probabilities for all actions
+        probs = np.flipud(np.fliplr(probs))
         # 현재 상태에서 가능한 모든 액션 가져오기
-        actions = env.get_all_actions(True)
+        actions = env.get_all_actions()
 
         # 모든 액션을 인코하여 새로운 리스트로 만듦 to : [[from, to]]
         encoded_actions = []
@@ -243,6 +243,7 @@ for i_episode in range(MAX_EPISODE):
         print("reward", r_red)
         track_r.append(r_red)
         # red: encode action for train
+        a_red = env.reverse_action(a_red)
         a_red = encode_action(a_red)
         state_list.append(s_blue_.tolist())
 
