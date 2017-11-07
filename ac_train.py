@@ -101,7 +101,8 @@ class Actor(object):
 
         probs = self.sess.run(self.acts_prob, {self.s: s})  # get probabilities for all actions
         # 현재 상태에서 가능한 모든 액션 가져오기
-        actions = env.get_all_actions()
+        actions = env.get_all_actions(True)
+
         # 모든 액션을 인코하여 새로운 리스트로 만듦 to : [[from, to]]
         encoded_actions = []
         for action in actions:

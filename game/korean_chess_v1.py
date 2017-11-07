@@ -216,5 +216,10 @@ class KoreanChessV1:
             print("")
         print('======================================================')
 
-    def get_all_actions(self):
-        return u.get_all_actions(self.current_state, self.current_turn)
+    def get_all_actions(self, red_reverse=False):
+
+        actions = u.get_all_actions(self.current_state, self.current_turn)
+        if red_reverse and self.current_turn == c.RED:
+            return u.reverse_actions(actions)
+        else:
+            return actions
