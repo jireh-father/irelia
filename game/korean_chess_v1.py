@@ -70,12 +70,12 @@ class KoreanChessV1:
         self.use_check = None
         self.red_catch_list = []
         self.blue_catch_list = []
-        self.limit_step = None
+        self.limit_step = 200
 
     def reset(self):
         self.interval = 0
         self.use_check = True
-        self.limit_step = None
+        self.limit_step = 200
         if self.properties:
             if "interval" in self.properties:
                 self.interval = self.properties["interval"]
@@ -89,7 +89,7 @@ class KoreanChessV1:
             self.next_turn = c.RED if self.current_turn == c.BLUE else c.BLUE
         else:
             if not self.properties or (
-                            "position_type" not in self.properties or self.properties['position_type'] == 'random'):
+                      "position_type" not in self.properties or self.properties['position_type'] == 'random'):
                 # random position
                 blue_rand_position = random.randint(0, 3)
                 red_rand_position = random.randint(0, 3)
@@ -222,3 +222,9 @@ class KoreanChessV1:
 
     def reverse_action(self, action):
         return u.reverse_actions([action])[0]
+
+    def encode_action(action):
+        action_from = action["from_y"] * 9 + action["from_x"]
+
+        action_to = action["to_y"] * 9 + action["to_x"]
+        return [action_from, action_to]
