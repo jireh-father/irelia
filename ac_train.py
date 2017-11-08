@@ -56,7 +56,7 @@ init_op = tf.global_variables_initializer()
 saver = tf.train.Saver()
 
 if checkpoint_path:
-    if os.path.exists(checkpoint_path):
+    if os.path.exists(checkpoint_path + ".index"):
         saver.restore(sess, checkpoint_path)
     tf.summary.FileWriter(os.path.dirname(checkpoint_path), sess.graph)
     output = open(os.path.join(os.path.dirname(checkpoint_path), "history.txt"), "w+")
