@@ -30,7 +30,7 @@ saver = tf.train.Saver()
 if os.path.exists(checkpoint_path + ".index"):
     saver.restore(sess, checkpoint_path)
 
-env = Game.make("KoreanChess-v1")
+env = Game.make("KoreanChess-v1", {"use_check": False, "limit_step": 200})
 
 env.reset()
 i = 0
