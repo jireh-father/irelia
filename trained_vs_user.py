@@ -32,7 +32,7 @@ if os.path.exists(checkpoint_path + ".index"):
 
 env = Game.make("KoreanChess-v1", {"use_check": False, "limit_step": 200})
 
-env.reset()
+new_state = env.reset()
 i = 0
 while True:
     if i % 2 == 0:
