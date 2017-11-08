@@ -51,7 +51,7 @@ while True:
             continue
     else:
         new_state = actor_critic.reverse_state(new_state)
-        action = actor.choose_action(new_state, env)
+        action = actor.choose_action(new_state, env, True)
         try:
             new_state, reward, done, _ = env.step(
                 {"from_x": action["from_x"], "from_y": action["from_y"], "to_x": action["to_x"],

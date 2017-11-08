@@ -57,7 +57,7 @@ class Actor(object):
         print("actor loss(-) : %f" % exp_v)
         return exp_v
 
-    def choose_action(self, s, env):
+    def choose_action(self, s, env, use_best_action=False):
         s = np.transpose(s, [1, 2, 0])
         s = s[np.newaxis, :]
 
@@ -74,6 +74,8 @@ class Actor(object):
         actions_probs = []
         for encoded_action in encoded_actions:
             actions_probs.append(probs[0, encoded_action[0]] + probs[0, encoded_action[1]])
+        if use_best_action:
+            return actions[np.array(actions_probs).argmax()]
         # 확률 최대 1값이 되도록 정규화
         total_p = sum(actions_probs)
 
