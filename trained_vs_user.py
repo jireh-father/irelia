@@ -36,7 +36,6 @@ new_state = env.reset()
 i = 0
 while True:
     if i % 2 == 0:
-        new_state = actor_critic.reverse_state(new_state)
         action = actor.choose_action(new_state, env, True)
         try:
             new_state, reward, done, _ = env.step(

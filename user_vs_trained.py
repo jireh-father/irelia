@@ -50,7 +50,6 @@ while True:
             traceback.print_exc()
             continue
     else:
-        new_state = actor_critic.reverse_state(new_state)
         action = actor.choose_action(new_state, env, True)
         try:
             new_state, reward, done, _ = env.step(

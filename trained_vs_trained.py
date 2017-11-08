@@ -36,15 +36,14 @@ env = Game.make("KoreanChess-v1", {"use_check": False, "limit_step": 200, "inter
 
 new_state = env.reset()
 while True:
-    from_x, from_y, to_x, to_y = user_input.get_user_input()
-
+    action = actor.choose_action(new_state, env, True)
     try:
-        new_state, reward, done, _ = env.step({"from_x": from_x, "from_y": from_y, "to_x": to_x, "to_y": to_y})
-
+        new_state, reward, done, _ = env.step(
+            {"from_x": action["from_x"], "from_y": action["from_y"], "to_x": action["to_x"],
+             "to_y": action["to_y"]})
         if done:
             print("The End")
             break
-
     except Exception as e:
         print(e)
         traceback.print_exc()
