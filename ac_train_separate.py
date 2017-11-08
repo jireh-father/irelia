@@ -44,7 +44,9 @@ def print_episode(track_r):
     print("episode:", i_episode, "  reward:", ep_rs_sum)
 
 
-sess = tf.Session()
+gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.3)
+sess = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
+# sess = tf.Session()
 ph_state = tf.placeholder(tf.float32, [1, 10, 9, 3], "state")
 conv_logits = resnet.model(ph_state, blocks=20, data_format="channels_last")
 conv_logits = tf.reshape(conv_logits, [-1, N_F], name="reshape")
@@ -53,6 +55,9 @@ critic = actor_critic.Critic(sess, input=conv_logits, input_ph=ph_state,
                              lr=LR_C)  # we need a good teacher, so the teacher should learn faster than the actor
 
 init_op = tf.global_variables_initializer()
+
+
+
 saver = tf.train.Saver()
 
 if checkpoint_path:
