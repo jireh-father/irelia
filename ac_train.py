@@ -44,7 +44,9 @@ def print_episode(track_r):
     print("episode:", i_episode, "  reward:", ep_rs_sum)
 
 
-sess = tf.Session()
+gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.3)
+sess = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
+# sess = tf.Session()
 ph_state = tf.placeholder(tf.float32, [1, 10, 9, 3], "state")
 conv_logits = resnet.model(ph_state, blocks=20, data_format="channels_last")
 conv_logits = tf.reshape(conv_logits, [-1, N_F], name="reshape")
@@ -62,7 +64,9 @@ if checkpoint_path:
     output = open(os.path.join(os.path.dirname(checkpoint_path), "history.txt"), "w+")
 
 sess.run(init_op)
-
+blue_wins = 0
+red_wins = 0
+draws = 0
 for i_episode in range(MAX_EPISODE):
     s_blue_ = env.reset()
     track_r = []
@@ -77,7 +81,7 @@ for i_episode in range(MAX_EPISODE):
         action_list.append(a_blue)
 
         """ blue: step """
-        s_red_, r_blue, done, _ = env.step(a_blue)
+        s_red_, r_blue, done, info = env.step(a_blue)
         print("reward", r_blue)
         track_r.append(r_blue)
         # blue : encode action for train
@@ -93,6 +97,10 @@ for i_episode in range(MAX_EPISODE):
 
         """ blue: if win ( done ) """
         if done:
+            if info["over_limit_step"]:
+                draws += 1
+            else:
+                blue_wins += 1
             """ blue : train """
             td_error = critic.learn(s_blue, r_blue, s_blue_)  # gradient = grad[r + gamma * V(s_) - V(s)]
             actor.learn(s_blue, a_blue[0], a_blue[1], td_error)  # true_gradient = grad[logPi(s,a) * td_error]
@@ -108,7 +116,7 @@ for i_episode in range(MAX_EPISODE):
         action_list.append(a_red)
 
         """ red : step """
-        s_blue_, r_red, done, _ = env.step(a_red)
+        s_blue_, r_red, done, info = env.step(a_red)
         print("reward", r_red)
         track_r.append(r_red)
         # red: encode action for train
@@ -122,6 +130,10 @@ for i_episode in range(MAX_EPISODE):
 
         """ red: if win ( done ) """
         if done:
+            if info["over_limit_step"]:
+                draws += 1
+            else:
+                red_wins += 1
             """ red: train """
             td_error = critic.learn(s_red, r_red, s_red_)  # gradient = grad[r + gamma * V(s_) - V(s)]
             actor.learn(s_red, a_red[0], a_red[1], td_error)  # true_gradient = grad[logPi(s,a) * td_error]
@@ -130,6 +142,7 @@ for i_episode in range(MAX_EPISODE):
 
         """ red : back up old state """
         s_red = s_red_
+    print("Blue wins : %d, Red winds : %d, Draws : %d" % (blue_wins, red_wins, draws))
     if checkpoint_path:
         output.write(json.dumps({"action": action_list, "state": state_list}) + "\n")
         if i_episode != 0 and i_episode % 100 == 0:

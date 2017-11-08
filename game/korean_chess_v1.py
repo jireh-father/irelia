@@ -181,7 +181,10 @@ class KoreanChessV1:
         # decode and return state
         is_game_over = (done or is_draw or self.current_step >= self.limit_step)
         reward = (float(reward) / c.REWARD_LIST[c.KING] * 1)
-        return u.decode_state(self.current_state, self.current_turn), reward, is_game_over, is_check
+        info = {"is_check": is_check,
+                "over_limit_step": self.current_step >= self.limit_step,
+                "is_draw": is_draw}
+        return u.decode_state(self.current_state, self.current_turn), reward, is_game_over, info
 
     def print_env(self, is_check=False, is_checkmate=False, to_x=10, to_y=10, done=False, is_draw=False):
         if self.interval > 0:

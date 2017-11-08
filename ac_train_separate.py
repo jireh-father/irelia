@@ -56,8 +56,6 @@ critic = actor_critic.Critic(sess, input=conv_logits, input_ph=ph_state,
 
 init_op = tf.global_variables_initializer()
 
-
-
 saver = tf.train.Saver()
 
 if checkpoint_path:
@@ -67,7 +65,9 @@ if checkpoint_path:
     output = open(os.path.join(os.path.dirname(checkpoint_path), "history.txt"), "w+")
 
 sess.run(init_op)
-
+blue_wins = 0
+red_wins = 0
+draws = 0
 for i_episode in range(MAX_EPISODE):
     s_blue_ = env.reset()
     track_r = []
@@ -82,7 +82,7 @@ for i_episode in range(MAX_EPISODE):
         action_list.append(a_blue)
 
         """ blue: step """
-        s_red_, r_blue, done, _ = env.step(a_blue)
+        s_red_, r_blue, done, info = env.step(a_blue)
         print("reward", r_blue)
         track_r.append(r_blue)
         # blue : encode action for train
@@ -96,6 +96,10 @@ for i_episode in range(MAX_EPISODE):
 
         """ blue: if win ( done ) """
         if done:
+            if info["over_limit_step"]:
+                draws += 1
+            else:
+                blue_wins += 1
             """ blue : train """
             td_error = critic.learn(s_blue, r_blue, s_blue_)  # gradient = grad[r + gamma * V(s_) - V(s)]
             actor.learn(s_blue, a_blue[0], a_blue[1], td_error)  # true_gradient = grad[logPi(s,a) * td_error]
@@ -111,7 +115,7 @@ for i_episode in range(MAX_EPISODE):
         action_list.append(a_red)
 
         """ red : step """
-        s_blue_, r_red, done, _ = env.step(a_red)
+        s_blue_, r_red, done, info = env.step(a_red)
         print("reward", r_red)
         track_r.append(r_red)
         # red: encode action for train
@@ -124,6 +128,10 @@ for i_episode in range(MAX_EPISODE):
 
         """ red: if win ( done ) """
         if done:
+            if info["over_limit_step"]:
+                draws += 1
+            else:
+                blue_wins += 1
             """ red: train """
             td_error = critic.learn(s_red, r_red, s_red_)  # gradient = grad[r + gamma * V(s_) - V(s)]
             actor.learn(s_red, a_red[0], a_red[1], td_error)  # true_gradient = grad[logPi(s,a) * td_error]
@@ -132,6 +140,7 @@ for i_episode in range(MAX_EPISODE):
 
         """ red : back up old state """
         s_red = s_red_
+    print("Blue wins : %d, Red winds : %d, Draws : %d" % (blue_wins, red_wins, draws))
     if checkpoint_path:
         output.write(json.dumps({"action": action_list, "state": state_list}) + "\n")
         if i_episode != 0 and i_episode % 100 == 0:
