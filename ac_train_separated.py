@@ -131,7 +131,7 @@ for i_episode in range(MAX_EPISODE):
             if info["over_limit_step"]:
                 draws += 1
             else:
-                blue_wins += 1
+                red_wins += 1
             """ red: train """
             td_error = critic.learn(s_red, r_red, s_red_)  # gradient = grad[r + gamma * V(s_) - V(s)]
             actor.learn(s_red, a_red[0], a_red[1], td_error)  # true_gradient = grad[logPi(s,a) * td_error]
