@@ -145,7 +145,10 @@ class KoreanChessV1:
         from_y = action['from_y']
 
         # check? 장군
-        is_check = u.is_check(self.current_state, from_x, from_y, to_x, to_y, self.current_turn)
+        if self.use_check:
+            is_check = u.is_check(self.current_state, from_x, from_y, to_x, to_y, self.current_turn)
+        else:
+            is_check = False
 
         # reward
         to_piece = self.current_state[to_y][to_x]
