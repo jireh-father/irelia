@@ -24,7 +24,7 @@ GAMMA = 0.9  # reward discount in TD error
 LR_A = 0.001  # learning rate for actor
 LR_C = 0.01  # learning rate for critic
 
-checkpoint_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "checkpoint", "model.ckpt")
+checkpoint_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "checkpoint", "model-separated.ckpt")
 if checkpoint_path and not os.path.exists(os.path.dirname(checkpoint_path)):
     os.mkdir(os.path.dirname(checkpoint_path))
 
