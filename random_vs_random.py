@@ -13,7 +13,7 @@ init_state[0][6][4] = c.CAR
 init_state[0][5][4] = c.CAR
 # env = Game.make("KoreanChess-v1", {"init_state": init_state})
 # env = Game.make("KoreanChess-v1", {"interval": 0.1})
-env = Game.make("KoreanChess-v1", {"use_check": False, "limit_step": 400})
+env = Game.make("KoreanChess-v1", {"use_check": False, "limit_step": 400, "interval": 2})
 episodes = 1000
 for i in range(episodes):
     env.reset()
@@ -22,7 +22,8 @@ for i in range(episodes):
         action = actions[random.randint(0, len(actions) - 1)]
         try:
             new_state, reward, done, _ = env.step(
-                {"from_x": action["from_x"], "from_y": action["from_y"], "to_x": action["to_x"], "to_y": action["to_y"]})
+                {"from_x": action["from_x"], "from_y": action["from_y"], "to_x": action["to_x"],
+                 "to_y": action["to_y"]})
 
             if done:
                 print("The End")

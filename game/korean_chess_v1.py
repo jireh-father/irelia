@@ -9,18 +9,31 @@ import time
 
 from game import korean_chess_constant as c
 from game import korean_chess_util as u
+from colorama import Fore
 
 
 class KoreanChessV1:
+    BLUE_COLOR = Fore.BLUE
+    RED_COLOR = Fore.RED
+    LAST_COLOR = Fore.MAGENTA
+    EMPTY_COLOR = Fore.WHITE
     PIECE_MAP_KOR = \
-        {c.R_SD: '졸(홍)', c.R_SG: '상(홍)', c.R_GD: '사(홍)', c.R_HS: '마(홍)', c.R_CN: '포(홍)', c.R_CR: '차(홍)', c.R_KG: '궁(홍)',
-         c.B_SD: '졸(청)', c.B_SG: '상(청)', c.B_GD: '사(청)', c.B_HS: '마(청)', c.B_CN: '포(청)', c.B_CR: '차(청)', c.B_KG: '궁(청)',
-         0: '------'}
+        {c.R_SD: RED_COLOR + '졸' + EMPTY_COLOR, c.R_SG: RED_COLOR + '상' + EMPTY_COLOR,
+         c.R_GD: RED_COLOR + '사' + EMPTY_COLOR, c.R_HS: RED_COLOR + '마' + EMPTY_COLOR,
+         c.R_CN: RED_COLOR + '포' + EMPTY_COLOR, c.R_CR: RED_COLOR + '차' + EMPTY_COLOR,
+         c.R_KG: RED_COLOR + '궁' + EMPTY_COLOR,
+         c.B_SD: Fore.BLUE + '졸' + EMPTY_COLOR, c.B_SG: Fore.BLUE + '상' + EMPTY_COLOR,
+         c.B_GD: Fore.BLUE + '사' + EMPTY_COLOR, c.B_HS: Fore.BLUE + '마' + EMPTY_COLOR,
+         c.B_CN: Fore.BLUE + '포' + EMPTY_COLOR, c.B_CR: Fore.BLUE + '차' + EMPTY_COLOR,
+         c.B_KG: Fore.BLUE + '궁' + EMPTY_COLOR,
+         0: EMPTY_COLOR + '--'}
 
     PIECE_MAP_KOR_NO_COLOR = \
-        {c.R_SD: '졸(V)', c.R_SG: '상(V)', c.R_GD: '사(V)', c.R_HS: '마(V)', c.R_CN: '포(V)', c.R_CR: '차(V)', c.R_KG: '궁(V)',
-         c.B_SD: '졸(V)', c.B_SG: '상(V)', c.B_GD: '사(V)', c.B_HS: '마(V)', c.B_CN: '포(V)', c.B_CR: '차(V)', c.B_KG: '궁(V)',
-         0: '------'}
+        {c.R_SD: LAST_COLOR + '졸', c.R_SG: LAST_COLOR + '상', c.R_GD: LAST_COLOR + '사', c.R_HS: LAST_COLOR + '마',
+         c.R_CN: LAST_COLOR + '포', c.R_CR: LAST_COLOR + '차', c.R_KG: LAST_COLOR + '궁',
+         c.B_SD: LAST_COLOR + '졸', c.B_SG: LAST_COLOR + '상', c.B_GD: LAST_COLOR + '사', c.B_HS: LAST_COLOR + '마',
+         c.B_CN: LAST_COLOR + '포', c.B_CR: LAST_COLOR + '차', c.B_KG: LAST_COLOR + '궁',
+         0: LAST_COLOR + '--'}
 
     default_state = [
         [c.R_CR, 0, 0, c.R_GD, 0, c.R_GD, 0, 0, c.R_CR],
@@ -194,7 +207,7 @@ class KoreanChessV1:
         else:
             print("%s %s : %d" % ("RED", "Turn", self.current_step))
         print("Score [ BLUE : %f ] [ RED : %f ]" % (self.blue_score, self.red_score))
-        print("Y  X " + KoreanChessV1.PIECE_MAP_KOR[0].join(["%d" % col_idx for col_idx in range(0, 9)]))
+        print("  " + KoreanChessV1.PIECE_MAP_KOR[0].join(["%d" % col_idx for col_idx in range(0, 9)]) + "  X")
         for i, line in enumerate(self.current_state):
             if to_y == i:
                 line = [KoreanChessV1.PIECE_MAP_KOR_NO_COLOR[piece] if j == to_x else
@@ -202,7 +215,7 @@ class KoreanChessV1:
             else:
                 line = [KoreanChessV1.PIECE_MAP_KOR[piece] for piece in line]
             print("%d %s" % (i, ' '.join(line)))
-
+        print("Y")
         if is_check:
             print("Check!!")
             if is_checkmate:
@@ -217,6 +230,7 @@ class KoreanChessV1:
 
         if self.current_step >= self.limit_step:
             print("")
+
         print('======================================================')
 
     def get_all_actions(self):
