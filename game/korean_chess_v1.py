@@ -84,11 +84,13 @@ class KoreanChessV1:
         self.red_catch_list = []
         self.blue_catch_list = []
         self.limit_step = 200
+        self.max_reward = 1
 
     def reset(self):
         self.interval = 0
         self.use_check = True
         self.limit_step = 200
+        self.max_reward = 1
         if self.properties:
             if "interval" in self.properties:
                 self.interval = self.properties["interval"]
@@ -96,7 +98,8 @@ class KoreanChessV1:
                 self.use_check = self.properties["use_check"]
             if "limit_step" in self.properties:
                 self.limit_step = self.properties["limit_step"]
-
+            if "max_reward" in self.properties:
+                self.max_reward = self.properties["max_reward"]
         if self.properties and "init_state" in self.properties:
             self.current_state, self.current_turn = u.encode_state(self.properties["init_state"])
             self.next_turn = c.RED if self.current_turn == c.BLUE else c.BLUE
@@ -196,7 +199,7 @@ class KoreanChessV1:
 
         # decode and return state
         is_game_over = (done or is_draw or self.current_step >= self.limit_step)
-        reward = (float(reward) / c.REWARD_LIST[c.KING] * 1)
+        reward = (float(reward) / c.REWARD_LIST[c.KING] * self.max_reward)
         info = {"is_check": is_check,
                 "over_limit_step": self.current_step >= self.limit_step,
                 "is_draw": is_draw}

@@ -24,7 +24,6 @@ for i in range(episodes):
             new_state, reward, done, _ = env.step(
                 {"from_x": action["from_x"], "from_y": action["from_y"], "to_x": action["to_x"],
                  "to_y": action["to_y"]})
-
             if done:
                 print("The End")
                 break

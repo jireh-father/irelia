@@ -37,8 +37,8 @@ def decode_state(state, turn):
         new_state.append([[1] * 9, [1] * 9, [1] * 9, [1] * 9, [1] * 9, [1] * 9, [1] * 9, [1] * 9, [1] * 9, [1] * 9])
     else:
         new_state.append([[0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9])
-
-    return np.array(new_state)
+    new_state = np.array(new_state).astype(np.float)
+    return new_state / c.KING
 
 
 def validate_action(action, state, turn, next_turn, use_check=True):
