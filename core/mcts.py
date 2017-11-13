@@ -15,7 +15,6 @@ class Mcts(object):
         self.is_train = is_train
 
     def search(self, current_turn, temperature=0):
-        # todo : implement noise!!
         self.temperature = temperature
         self.current_turn = current_turn
         for i in range(self.maximum_simulate):
@@ -54,17 +53,15 @@ class Mcts(object):
 
     def expand_and_evaluate(self):
         # todo: implement model class
-
         action_probs, state_value = self.model.inference(self.current_node.state)
+        # todo: add noise!!
         if self.root_node is self.current_node:
             # add noise to prior probabilities
-            action_probs = ((1-0.25)*action_probs + 0.25*0.03)
+            action_probs = ((1 - 0.25) * action_probs + 0.25 * 0.03)
 
-        # check game finished
-        # todo: implement finish function
-        if self.env.finished(self.current_node.state):
+        if self.env.is_over(self.current_node.state):
             # todo: implement env.winner function
-            return 1 if self.env.winner() == self.current_turn else 0
+            return 1 if self.env.get_winner() == self.current_turn else 0
 
         legal_actions = self.env.get_all_actions(self.current_node.state, self.current_turn)
 
@@ -81,6 +78,7 @@ class Mcts(object):
         return state_value
 
     def backup(self, state_value):
+        # todo: change to me and 상대 점수 다르게 세팅되도록
         for edge in self.selected_edges:
             edge.update(state_value)
 

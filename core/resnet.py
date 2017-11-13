@@ -126,7 +126,7 @@ def model(inputs, blocks=2, is_training=True, data_format=None):
 # X = tf.placeholder(tf.float32, shape=[None, 10, 9, 2])
 # Y = tf.placeholder(tf.float32, shape=[None, 1])
 # Y_classification = tf.placeholder(tf.float32, shape=[None, 90])
-# value_net_inputs, policy_net_inputs = model(X)
+# value_net_inputs, policy_net_inputs = core(X)
 # print("policy", policy_net_inputs)
 # mse = Y * tf.log(value_net_inputs) + (1 - Y) * tf.log(1 - value_net_inputs)
 # print(mse)
@@ -151,7 +151,7 @@ def model(inputs, blocks=2, is_training=True, data_format=None):
 #     #
 #     #     # Perform your computation...
 #     #     # for i in range(1000):
-#     #     sess.run(model)
+#     #     sess.run(core)
 #     #     # ...
 #     #
 #     writer.close()

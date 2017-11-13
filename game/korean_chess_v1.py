@@ -105,7 +105,7 @@ class KoreanChessV1:
             self.next_turn = c.RED if self.current_turn == c.BLUE else c.BLUE
         else:
             if not self.properties or (
-                            "position_type" not in self.properties or self.properties['position_type'] == 'random'):
+                      "position_type" not in self.properties or self.properties['position_type'] == 'random'):
                 # random position
                 blue_rand_position = random.randint(0, 3)
                 red_rand_position = random.randint(0, 3)
@@ -243,11 +243,22 @@ class KoreanChessV1:
 
         return u.get_all_actions(self.current_state if not state else state, self.current_turn if not turn else turn)
 
-    def reverse_action(self, action):
-        return u.reverse_actions([action])[0]
-
-    def encode_action(action):
+    def encode_action(self, action):
         action_from = action["from_y"] * 9 + action["from_x"]
 
         action_to = action["to_y"] * 9 + action["to_x"]
         return [action_from, action_to]
+
+    def is_over(self, state):
+        state = u.encode_state(state)
+        num_kings = 0
+        for line in state:
+            for piece in line:
+                if piece != 0 and int(piece[1]) == c.KING:
+                    num_kings += 1
+                    if num_kings == 2:
+                        return False
+        return True
+
+    def get_winner(self):
+        pass

@@ -4,8 +4,8 @@ from game import korean_chess_constant as c
 import random
 import numpy as np
 import tensorflow as tf
-from model import resnet
-from model import actor_critic
+from core import resnet
+from core import actor_critic
 import os
 from util import user_input
 
@@ -14,7 +14,7 @@ LR_C = 0.01  # learning rate for critic
 N_F = 9 * 10  # env.observation_space.shape[0]
 N_A = 9 * 10  # env.action_space.n
 
-checkpoint_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "checkpoint", "model.ckpt")
+checkpoint_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "checkpoint", "core.ckpt")
 
 gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.2)
 sess = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))

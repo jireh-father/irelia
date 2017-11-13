@@ -6,11 +6,11 @@ source reference : https://github.com/MorvanZhou/Reinforcement-learning-with-ten
 import numpy as np
 import tensorflow as tf
 from game.game import Game
-from model import resnet
+from core import resnet
 import json
 import os
 import copy
-from model import actor_critic
+from core import actor_critic
 
 FLAGS = tf.app.flags.FLAGS
 
@@ -24,7 +24,7 @@ GAMMA = 0.9  # reward discount in TD error
 LR_A = 0.001  # learning rate for actor
 LR_C = 0.01  # learning rate for critic
 
-checkpoint_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "checkpoint", "model.ckpt")
+checkpoint_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "checkpoint", "core.ckpt")
 if checkpoint_path and not os.path.exists(os.path.dirname(checkpoint_path)):
     os.mkdir(os.path.dirname(checkpoint_path))
 

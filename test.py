@@ -4,7 +4,7 @@ from __future__ import print_function
 
 from game import korean_chess_util
 from game.korean_chess_v1 import KoreanChessV1
-from model import resnet
+from core import resnet
 
 
 

@@ -93,7 +93,7 @@ def building_block(inputs, filters, is_training, projection_shortcut, strides,
       inputs: A tensor of size [batch, channels, height_in, width_in] or
         [batch, height_in, width_in, channels] depending on data_format.
       filters: The number of filters for the convolutions.
-      is_training: A Boolean for whether the model is in training or inference
+      is_training: A Boolean for whether the core is in training or inference
         mode. Needed for batch normalization.
       projection_shortcut: The function to use for projection shortcuts (typically
         a 1x1 convolution when downsampling the input).
@@ -131,7 +131,7 @@ def bottleneck_block(inputs, filters, is_training, projection_shortcut,
         [batch, height_in, width_in, channels] depending on data_format.
       filters: The number of filters for the first two convolutions. Note that the
         third and final convolution will use 4 times as many filters.
-      is_training: A Boolean for whether the model is in training or inference
+      is_training: A Boolean for whether the core is in training or inference
         mode. Needed for batch normalization.
       projection_shortcut: The function to use for projection shortcuts (typically
         a 1x1 convolution when downsampling the input).
@@ -168,18 +168,18 @@ def bottleneck_block(inputs, filters, is_training, projection_shortcut,
 
 def block_layer(inputs, filters, block_fn, blocks, strides, is_training, name,
                 data_format):
-    """Creates one layer of blocks for the ResNet model.
+    """Creates one layer of blocks for the ResNet core.
     Args:
       inputs: A tensor of size [batch, channels, height_in, width_in] or
         [batch, height_in, width_in, channels] depending on data_format.
       filters: The number of filters for the first convolution of the layer.
-      block_fn: The block to use within the model, either `building_block` or
+      block_fn: The block to use within the core, either `building_block` or
         `bottleneck_block`.
       blocks: The number of blocks contained in the layer.
       strides: The stride to use for the first convolution of the layer. If
         greater than 1, this layer will ultimately downsample the input.
       is_training: Either True or False, whether we are currently training the
-        model. Needed for batch norm.
+        core. Needed for batch norm.
       name: A string name for the tensor output of the block layer.
       data_format: The input format ('channels_last' or 'channels_first').
     Returns:
@@ -206,13 +206,13 @@ def block_layer(inputs, filters, block_fn, blocks, strides, is_training, name,
 def cifar10_resnet_v2_generator(resnet_size, num_classes, data_format=None):
     """Generator for CIFAR-10 ResNet v2 models.
     Args:
-      resnet_size: A single integer for the size of the ResNet model.
+      resnet_size: A single integer for the size of the ResNet core.
       num_classes: The number of possible classes for image classification.
       data_format: The input format ('channels_last', 'channels_first', or None).
         If set to None, the format is dependent on whether a GPU is available.
     Returns:
-      The model function that takes in `inputs` and `is_training` and
-      returns the output tensor of the ResNet model.
+      The core function that takes in `inputs` and `is_training` and
+      returns the output tensor of the ResNet core.
     Raises:
       ValueError: If `resnet_size` is invalid.
     """
@@ -226,7 +226,7 @@ def cifar10_resnet_v2_generator(resnet_size, num_classes, data_format=None):
             'channels_first' if tf.test.is_built_with_cuda() else 'channels_last')
 
     def model(inputs, is_training):
-        """Constructs the ResNet model given the inputs."""
+        """Constructs the ResNet core given the inputs."""
         if data_format == 'channels_first':
             # Convert from channels_last (NHWC) to channels_first (NCHW). This
             # provides a large performance boost on GPU. See
@@ -268,7 +268,7 @@ def imagenet_resnet_v2_generator(block_fn, layers, num_classes,
                                  data_format=None):
     """Generator for ImageNet ResNet v2 models.
     Args:
-      block_fn: The block to use within the model, either `building_block` or
+      block_fn: The block to use within the core, either `building_block` or
         `bottleneck_block`.
       layers: A length-4 array denoting the number of blocks to include in each
         layer. Each layer consists of blocks that take inputs of the same size.
@@ -276,15 +276,15 @@ def imagenet_resnet_v2_generator(block_fn, layers, num_classes,
       data_format: The input format ('channels_last', 'channels_first', or None).
         If set to None, the format is dependent on whether a GPU is available.
     Returns:
-      The model function that takes in `inputs` and `is_training` and
-      returns the output tensor of the ResNet model.
+      The core function that takes in `inputs` and `is_training` and
+      returns the output tensor of the ResNet core.
     """
     if data_format is None:
         data_format = (
             'channels_first' if tf.test.is_built_with_cuda() else 'channels_last')
 
     def model(inputs, is_training):
-        """Constructs the ResNet model given the inputs."""
+        """Constructs the ResNet core given the inputs."""
         if data_format == 'channels_first':
             # Convert from channels_last (NHWC) to channels_first (NCHW). This
             # provides a large performance boost on GPU.
@@ -331,7 +331,7 @@ def imagenet_resnet_v2_generator(block_fn, layers, num_classes,
 
 
 def imagenet_resnet_v2(resnet_size, num_classes, data_format=None):
-    """Returns the ResNet model for a given size and number of output classes."""
+    """Returns the ResNet core for a given size and number of output classes."""
     model_params = {
         18: {'block': building_block, 'layers': [2, 2, 2, 2]},
         34: {'block': building_block, 'layers': [3, 4, 6, 3]},
@@ -360,7 +360,7 @@ with tf.Session() as sess:
     #
     #     # Perform your computation...
     #     # for i in range(1000):
-    #     sess.run(model)
+    #     sess.run(core)
     #     # ...
     #
     writer.close()
