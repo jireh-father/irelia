@@ -105,7 +105,7 @@ class KoreanChessV1:
             self.next_turn = c.RED if self.current_turn == c.BLUE else c.BLUE
         else:
             if not self.properties or (
-                      "position_type" not in self.properties or self.properties['position_type'] == 'random'):
+                            "position_type" not in self.properties or self.properties['position_type'] == 'random'):
                 # random position
                 blue_rand_position = random.randint(0, 3)
                 red_rand_position = random.randint(0, 3)
@@ -260,5 +260,16 @@ class KoreanChessV1:
                         return False
         return True
 
-    def get_winner(self):
-        pass
+    def simulate(self, state, action):
+        turn = c.RED if state[2][0][0] == 0 else c.BLUE
+        state = u.encode_state(state)
+
+        to_x = action['to_x']
+        to_y = action['to_y']
+        from_x = action['from_x']
+        from_y = action['from_y']
+
+        state[to_y][to_x] = state[from_y][from_x]
+        state[from_y][from_x] = 0
+
+        return u.decode_state(state, turn)

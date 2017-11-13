@@ -3,29 +3,35 @@ import numpy as np
 
 
 class Mcts(object):
-    def __init__(self, state, env, model, maximum_simulate, is_train=True):
+    def __init__(self, state, env, model, max_simulation=500, winner_reward=1, loser_reward=-1):
         self.env = env
         self.model = model
-        self.maximum_simulate = maximum_simulate
+        self.max_simulation = max_simulation
         self.root_node = Node(state)
         self.selected_edges = []
         self.current_node = self.root_node
+        self.root_turn = None
         self.current_turn = None
         self.temperature = 0
-        self.is_train = is_train
+        self.winner_reward = winner_reward
+        self.loser_reward = loser_reward
 
-    def search(self, current_turn, temperature=0):
+    def search(self, temperature=0, action_idx=None):
         self.temperature = temperature
-        self.current_turn = current_turn
-        for i in range(self.maximum_simulate):
-            self.simulate()
+        self.root_turn = self.env.current_turn
+        self.current_turn = self.env.current_turn
         if not self.root_node.edges:
             return False
+        if action_idx:
+            self.root_node = self.root_node.edges[action_idx].node
+
+        for i in range(self.max_simulation):
+            self.simulate()
 
         action_probs = [edge.get_action_probs(self.root_node.edges, self.temperature) for edge in self.root_node.edges]
 
         self.root_node = self.root_node.edges[np.array(action_probs).argmax()].node
-        return self.root_node.edges[np.array(action_probs).argmax()].action
+        return action_probs
 
     def simulate(self):
         is_leaf_node = False
@@ -48,38 +54,47 @@ class Mcts(object):
 
         self.current_node = self.current_node.edges[max_score_edge].node
         self.selected_edges.append(self.current_node.edges[max_score_edge])
+        self.current_turn = 'r' if self.current_turn == 'b' else 'b'
 
         return False
 
     def expand_and_evaluate(self):
-        # todo: implement model class
-        action_probs, state_value = self.model.inference(self.current_node.state)
-        # todo: add noise!!
-        if self.root_node is self.current_node:
-            # add noise to prior probabilities
-            action_probs = ((1 - 0.25) * action_probs + 0.25 * 0.03)
-
         if self.env.is_over(self.current_node.state):
-            # todo: implement env.winner function
-            return 1 if self.env.get_winner() == self.current_turn else 0
+            return self.winner_reward
+
+        # todo: implement model class
+        # todo :pass액션 추가 ( 둘다 pass할경우 점수계산으로
+        action_probs, state_value = self.model.inference(self.current_node.state)
+
+        # todo: 비긴 상태 구현해서 적용하기
+        # todo: 반복수 제한도 걸기
 
         legal_actions = self.env.get_all_actions(self.current_node.state, self.current_turn)
+
+        if not legal_actions:
+            return self.loser_reward
 
         legal_action_probs = []
         for legal_action in legal_actions:
             legal_action = self.env.encode_action(legal_action)
             legal_action_probs.append(action_probs[legal_action[0]] + action_probs[legal_action[0]])
 
-        # todo: implement env.simulate
+        # todo: add noise!!
+        if self.root_node is self.current_node:
+            # add noise to prior probabilities
+            legal_action_probs = ((1 - 0.25) * legal_action_probs + 0.25 * 0.03)
+
         self.current_node.edges = [
             Edge(action_prob, self.env.simulate(self.current_node.state, legal_actions[i]), legal_actions[i]) for
             i, action_prob in enumerate(legal_action_probs)]
 
-        return state_value
+        return -state_value if self.current_turn != self.root_turn else state_value
 
     def backup(self, state_value):
-        # todo: change to me and 상대 점수 다르게 세팅되도록
-        for edge in self.selected_edges:
+        self.selected_edges.reverse()
+        for i, edge in enumerate(self.selected_edges):
+            if i % 2 == 0:
+                state_value = -state_value
             edge.update(state_value)
 
         self.current_node = self.root_node
