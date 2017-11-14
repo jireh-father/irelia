@@ -105,7 +105,7 @@ class KoreanChessV1:
             self.next_turn = c.RED if self.current_turn == c.BLUE else c.BLUE
         else:
             if not self.properties or (
-                            "position_type" not in self.properties or self.properties['position_type'] == 'random'):
+                      "position_type" not in self.properties or self.properties['position_type'] == 'random'):
                 # random position
                 blue_rand_position = random.randint(0, 3)
                 red_rand_position = random.randint(0, 3)
@@ -169,7 +169,7 @@ class KoreanChessV1:
         self.current_state[from_y][from_x] = 0
         self.current_step += 1
 
-        # checkmate? 외통수
+        # checkmate?
         is_checkmate = False
         if is_check:
             is_checkmate = u.is_checkmate(self.current_state, self.current_turn)
@@ -178,8 +178,8 @@ class KoreanChessV1:
 
         # draw?
         is_draw = u.is_draw(self.current_state)
-        # reverse 랑 액션쪽 하는거 다 바꾸기 그리고 내편 상대편으로 각 기능 다 시뮬레이션 해보기
 
+        # 장군, 외통수 상태편 수둘때도 고려해서 수정하기
         # todo: 먹힌말 print
         # todo: repeat limit(반복수)
         # todo: count, win or lose by count(점수에 의한 승부 정리)

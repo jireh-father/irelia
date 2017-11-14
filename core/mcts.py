@@ -3,7 +3,8 @@ import numpy as np
 
 
 class Mcts(object):
-    def __init__(self, state, env, model, max_simulation=500, winner_reward=1, loser_reward=-1):
+    def __init__(self, state, env, model, max_simulation=500, winner_reward=1, loser_reward=-1, use_best=True,
+                 c_puct=0.5):
         self.env = env
         self.model = model
         self.max_simulation = max_simulation
@@ -15,6 +16,8 @@ class Mcts(object):
         self.temperature = 0
         self.winner_reward = winner_reward
         self.loser_reward = loser_reward
+        self.use_best = use_best
+        self.c_puct = c_puct
 
     def search(self, temperature=0, action_idx=None):
         self.temperature = temperature
@@ -30,8 +33,9 @@ class Mcts(object):
 
         action_probs = [edge.get_action_probs(self.root_node.edges, self.temperature) for edge in self.root_node.edges]
 
-        self.root_node = self.root_node.edges[np.array(action_probs).argmax()].node
-        return action_probs
+        if self.use_best:
+            self.root_node = self.root_node.edges[np.array(action_probs).argmax()].node
+        return np.array(action_probs)
 
     def simulate(self):
         is_leaf_node = False
@@ -47,7 +51,7 @@ class Mcts(object):
         max_score = 0
         max_score_edge = -1
         for i, edge in enumerate(self.current_node.edges):
-            score = edge.get_select_score(self.current_node.edges, 1)
+            score = edge.get_select_score(self.current_node.edges, self.c_puct)
             if max_score < score:
                 max_score = score
                 max_score_edge = i
@@ -65,9 +69,9 @@ class Mcts(object):
         # todo: implement model class
         # todo :pass액션 추가 ( 둘다 pass할경우 점수계산으로
         action_probs, state_value = self.model.inference(self.current_node.state)
-
+        # todo : <<빅장>> 혹은 외통수(장군)등 기능 구현?
         # todo: 비긴 상태 구현해서 적용하기
-        # todo: 반복수 제한도 걸기
+        # todo: 반복수 제한도 걸기(여러 반복수하면 비겨서 계산하는 조건도 알아보기)
 
         legal_actions = self.env.get_all_actions(self.current_node.state, self.current_turn)
 

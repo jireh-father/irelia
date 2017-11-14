@@ -23,7 +23,21 @@ def copy_state(state):
     return copy.deepcopy(state)
 
 
+def encode_state(state):
+    # todo: transpose
+    new_state = [[0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9]
+    for i, line in enumerate(state[0]):
+        for j, piece in enumerate(line):
+            if piece != 0:
+                new_state[i][j] = "b" + str(piece)
+            if state[1][i][j] != 0:
+                new_state[i][j] = "r" + str(state[1][i][j])
+    turn = c.BLUE if state[2][0][0] == 1 else c.RED
+    return new_state, turn
+
+
 def decode_state(state, turn):
+    # todo: transpose
     new_state = [[[0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9],
                  [[0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9]]
     for i, line in enumerate(state):
@@ -82,18 +96,6 @@ def validate_action(action, state, turn, next_turn, use_check=True):
         raise Exception("this action causes opponent's check %d %d %d %d" % (from_x, from_y, to_x, to_y,))
         # return False
     return True
-
-
-def encode_state(state):
-    new_state = [[0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9]
-    for i, line in enumerate(state[0]):
-        for j, piece in enumerate(line):
-            if piece != 0:
-                new_state[i][j] = "b" + str(piece)
-            if state[1][i][j] != 0:
-                new_state[i][j] = "r" + str(state[1][i][j])
-    turn = c.BLUE if state[2][0][0] == 1 else c.RED
-    return new_state, turn
 
 
 def is_check(state, from_x, from_y, to_x, to_y, turn):
@@ -160,7 +162,6 @@ def is_draw(state):
             if int(piece[1]) != c.KING and int(piece[1]) != c.GUARDIAN:
                 other_piece_list.append([x, y])
 
-                # todo: 포만 남았을경우 못넘는경우면 비긴걸로 계산
     cannon_cnt = 0
     disable_cannon_cnt = 0
     for other_piece in other_piece_list:
@@ -188,6 +189,7 @@ def reverse_actions(actions):
 
 
 def get_all_actions(state, turn):
+    # todo: encode and transpose?
     if turn == c.RED:
         state = reverse_state(state)
     actions = []
@@ -204,6 +206,7 @@ def get_all_actions(state, turn):
 
 
 def get_actions(state, x, y, turn):
+    # todo: encode and transpose?
     if state[y][x] == 0 or state[y][x][0] != turn:
         return None
     piece = piece_factory.get_piece(int(state[y][x][1]))
