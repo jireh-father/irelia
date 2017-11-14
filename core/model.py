@@ -15,6 +15,7 @@ class Model(object):
         self.value_network = None
         self.policy_label = None
         self.value_label = None
+        self.learning_rate = None
         self.build_model(input_shape, num_layers, num_classes, weight_decay)
 
     def inference(self, state):
@@ -36,12 +37,12 @@ class Model(object):
         if data_format == 'channels_first':
             inputs = tf.transpose(inputs, [0, 3, 1, 2], name="channel_axis_change")
 
-        inputs = self.conv2d_fixed_padding(
+        network = self.conv2d_fixed_padding(
             inputs=inputs, filters=256, kernel_size=3, strides=1, data_format=data_format, name="start_conv")
 
-        inputs = self.block_layer(inputs=inputs, filters=256, blocks=num_layers, strides=1, data_format=data_format)
+        network = self.block_layer(inputs=network, filters=256, blocks=num_layers, strides=1, data_format=data_format)
 
-        value_network = self.conv2d_fixed_padding(inputs=inputs, filters=1, kernel_size=1, strides=1,
+        value_network = self.conv2d_fixed_padding(inputs=network, filters=1, kernel_size=1, strides=1,
                                                   data_format=data_format, name="value_conv")
         value_network = tf.reshape(value_network, [-1, num_classes], name="value_reshape")
         value_network = tf.layers.dense(inputs=value_network, units=64, name="value_dense1")
@@ -53,7 +54,7 @@ class Model(object):
         value_network = tf.nn.tanh(value_network, name="value_tanh")
         # value_net_inputs = tf.reshape(value_net_inputs, [-1], name="value_scalar_reshape")
 
-        policy_network = self.conv2d_fixed_padding(inputs=inputs, filters=2, kernel_size=1, strides=1,
+        policy_network = self.conv2d_fixed_padding(inputs=network, filters=2, kernel_size=1, strides=1,
                                                    data_format=data_format, name="policy_conv")
         policy_network = tf.reshape(policy_network, [-1, num_classes * 2], name="policy_reshape")
         policy_network = tf.layers.dense(inputs=policy_network, units=num_classes, name="policy_dense")

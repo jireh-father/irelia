@@ -16,6 +16,10 @@ tf.app.flags.DEFINE_integer('exploration_step', 20, "exploration step")
 tf.app.flags.DEFINE_integer('episode_interval_to_save', 200, "episode interval to save model")
 tf.app.flags.DEFINE_integer('episode_interval_to_train', 10, "episode interval to train model")
 tf.app.flags.DEFINE_float('weight_decay', 0.01, "weigh decay for weights l2 regularize")
+tf.app.flags.DEFINE_float('learning_rate', 0.01, "learning rate")
+tf.app.flags.DEFINE_float('learning_rate_decay', 0.1, "learning rate decay")
+tf.app.flags.DEFINE_integer('learning_rate_decay_interval', 10000, "learning rate decay interval")
+tf.app.flags.DEFINE_integer('batch_size', 64, "batch size")
 tf.app.flags.DEFINE_float('c_puct', 0.5, "a constant determining the level of exploration")
 
 if FLAGS.checkpoint and not os.path.exists(os.path.dirname(FLAGS.checkpoint)):
