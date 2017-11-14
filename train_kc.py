@@ -13,9 +13,10 @@ tf.app.flags.DEFINE_integer('max_step', 200, "max step in a episode")
 tf.app.flags.DEFINE_integer('max_episode', 100000, "max episode to train")
 tf.app.flags.DEFINE_integer('max_simulation', 500, "max simulation count in a mcts search")
 tf.app.flags.DEFINE_integer('exploration_step', 20, "exploration step")
-tf.app.flags.DEFINE_integer('episode_interval_to_save', 200, "episode interval to save model")
-tf.app.flags.DEFINE_integer('episode_interval_to_train', 10, "episode interval to train model")
-tf.app.flags.DEFINE_float('weight_decay', 0.01, "weigh decay for weights l2 regularize")
+tf.app.flags.DEFINE_integer('batch_interval_to_save', 200, "batch interval to save model")
+tf.app.flags.DEFINE_integer('episode_interval_to_train', 100, "episode interval to train model")
+tf.app.flags.DEFINE_integer('whole train_steps', 50, "train steps of whole data")
+tf.app.flags.DEFINE_float('weight_decay', 0.0001, "weigh decay for weights l2 regularize")
 tf.app.flags.DEFINE_float('learning_rate', 0.01, "learning rate")
 tf.app.flags.DEFINE_float('learning_rate_decay', 0.1, "learning rate decay")
 tf.app.flags.DEFINE_integer('learning_rate_decay_interval', 10000, "learning rate decay interval")
@@ -75,8 +76,12 @@ for i_episode in range(FLAGS.max_episode):
     # save data
     if i_episode > 0 and i_episode % FLAGS.episode_interval_to_train == 0:
         # read saved data
-        model.train()  # todo: learning rate decay
-    # save model
-    if i_episode > 0 and i_episode % FLAGS.episode_interval_to_save == 0:
-        result = saver.save(sess, checkpoint_path)
+        train_steps = data_cnt / FLAGS.batch_size * FLAGS.whole_train_steps
+        for i in range(train_steps):
+            data = get_batch()
+            model.train(data)  # todo: learning rate decay
+            # save model
+            if i > 0 and i % FLAGS.batch_interval_to_save == 0:
+                result = saver.save(sess, checkpoint_path)
+                # todo : evaluate best player
 output.close()
