@@ -28,8 +28,8 @@ tf.app.flags.DEFINE_float('c_puct', 0.5, "a constant determining the level of ex
 tf.app.flags.DEFINE_float('train_fraction', 0.7, "train dataset fraction")
 tf.app.flags.DEFINE_float('momentum', 0.9, "momentum for optimizer")
 
-if not os.path.exists(os.path.dirname(FLAGS.save_dir)):
-    os.mkdir(os.path.dirname(FLAGS.save_dir))
+if not os.path.exists(FLAGS.save_dir):
+    os.mkdir(FLAGS.save_dir)
 
 data_format = ('channels_first' if tf.test.is_built_with_cuda() else 'channels_last')
 
@@ -48,9 +48,9 @@ if not os.path.exists(FLAGS.save_dir):
 checkpoint_path = os.path.join(FLAGS.save_dir, FLAGS.model_file_name)
 if os.path.exists(checkpoint_path + ".index"):
     saver.restore(sess, checkpoint_path)
-tf.summary.FileWriter(os.path.dirname(FLAGS.save_dir), sess.graph)
-train_data_path = os.path.join(os.path.dirname(FLAGS.save_dir), "train_dataset.txt")
-test_data_path = os.path.join(os.path.dirname(FLAGS.save_dir), "test_dataset.txt")
+tf.summary.FileWriter(FLAGS.save_dir, sess.graph)
+train_data_path = os.path.join(FLAGS.save_dir, "train_dataset.txt")
+test_data_path = os.path.join(FLAGS.save_dir, "test_dataset.txt")
 if os.path.exists(train_data_path):
     os.remove(train_data_path)
 if os.path.exists(test_data_path):
