@@ -114,6 +114,8 @@ for i_episode in range(FLAGS.max_episode):
     """train model"""
     if i_episode > 0 and i_episode % FLAGS.episode_interval_to_train == 0:
         # read saved data
+        train_f.close()
+        test_f.close()
         train_dataset = dataset.get_dataset(train_data_path, FLAGS.batch_size)
         test_dataset = dataset.get_dataset(test_data_path, FLAGS.batch_size)
         batch_step = 0
@@ -139,8 +141,6 @@ for i_episode in range(FLAGS.max_episode):
                 except tf.errors.OutOfRangeError:
                     break
 
-        train_f.close()
-        test_f.close()
         os.remove(train_data_path)
         os.remove(test_data_path)
         train_f = open(train_data_path, "w+")
