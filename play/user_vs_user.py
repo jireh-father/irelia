@@ -11,7 +11,7 @@ from util import user_input
 # init_state[0][6][4] = c.CAR
 # init_state[0][5][4] = c.CAR
 # env = Game.make("KoreanChess-v1", {"init_state": init_state})
-env = Game.make("KoreanChess-v1")
+env = Game.make("KoreanChess-v1", {"check_repeat": 3})
 
 env.reset()
 

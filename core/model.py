@@ -1,36 +1,50 @@
 """reference source: https://github.com/tensorflow/models/tree/master/official/resnet """
 import tensorflow as tf
-import math
+import numpy as np
 
 _BATCH_NORM_DECAY = 0.997
 _BATCH_NORM_EPSILON = 1e-5
 
 
 class Model(object):
-    def __init__(self, sess, input_shape=[10, 9, 3], num_layers=20, num_classes=10 * 9 + 1, weight_decay=0.01):
+    def __init__(self, sess, input_shape=[10, 9, 3], num_layers=20, num_classes=10 * 9 + 1, weight_decay=0.01,
+                 momentum=0.9):
         self.sess = sess
-        self.is_training = tf.placeholder(tf.bool, shape=())
+        self.is_training = tf.placeholder(tf.bool, shape=(), name="is_training")
         self.inputs = None
         self.policy_network = None
         self.value_network = None
         self.policy_label = None
         self.value_label = None
-        self.learning_rate = None
+        self.learning_rate = tf.placeholder(tf.float32, shape=(), name="learning_rate")
+        self.cost = None
+        self.train = None
+        self.momentum = momentum
         self.build_model(input_shape, num_layers, num_classes, weight_decay)
 
     def inference(self, state):
-        # todo: state 다수로 구조 변경
-        return self.sess.run([], feed_dict={self.inputs: state, self.is_training: False})
+        state = (state / 7)
+        state = state[np.newaxis, :]
+        return self.sess.run([self.policy_network, self.value_network],
+                             feed_dict={self.inputs: state, self.is_training: False})
 
-    def train(self, state):
-        return self.sess.run([], feed_dict={self.inputs: state, self.is_training: True, self.policy_label: True,
-                                            self.value_label: True})
+    def train(self, state, policy, value, learning_rate):
+        state = (state / 7)
+        return self.sess.run([self.train, self.cost],
+                             feed_dict={self.inputs: state, self.is_training: True, self.policy_label: policy,
+                                        self.value_label: value, self.learning_rate: learning_rate})
+
+    def eval(self, state, policy, value):
+        state = (state / 7)
+        return self.sess.run([self.cost],
+                             feed_dict={self.inputs: state, self.is_training: False, self.policy_label: policy,
+                                        self.value_label: value})
 
     def build_model(self, input_shape, num_layers, num_classes, weight_decay):
-        self.inputs = tf.placeholder(tf.float32, [-1, input_shape[0], input_shape[1], input_shape[2]],
+        self.inputs = tf.placeholder(tf.float32, [None, input_shape[0], input_shape[1], input_shape[2]],
                                      "inputs")
-        self.policy_label = tf.placeholder(tf.float32, [-1, num_classes], "policy_label")
-        self.value_label = tf.placeholder(tf.float32, [-1, 1], "value_label")
+        self.policy_label = tf.placeholder(tf.float32, [None, num_classes], "policy_label")
+        self.value_label = tf.placeholder(tf.float32, [None, 1], "value_label")
         inputs = self.inputs
         data_format = ('channels_first' if tf.test.is_built_with_cuda() else 'channels_last')
 
@@ -65,10 +79,17 @@ class Model(object):
         l2_regularizer = tf.contrib.layers.l2_regularizer(weight_decay)
 
         #     l = (z − v) 2 − πT log p + c||θ||2
-        loss = tf.reduce_mean(tf.pow(self.value_label - value_network, 2)) - tf.reduce_mean(
-            self.policy_label * tf.log(policy_network)) + l2_regularizer
+        # self.cost = tf.reduce_mean(tf.pow(self.value_label - value_network, 2)) - tf.reduce_mean(
+        #     self.policy_label * tf.log(policy_network)) + l2_regularizer
+        self.cost = tf.reduce_mean(tf.pow(self.value_label - value_network, 2)) - tf.reduce_mean(
+            self.policy_label * tf.log(policy_network))
+
         # value_loss = tf.losses.mean_squared_error(self.value_label, value_network)
         # policy_loss = tf.losses.softmax_cross_entropy()
+
+        self.train = tf.train.MomentumOptimizer(self.learning_rate, self.momentum).minimize(self.cost)
+
+        # todo: eval !! legal action probabilities and value scalar
 
     def batch_norm_relu(self, inputs, data_format, name):
         inputs = tf.layers.batch_normalization(

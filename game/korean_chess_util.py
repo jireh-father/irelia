@@ -23,21 +23,21 @@ def copy_state(state):
     return copy.deepcopy(state)
 
 
-def encode_state(state):
-    # todo: transpose
+def encode_state(state, data_format):
+    if data_format == "channels_first":
+        state = np.transpose(state, [2, 0, 1])
     new_state = [[0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9]
     for i, line in enumerate(state[0]):
         for j, piece in enumerate(line):
             if piece != 0:
-                new_state[i][j] = "b" + str(piece)
+                new_state[i][j] = "b" + str(int(piece))
             if state[1][i][j] != 0:
-                new_state[i][j] = "r" + str(state[1][i][j])
+                new_state[i][j] = "r" + str(int(state[1][i][j]))
     turn = c.BLUE if state[2][0][0] == 1 else c.RED
     return new_state, turn
 
 
-def decode_state(state, turn):
-    # todo: transpose
+def decode_state(state, turn, data_format):
     new_state = [[[0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9],
                  [[0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9]]
     for i, line in enumerate(state):
@@ -52,10 +52,12 @@ def decode_state(state, turn):
     else:
         new_state.append([[0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9])
     new_state = np.array(new_state).astype(np.float)
-    return new_state / c.KING
+    if data_format == "channels_first":
+        new_state = np.transpose(new_state, [1, 2, 0])
+    return new_state
 
 
-def validate_action(action, state, turn, next_turn, use_check=True):
+def validate_action(action, state, turn, next_turn, use_check=True, actions_history=None, check_repeat=None):
     to_x = action['to_x']
     to_y = action['to_y']
     from_x = action['from_x']
@@ -95,6 +97,23 @@ def validate_action(action, state, turn, next_turn, use_check=True):
     if check:
         raise Exception("this action causes opponent's check %d %d %d %d" % (from_x, from_y, to_x, to_y,))
         # return False
+
+    if check_repeat and len(actions_history[turn]) >= (check_repeat - 1):
+        actions_history = actions_history[turn]
+        for i in range(check_repeat - 1):
+            action_idx = -(i + 1)
+            old_action = actions_history[action_idx]
+            if i % 2 == 0:
+                if old_action["to_x"] != action["from_x"] or old_action["to_y"] != action["from_y"] or old_action[
+                    "from_x"] != action["to_x"] or old_action["from_y"] != action["to_y"]:
+                    return True
+            else:
+                if old_action != action:
+                    return True
+        if state[to_y][to_x] != 0:
+            return True
+        raise Exception("repeat action!!")
+
     return True
 
 
@@ -189,7 +208,6 @@ def reverse_actions(actions):
 
 
 def get_all_actions(state, turn):
-    # todo: encode and transpose?
     if turn == c.RED:
         state = reverse_state(state)
     actions = []
@@ -206,7 +224,6 @@ def get_all_actions(state, turn):
 
 
 def get_actions(state, x, y, turn):
-    # todo: encode and transpose?
     if state[y][x] == 0 or state[y][x][0] != turn:
         return None
     piece = piece_factory.get_piece(int(state[y][x][1]))

@@ -23,9 +23,9 @@ class Mcts(object):
         self.temperature = temperature
         self.root_turn = self.env.current_turn
         self.current_turn = self.env.current_turn
-        if not self.root_node.edges:
-            return False
         if action_idx:
+            if not self.root_node.edges:
+                return False
             self.root_node = self.root_node.edges[action_idx].node
 
         for i in range(self.max_simulation):
@@ -67,13 +67,13 @@ class Mcts(object):
             return self.winner_reward
 
         # todo: implement model class
+        # todo: !!!<일단 요것만구현>반복수 제한도 걸기(여러 반복수하면 비겨서 계산하는 조건도 알아보기)
         # todo :pass액션 추가 ( 둘다 pass할경우 점수계산으로
         action_probs, state_value = self.model.inference(self.current_node.state)
         # todo : <<빅장>> 혹은 외통수(장군)등 기능 구현?
-        # todo: 비긴 상태 구현해서 적용하기
-        # todo: 반복수 제한도 걸기(여러 반복수하면 비겨서 계산하는 조건도 알아보기)
+        # todo: 비긴 상태 구현해서 적용하기(더 디테일하게)
 
-        legal_actions = self.env.get_all_actions(self.current_node.state, self.current_turn)
+        legal_actions = self.env.get_all_actions(self.current_node.state)
 
         if not legal_actions:
             return self.loser_reward
@@ -83,10 +83,11 @@ class Mcts(object):
             legal_action = self.env.encode_action(legal_action)
             legal_action_probs.append(action_probs[legal_action[0]] + action_probs[legal_action[0]])
 
-        # todo: add noise!!
+        # todo: add noise!! check (DIR(0.03)???)
         if self.root_node is self.current_node:
             # add noise to prior probabilities
-            legal_action_probs = ((1 - 0.25) * legal_action_probs + 0.25 * 0.03)
+            noise_probs = np.random.dirichlet(legal_action_probs, 1)[0]
+            legal_action_probs = ((1 - 0.25) * legal_action_probs + (noise_probs * 0.25))
 
         self.current_node.edges = [
             Edge(action_prob, self.env.simulate(self.current_node.state, legal_actions[i]), legal_actions[i]) for

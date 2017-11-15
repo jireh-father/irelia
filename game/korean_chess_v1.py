@@ -26,14 +26,18 @@ class KoreanChessV1:
          c.B_GD: Fore.BLUE + '사' + EMPTY_COLOR, c.B_HS: Fore.BLUE + '마' + EMPTY_COLOR,
          c.B_CN: Fore.BLUE + '포' + EMPTY_COLOR, c.B_CR: Fore.BLUE + '차' + EMPTY_COLOR,
          c.B_KG: Fore.BLUE + '궁' + EMPTY_COLOR,
-         0: EMPTY_COLOR + '--'}
+         0: EMPTY_COLOR + '--' + EMPTY_COLOR}
 
     PIECE_MAP_KOR_NO_COLOR = \
-        {c.R_SD: LAST_COLOR + '졸', c.R_SG: LAST_COLOR + '상', c.R_GD: LAST_COLOR + '사', c.R_HS: LAST_COLOR + '마',
-         c.R_CN: LAST_COLOR + '포', c.R_CR: LAST_COLOR + '차', c.R_KG: LAST_COLOR + '궁',
-         c.B_SD: LAST_COLOR + '졸', c.B_SG: LAST_COLOR + '상', c.B_GD: LAST_COLOR + '사', c.B_HS: LAST_COLOR + '마',
-         c.B_CN: LAST_COLOR + '포', c.B_CR: LAST_COLOR + '차', c.B_KG: LAST_COLOR + '궁',
-         0: LAST_COLOR + '--'}
+        {c.R_SD: LAST_COLOR + '졸' + EMPTY_COLOR, c.R_SG: LAST_COLOR + '상' + EMPTY_COLOR,
+         c.R_GD: LAST_COLOR + '사' + EMPTY_COLOR, c.R_HS: LAST_COLOR + '마' + EMPTY_COLOR,
+         c.R_CN: LAST_COLOR + '포' + EMPTY_COLOR, c.R_CR: LAST_COLOR + '차' + EMPTY_COLOR,
+         c.R_KG: LAST_COLOR + '궁' + EMPTY_COLOR,
+         c.B_SD: LAST_COLOR + '졸' + EMPTY_COLOR, c.B_SG: LAST_COLOR + '상' + EMPTY_COLOR,
+         c.B_GD: LAST_COLOR + '사' + EMPTY_COLOR, c.B_HS: LAST_COLOR + '마' + EMPTY_COLOR,
+         c.B_CN: LAST_COLOR + '포' + EMPTY_COLOR, c.B_CR: LAST_COLOR + '차' + EMPTY_COLOR,
+         c.B_KG: LAST_COLOR + '궁' + EMPTY_COLOR,
+         0: LAST_COLOR + '--' + EMPTY_COLOR}
 
     default_state = [
         [c.R_CR, 0, 0, c.R_GD, 0, c.R_GD, 0, 0, c.R_CR],
@@ -85,10 +89,14 @@ class KoreanChessV1:
         self.blue_catch_list = []
         self.limit_step = 200
         self.max_reward = 1
+        self.data_format = None
+        self.check_repeat = True
+        self.action_history = {c.BLUE: [], c.RED: []}
 
     def reset(self):
         self.interval = 0
         self.use_check = True
+        self.check_repeat = 5
         self.limit_step = 200
         self.max_reward = 1
         if self.properties:
@@ -100,8 +108,13 @@ class KoreanChessV1:
                 self.limit_step = self.properties["limit_step"]
             if "max_reward" in self.properties:
                 self.max_reward = self.properties["max_reward"]
+            if "data_format" in self.properties:
+                self.data_format = self.properties["data_format"]
+            if "check_repeat" in self.properties:
+                self.check_repeat = self.properties["check_repeat"]
+
         if self.properties and "init_state" in self.properties:
-            self.current_state, self.current_turn = u.encode_state(self.properties["init_state"])
+            self.current_state, self.current_turn = u.encode_state(self.properties["init_state"], self.data_format)
             self.next_turn = c.RED if self.current_turn == c.BLUE else c.BLUE
         else:
             if not self.properties or (
@@ -136,12 +149,14 @@ class KoreanChessV1:
         # print environment
         self.print_env()
 
-        return u.decode_state(self.current_state, self.current_turn)
+        return u.decode_state(self.current_state, self.current_turn, self.data_format)
 
     def step(self, action):
         # validate action
-        if not u.validate_action(action, self.current_state, self.current_turn, self.next_turn, self.use_check):
+        if not u.validate_action(action, self.current_state, self.current_turn, self.next_turn, self.use_check,
+                                 self.action_history, self.check_repeat):
             raise Exception("Invalid action :%s" % action)
+        self.action_history[self.current_turn].append(action)
         to_x = action['to_x']
         to_y = action['to_y']
         from_x = action['from_x']
@@ -181,7 +196,6 @@ class KoreanChessV1:
 
         # 장군, 외통수 상태편 수둘때도 고려해서 수정하기
         # todo: 먹힌말 print
-        # todo: repeat limit(반복수)
         # todo: count, win or lose by count(점수에 의한 승부 정리)
         # todo: 빅장
         # todo: 장군, 가능한 actions, 외통수 등 기능 테스트
@@ -203,7 +217,7 @@ class KoreanChessV1:
         info = {"is_check": is_check,
                 "over_limit_step": self.current_step >= self.limit_step,
                 "is_draw": is_draw}
-        return u.decode_state(self.current_state, self.current_turn), reward, is_game_over, info
+        return u.decode_state(self.current_state, self.current_turn, self.data_format), reward, is_game_over, info
 
     def print_env(self, is_check=False, is_checkmate=False, to_x=10, to_y=10, done=False, is_draw=False):
         if self.interval > 0:
@@ -239,8 +253,10 @@ class KoreanChessV1:
 
         print('======================================================')
 
-    def get_all_actions(self, state=None, turn=None):
-
+    def get_all_actions(self, state=None):
+        turn = None
+        if state:
+            state, turn = u.encode_state(state, self.data_format)
         return u.get_all_actions(self.current_state if not state else state, self.current_turn if not turn else turn)
 
     def encode_action(self, action):
@@ -250,7 +266,7 @@ class KoreanChessV1:
         return [action_from, action_to]
 
     def is_over(self, state):
-        state = u.encode_state(state)
+        state, turn = u.encode_state(state, self.data_format)
         num_kings = 0
         for line in state:
             for piece in line:
@@ -261,9 +277,8 @@ class KoreanChessV1:
         return True
 
     def simulate(self, state, action):
-        turn = c.RED if state[2][0][0] == 0 else c.BLUE
-        state = u.encode_state(state)
-
+        state, turn = u.encode_state(state, self.data_format)
+        turn = c.RED if turn == c.BLUE else c.BLUE
         to_x = action['to_x']
         to_y = action['to_y']
         from_x = action['from_x']
@@ -272,4 +287,4 @@ class KoreanChessV1:
         state[to_y][to_x] = state[from_y][from_x]
         state[from_y][from_x] = 0
 
-        return u.decode_state(state, turn)
+        return u.decode_state(state, turn, self.data_format)
