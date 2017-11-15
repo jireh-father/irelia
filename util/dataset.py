@@ -16,7 +16,7 @@ def write_data(writer, winner, state_history, mcts_history):
             value = values["b"]
         else:
             value = values["r"]
-        writer.writerow(value, json.dumps(state_history[i]), json.dumps(mcts_history[i]))
+        writer.writerow([value, json.dumps(state_history[i]), json.dumps(mcts_history[i])])
 
 
 def get_dataset(data_path, batch_size=64, shuffle=1000):
