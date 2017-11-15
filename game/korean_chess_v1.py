@@ -304,7 +304,7 @@ class KoreanChessV1:
         for i, prob in enumerate(action_probs):
             action = actions[i]
             action = self.encode_action(action)
-            half_prob = prob[i] / 2
+            half_prob = prob / 2
             policy_probs[action[0]] = half_prob
             policy_probs[action[1]] = half_prob
         return policy_probs
