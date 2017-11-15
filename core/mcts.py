@@ -84,11 +84,11 @@ class Mcts(object):
             legal_action = self.env.encode_action(legal_action)
             legal_action_probs.append(action_probs[legal_action[0]] + action_probs[legal_action[0]])
 
+        legal_action_probs = np.array(legal_action_probs)
         # todo: add noise!! check (DIR(0.03)???)
         if self.root_node is self.current_node:
             # add noise to prior probabilities
             noise_probs = np.random.dirichlet(legal_action_probs, 1)[0]
-            print(type(noise_probs), type(legal_action_probs))
             legal_action_probs = ((1 - 0.25) * legal_action_probs + (noise_probs * 0.25))
 
         self.current_node.edges = [
