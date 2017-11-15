@@ -78,6 +78,7 @@ class Model(object):
         self.policy_network = policy_network
         self.value_network = value_network
 
+        # todo: l2!!
         l2_regularizer = tf.contrib.layers.l2_regularizer(weight_decay)
 
         #     l = (z − v) 2 − πT log p + c||θ||2

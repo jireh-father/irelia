@@ -88,7 +88,11 @@ class Mcts(object):
         legal_action_probs = []
         for legal_action in legal_actions:
             legal_action = self.env.encode_action(legal_action)
-            legal_action_probs.append(action_probs[legal_action[0]] + action_probs[legal_action[0]])
+            prob = action_probs[legal_action[0]] + action_probs[legal_action[0]]
+            if prob == 0:
+                # todo: 아주작은수 세팅
+                prob = 0.000001
+            legal_action_probs.append(prob)
 
         legal_action_probs = np.array(legal_action_probs)
         # todo: add noise!! check (DIR(0.03)???)
