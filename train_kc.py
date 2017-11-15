@@ -128,9 +128,9 @@ for i_episode in range(FLAGS.max_episode):
                     model.train(train_batch_state, train_batch_policy, train_batch_value, learning_rate)
                     # save model
                     if batch_step > 0 and batch_step % FLAGS.batch_interval_to_save == 0:
-                        test_batch_state, test_batch_policy, test_batch_value = dataset.get_batch(sess, test_dataset)
-                        cost = model.eval(test_batch_state, test_batch_policy, test_batch_value)
-                        print("eval cost", cost)
+                        # test_batch_state, test_batch_policy, test_batch_value = dataset.get_batch(sess, test_dataset)
+                        # cost = model.eval(test_batch_state, test_batch_policy, test_batch_value)
+                        # print("eval cost", cost)
                         print("save model")
                         result = saver.save(sess, checkpoint_path)
                         # todo : evaluate best player
