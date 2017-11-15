@@ -46,7 +46,7 @@ class Model(object):
         self.inputs = tf.placeholder(tf.float32, [None, input_shape[0], input_shape[1], input_shape[2]],
                                      "inputs")
         self.policy_label = tf.placeholder(tf.float32, [None, num_classes], "policy_label")
-        self.value_label = tf.placeholder(tf.float32, [None, 1], "value_label")
+        self.value_label = tf.placeholder(tf.float32, [None], "value_label")
         inputs = self.inputs
         data_format = ('channels_first' if tf.test.is_built_with_cuda() else 'channels_last')
 
