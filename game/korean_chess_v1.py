@@ -10,6 +10,7 @@ import time
 from game import korean_chess_constant as c
 from game import korean_chess_util as u
 from colorama import Fore
+import numpy as np
 
 
 class KoreanChessV1:
@@ -297,3 +298,13 @@ class KoreanChessV1:
         state[from_y][from_x] = 0
 
         return u.decode_state(state, turn, self.data_format)
+
+    def convert_action_probs_to_policy_probs(self, actions, action_probs):
+        policy_probs = [.0] * 90
+        for i, prob in enumerate(action_probs):
+            action = actions[i]
+            action = self.encode_action(action)
+            half_prob = prob[i] / 2
+            policy_probs[action[0]] = half_prob
+            policy_probs[action[1]] = half_prob
+        return policy_probs

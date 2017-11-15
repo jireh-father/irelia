@@ -82,7 +82,7 @@ for i_episode in range(FLAGS.max_episode):
         action = actions[search_action_probs.argmax()]
         try:
             state, reward, done, info = env.step(action)
-            mcts_history.append(search_action_probs.tolist())
+            mcts_history.append(env.convert_action_probs_to_policy_probs(actions, search_action_probs))
         except Exception as e:
             print(e)
             continue
