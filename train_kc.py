@@ -1,10 +1,10 @@
+# coding=utf8
 import tensorflow as tf
 from game.game import Game
 import os
 from core.model import Model
 from core.mcts import Mcts
 from util import dataset
-import json
 import csv
 
 FLAGS = tf.app.flags.FLAGS
@@ -12,13 +12,13 @@ FLAGS = tf.app.flags.FLAGS
 tf.app.flags.DEFINE_string('save_dir', os.path.join(os.path.dirname(os.path.realpath(__file__)), "checkpoint"),
                            "save dir")
 tf.app.flags.DEFINE_string('model_file_name', "model.ckpt", "model name to save")
-tf.app.flags.DEFINE_integer('max_step', 200, "max step in a episode")
-tf.app.flags.DEFINE_integer('max_episode', 100000, "max episode to train")
-tf.app.flags.DEFINE_integer('max_simulation', 500, "max simulation count in a mcts search")
-tf.app.flags.DEFINE_integer('exploration_step', 20, "exploration step")
-tf.app.flags.DEFINE_integer('batch_interval_to_save', 200, "batch interval to save model")
-tf.app.flags.DEFINE_integer('episode_interval_to_train', 100, "episode interval to train model")
-tf.app.flags.DEFINE_integer('epoch', 50, "epoch")
+tf.app.flags.DEFINE_integer('max_step', 10, "max step in a episode")
+tf.app.flags.DEFINE_integer('max_episode', 100000, "max episode")
+tf.app.flags.DEFINE_integer('max_simulation', 3, "max simulation count in a mcts search")
+tf.app.flags.DEFINE_integer('exploration_step', 3, "exploration step")
+tf.app.flags.DEFINE_integer('batch_interval_to_save', 1, "batch interval to save model")
+tf.app.flags.DEFINE_integer('episode_interval_to_train', 3, "episode interval to train model")
+tf.app.flags.DEFINE_integer('epoch', 1, "epoch")
 tf.app.flags.DEFINE_float('weight_decay', 0.0001, "weigh decay for weights l2 regularize")
 tf.app.flags.DEFINE_float('learning_rate', 0.01, "learning rate")
 tf.app.flags.DEFINE_float('learning_rate_decay', 0.1, "learning rate decay")
@@ -145,5 +145,5 @@ for i_episode in range(FLAGS.max_episode):
         os.remove(test_data_path)
         train_f = open(train_data_path, "w+")
         test_f = open(test_data_path, "w+")
-        train_csv = csv.writer(train_f, delimeter=',')
-        test_csv = csv.writer(test_f, delimeter=',')
+        train_csv = csv.writer(train_f, delimiter=',')
+        test_csv = csv.writer(test_f, delimiter=',')

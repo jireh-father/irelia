@@ -1,3 +1,4 @@
+# coding=utf8
 """reference source: https://github.com/tensorflow/models/tree/master/official/resnet """
 import tensorflow as tf
 import numpy as np

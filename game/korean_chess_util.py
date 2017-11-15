@@ -24,7 +24,7 @@ def copy_state(state):
 
 
 def encode_state(state, data_format):
-    if data_format == "channels_first":
+    if data_format == "channels_last":
         state = np.transpose(state, [2, 0, 1])
     new_state = [[0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9]
     for i, line in enumerate(state[0]):
@@ -52,7 +52,7 @@ def decode_state(state, turn, data_format):
     else:
         new_state.append([[0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9])
     new_state = np.array(new_state).astype(np.float)
-    if data_format == "channels_first":
+    if data_format == "channels_last":
         new_state = np.transpose(new_state, [1, 2, 0])
     return new_state
 
@@ -128,8 +128,8 @@ def is_check(state, from_x, from_y, to_x, to_y, turn):
             actions = get_actions(state, x, y, turn)
             for action in actions:
                 if state[action["to_y"]][action["to_x"]] != 0 \
-                  and int(state[action["to_y"]][action["to_x"]][1]) == c.KING \
-                  and state[action["to_y"]][action["to_x"]][0] != turn:
+                        and int(state[action["to_y"]][action["to_x"]][1]) == c.KING \
+                        and state[action["to_y"]][action["to_x"]][0] != turn:
                     return True
     return False
 

@@ -26,7 +26,7 @@ class KoreanChessV1:
          c.B_GD: Fore.BLUE + '사' + EMPTY_COLOR, c.B_HS: Fore.BLUE + '마' + EMPTY_COLOR,
          c.B_CN: Fore.BLUE + '포' + EMPTY_COLOR, c.B_CR: Fore.BLUE + '차' + EMPTY_COLOR,
          c.B_KG: Fore.BLUE + '궁' + EMPTY_COLOR,
-         0: EMPTY_COLOR + '--' + EMPTY_COLOR}
+         0: EMPTY_COLOR + '---' + EMPTY_COLOR}
 
     PIECE_MAP_KOR_NO_COLOR = \
         {c.R_SD: LAST_COLOR + '졸' + EMPTY_COLOR, c.R_SG: LAST_COLOR + '상' + EMPTY_COLOR,
@@ -37,7 +37,7 @@ class KoreanChessV1:
          c.B_GD: LAST_COLOR + '사' + EMPTY_COLOR, c.B_HS: LAST_COLOR + '마' + EMPTY_COLOR,
          c.B_CN: LAST_COLOR + '포' + EMPTY_COLOR, c.B_CR: LAST_COLOR + '차' + EMPTY_COLOR,
          c.B_KG: LAST_COLOR + '궁' + EMPTY_COLOR,
-         0: LAST_COLOR + '--' + EMPTY_COLOR}
+         0: LAST_COLOR + '---' + EMPTY_COLOR}
 
     default_state = [
         [c.R_CR, 0, 0, c.R_GD, 0, c.R_GD, 0, 0, c.R_CR],
@@ -219,16 +219,24 @@ class KoreanChessV1:
                 "is_draw": is_draw}
         return u.decode_state(self.current_state, self.current_turn, self.data_format), reward, is_game_over, info
 
-    def print_env(self, is_check=False, is_checkmate=False, to_x=10, to_y=10, done=False, is_draw=False):
+    def print_env(self, is_check=False, is_checkmate=False, to_x=10, to_y=10, done=False, is_draw=False, state=None):
+        if state is None:
+            by_mcts = False
+            state = self.current_state
+            turn = self.current_turn
+        else:
+            by_mcts = True
+            state, turn = u.encode_state(state, self.data_format)
         if self.interval > 0:
             time.sleep(self.interval)
-        if self.current_turn == c.BLUE:
+        if turn == c.BLUE:
             print("%s %s : %d" % ("BLUE", "Turn", self.current_step))
         else:
             print("%s %s : %d" % ("RED", "Turn", self.current_step))
-        print("Score [ BLUE : %f ] [ RED : %f ]" % (self.blue_score, self.red_score))
+        if not by_mcts:
+            print("Score [ BLUE : %f ] [ RED : %f ]" % (self.blue_score, self.red_score))
         print("  " + KoreanChessV1.PIECE_MAP_KOR[0].join(["%d" % col_idx for col_idx in range(0, 9)]) + "  X")
-        for i, line in enumerate(self.current_state):
+        for i, line in enumerate(state):
             if to_y == i:
                 line = [KoreanChessV1.PIECE_MAP_KOR_NO_COLOR[piece] if j == to_x else
                         KoreanChessV1.PIECE_MAP_KOR[piece] for j, piece in enumerate(line)]
@@ -236,17 +244,18 @@ class KoreanChessV1:
                 line = [KoreanChessV1.PIECE_MAP_KOR[piece] for piece in line]
             print("%d %s" % (i, ' '.join(line)))
         print("Y")
-        if is_check:
-            print("Check!!")
-            if is_checkmate:
-                print("Checkmate!!")
-        if done:
-            if self.next_turn == c.BLUE:
-                print("BLUE WIN")
-            else:
-                print("RED WIN")
-        if is_draw:
-            print("draw!!")
+        if not by_mcts:
+            if is_check:
+                print("Check!!")
+                if is_checkmate:
+                    print("Checkmate!!")
+            if done:
+                if self.next_turn == c.BLUE:
+                    print("BLUE WIN")
+                else:
+                    print("RED WIN")
+            if is_draw:
+                print("draw!!")
 
         if self.current_step >= self.limit_step:
             print("")
