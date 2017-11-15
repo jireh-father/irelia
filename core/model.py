@@ -19,7 +19,7 @@ class Model(object):
         self.value_label = None
         self.learning_rate = tf.placeholder(tf.float32, shape=(), name="learning_rate")
         self.cost = None
-        self.train = None
+        self.train_op = None
         self.momentum = momentum
         self.build_model(input_shape, num_layers, num_classes, weight_decay)
 
@@ -32,7 +32,7 @@ class Model(object):
 
     def train(self, state, policy, value, learning_rate):
         state = (state / 7)
-        return self.sess.run([self.train, self.cost],
+        return self.sess.run([self.train_op, self.cost],
                              feed_dict={self.inputs: state, self.is_training: True, self.policy_label: policy,
                                         self.value_label: value, self.learning_rate: learning_rate})
 
@@ -89,7 +89,7 @@ class Model(object):
         # value_loss = tf.losses.mean_squared_error(self.value_label, value_network)
         # policy_loss = tf.losses.softmax_cross_entropy()
 
-        self.train = tf.train.MomentumOptimizer(self.learning_rate, self.momentum).minimize(self.cost)
+        self.train_op = tf.train.MomentumOptimizer(self.learning_rate, self.momentum).minimize(self.cost)
 
         # todo: eval !! legal action probabilities and value scalar
 
