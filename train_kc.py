@@ -117,7 +117,8 @@ for i_episode in range(FLAGS.max_episode):
         train_f.close()
         test_f.close()
         train_dataset = dataset.get_dataset(train_data_path, FLAGS.batch_size)
-        test_dataset = dataset.get_dataset(test_data_path, FLAGS.batch_size)
+        dataset.initializer(sess, train_dataset)
+        # test_dataset = dataset.get_dataset(test_data_path, FLAGS.batch_size)
         batch_step = 0
         print("train!")
         for epoch in range(FLAGS.epoch):
@@ -139,6 +140,7 @@ for i_episode in range(FLAGS.max_episode):
                         learning_rate = learning_rate * FLAGS.learning_rate_decay
                     batch_step += 1
                 except tf.errors.OutOfRangeError:
+                    dataset.initializer(sess, train_dataset)
                     break
 
         os.remove(train_data_path)

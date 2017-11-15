@@ -33,9 +33,12 @@ def get_dataset(data_path, batch_size=64, shuffle=1000):
 
 
 def get_batch(sess, dataset):
-    sess.run(dataset.initializer)
     value_data, state_data, policy_data = sess.run(dataset.get_next())
     state_data = np.array(map(lambda x: np.array(json.loads(x.decode("utf-8"))), state_data))
     policy_data = np.array(map(lambda x: np.array(json.loads(x.decode("utf-8"))), policy_data))
     value_data = np.array(map(lambda x: float(x.decode("utf-8")), value_data))
     return state_data, policy_data, value_data
+
+
+def initializer(sess, dataset):
+    sess.run(dataset.initializer)
