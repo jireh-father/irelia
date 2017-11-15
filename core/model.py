@@ -7,7 +7,7 @@ _BATCH_NORM_EPSILON = 1e-5
 
 
 class Model(object):
-    def __init__(self, sess, input_shape=[10, 9, 3], num_layers=20, num_classes=10 * 9 + 1, weight_decay=0.01,
+    def __init__(self, sess, input_shape=[10, 9, 3], num_layers=20, num_classes=10 * 9, weight_decay=0.01,
                  momentum=0.9):
         self.sess = sess
         self.is_training = tf.placeholder(tf.bool, shape=(), name="is_training")
@@ -25,8 +25,9 @@ class Model(object):
     def inference(self, state):
         state = (state / 7)
         state = state[np.newaxis, :]
-        return self.sess.run([self.policy_network, self.value_network],
-                             feed_dict={self.inputs: state, self.is_training: False})
+        policy, value = self.sess.run([self.policy_network, self.value_network],
+                                      feed_dict={self.inputs: state, self.is_training: False})
+        return policy[0], value[0]
 
     def train(self, state, policy, value, learning_rate):
         state = (state / 7)

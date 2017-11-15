@@ -38,8 +38,8 @@ env = Game.make("KoreanChess-v1", {"use_check": False, "limit_step": FLAGS.max_s
 config = tf.ConfigProto()
 config.gpu_options.allow_growth = True
 sess = tf.Session(config=config)
-sess.run(tf.global_variables_initializer())
 model = Model(sess, weight_decay=FLAGS.weight_decay, momentum=FLAGS.momentum)
+sess.run(tf.global_variables_initializer())
 saver = tf.train.Saver()
 learning_rate = FLAGS.learning_rate_decay
 
@@ -62,6 +62,7 @@ test_csv = csv.writer(test_f, delimiter=',')
 
 game_results = {"b": 0, "r": 0, "d": 0}
 train_games = int(FLAGS.episode_interval_to_train * FLAGS.train_fraction)
+
 for i_episode in range(FLAGS.max_episode):
     """self-play"""
     state = env.reset()

@@ -70,6 +70,7 @@ class Mcts(object):
         # todo: !!!<일단 요것만구현>반복수 제한도 걸기(여러 반복수하면 비겨서 계산하는 조건도 알아보기)
         # todo :pass액션 추가 ( 둘다 pass할경우 점수계산으로
         action_probs, state_value = self.model.inference(self.current_node.state)
+
         # todo : <<빅장>> 혹은 외통수(장군)등 기능 구현?
         # todo: 비긴 상태 구현해서 적용하기(더 디테일하게)
 
@@ -87,6 +88,7 @@ class Mcts(object):
         if self.root_node is self.current_node:
             # add noise to prior probabilities
             noise_probs = np.random.dirichlet(legal_action_probs, 1)[0]
+            print(type(noise_probs), type(legal_action_probs))
             legal_action_probs = ((1 - 0.25) * legal_action_probs + (noise_probs * 0.25))
 
         self.current_node.edges = [

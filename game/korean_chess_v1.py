@@ -255,7 +255,7 @@ class KoreanChessV1:
 
     def get_all_actions(self, state=None):
         turn = None
-        if state:
+        if state is not None:
             state, turn = u.encode_state(state, self.data_format)
         return u.get_all_actions(self.current_state if not state else state, self.current_turn if not turn else turn)
 
