@@ -96,8 +96,7 @@ class Mcts(object):
         return state_value
 
     def rollout(self, state):
-        i = 0
-        while True:
+        for i in range(500):
             legal_actions = self.env.get_all_actions(self.current_node.state)
             action = legal_actions[random.randint(0, len(legal_actions) - 1)]
             state = self.env.simulate(state, action)
@@ -106,7 +105,7 @@ class Mcts(object):
                     return self.winner_reward
                 else:
                     return self.loser_reward
-            i += 1
+        return 0
 
     def backup(self, state_value):
         print("MCTS Backup")
