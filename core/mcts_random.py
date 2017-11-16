@@ -5,7 +5,7 @@ import random
 
 
 class Mcts(object):
-    def __init__(self, state, env, max_simulation=500, winner_reward=1, loser_reward=-1, use_best=True, c_puct=0.5):
+    def __init__(self, state, env, max_simulation=500, winner_reward=1, loser_reward=-1, c_puct=0.5):
         self.env = env
         self.max_simulation = max_simulation
         self.root_node = Node(state)
@@ -16,7 +16,6 @@ class Mcts(object):
         self.temperature = 0
         self.winner_reward = winner_reward
         self.loser_reward = loser_reward
-        self.use_best = use_best
         self.c_puct = c_puct
 
     def search(self, temperature=0, action_idx=None):
@@ -24,8 +23,8 @@ class Mcts(object):
         self.root_turn = self.env.current_turn
         self.current_turn = self.env.current_turn
         if action_idx:
-            if not self.root_node.edges:
-                return False
+            if not self.root_node.edges or len(self.root_node.edges) <= action_idx:
+                self.expand_and_evaluate(False)
             self.root_node = self.root_node.edges[action_idx].node
 
         for i in range(self.max_simulation):
@@ -33,19 +32,17 @@ class Mcts(object):
 
         action_probs = np.array(
             [edge.get_action_probs(self.root_node.edges, self.temperature) for edge in self.root_node.edges])
-        if self.use_best:
-            if (action_probs == 0).all():
-                action_idx = np.random.choice(range(len(action_probs)), 1)[0]
+        if (action_probs == 0).all():
+            action_idx = np.random.choice(range(len(action_probs)), 1)[0]
+        else:
+            arg_max_list = np.argwhere(action_probs == np.amax(action_probs)).flatten()
+            if len(arg_max_list) > 1:
+                action_idx = np.random.choice(arg_max_list, 1)[0]
             else:
-                arg_max_list = np.argwhere(action_probs == np.amax(action_probs)).flatten()
-                if len(arg_max_list) > 1:
-                    action_idx = np.random.choice(arg_max_list, 1)[0]
-                else:
-                    action_idx = action_probs.argmax()
-            searched_action = self.root_node.edges[action_idx].action
-            self.root_node = self.root_node.edges[action_idx].node
-            return action_probs, searched_action
-        return action_probs, False
+                action_idx = action_probs.argmax()
+        searched_action = self.root_node.edges[action_idx].action
+        self.root_node = self.root_node.edges[action_idx].node
+        return searched_action
 
     def simulate(self):
         is_leaf_node = False
@@ -77,13 +74,15 @@ class Mcts(object):
 
         return False
 
-    def expand_and_evaluate(self):
+    def expand_and_evaluate(self, do_rollout=True):
         print("Expand and Evaluate!")
         if self.env.is_over(self.current_node.state):
             print("MCTS Game Over")
-            return self.loser_rewardf
+            return self.loser_reward
 
-        state_value = self.rollout(self.current_node.state)
+        state_value = 0
+        if do_rollout:
+            state_value = self.rollout(self.current_node.state)
 
         legal_actions = self.env.get_all_actions(self.current_node.state)
 
