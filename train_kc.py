@@ -7,6 +7,7 @@ from core.mcts import Mcts
 from util import dataset
 from util import common
 import csv
+import sys, traceback
 
 FLAGS = tf.app.flags.FLAGS
 
@@ -18,7 +19,7 @@ tf.app.flags.DEFINE_integer('max_episode', 1000000, "max episode")
 tf.app.flags.DEFINE_integer('max_simulation', 5, "max simulation count in a mcts search")
 tf.app.flags.DEFINE_integer('exploration_step', 20, "exploration step")
 tf.app.flags.DEFINE_integer('batch_interval_to_save', 10, "batch interval to save model")
-tf.app.flags.DEFINE_integer('episode_interval_to_train', 1, "episode interval to train model")
+tf.app.flags.DEFINE_integer('episode_interval_to_train', 2, "episode interval to train model")
 tf.app.flags.DEFINE_integer('epoch', 20, "epoch")
 tf.app.flags.DEFINE_integer('num_model_layers', 20, "numbers of model layers")
 tf.app.flags.DEFINE_float('weight_decay', 0.0001, "weigh decay for weights l2 regularize")
@@ -84,14 +85,21 @@ for i_episode in range(FLAGS.max_episode):
         if step >= FLAGS.exploration_step:
             print("temperature down")
             temperature = 0
+        actions = env.get_all_actions()
         search_action_probs, action = mcts.search(temperature)
         try:
             state, reward, done, info = env.step(action)
-            actions = env.get_all_actions()
-            mcts_history.append(env.convert_action_probs_to_policy_probs(actions, search_action_probs))
+
         except Exception as e:
-            print(e)
+            traceback.print_exc(file=sys.stdout)
             continue
+
+        if len(actions) != len(search_action_probs):
+            print(len(actions), len(search_action_probs))
+            print(actions)
+            print(search_action_probs)
+            sys.exit("error!!! action count!!")
+        mcts_history.append(env.convert_action_probs_to_policy_probs(actions, search_action_probs))
 
         if done:
             if info["over_limit_step"] or info["is_draw"]:

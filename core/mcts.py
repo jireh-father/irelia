@@ -34,7 +34,6 @@ class Mcts(object):
 
         action_probs = np.array(
             [edge.get_action_probs(self.root_node.edges, self.temperature) for edge in self.root_node.edges])
-
         if self.use_best:
             if (action_probs == 0).all():
                 action_idx = np.random.choice(range(len(action_probs)), 1)[0]
