@@ -120,33 +120,45 @@ for i_episode in range(FLAGS.max_episode):
         # read saved data
         train_f.close()
         test_f.close()
-        train_dataset = dataset.get_dataset(train_data_path, FLAGS.batch_size)
-        dataset.initializer(sess, train_dataset)
-        # test_dataset = dataset.get_dataset(test_data_path, FLAGS.batch_size)
-        batch_step = 0
-        print("train!")
-        for epoch in range(FLAGS.epoch):
-            while True:
-                print("epoch: %d, step: %d, episode: %d" % (epoch, batch_step, i_episode))
-                try:
-                    train_batch_state, train_batch_policy, train_batch_value = dataset.get_batch(sess, train_dataset)
-                    model.train(train_batch_state, train_batch_policy, train_batch_value, learning_rate)
-                    # save model
-                    if batch_step > 0 and batch_step % FLAGS.batch_interval_to_save == 0:
-                        # test_batch_state, test_batch_policy, test_batch_value = dataset.get_batch(sess, test_dataset)
-                        # cost = model.eval(test_batch_state, test_batch_policy, test_batch_value)
-                        # print("eval cost", cost)
-                        print("save model")
-                        result = saver.save(sess, checkpoint_path)
-                        # todo : evaluate best player
-                    if batch_step > 0 and batch_step % FLAGS.learning_rate_decay_interval == 0:
-                        print("decay learning rate")
-                        learning_rate = learning_rate * FLAGS.learning_rate_decay
-                    batch_step += 1
-                except tf.errors.OutOfRangeError:
-                    dataset.initializer(sess, train_dataset)
-                    break
-
+        if os.path.getsize(train_data_path) != 0:
+            train_dataset = dataset.get_dataset(train_data_path, FLAGS.batch_size)
+            dataset.initializer(sess, train_dataset)
+            test_dataset = None
+            if os.path.getsize(test_data_path) != 0:
+                test_dataset = dataset.get_dataset(test_data_path, FLAGS.batch_size)
+                dataset.initializer(sess, test_dataset)
+            batch_step = 0
+            print("train!")
+            for epoch in range(FLAGS.epoch):
+                while True:
+                    print("epoch: %d, step: %d, episode: %d" % (epoch, batch_step, i_episode))
+                    try:
+                        train_batch_state, train_batch_policy, train_batch_value = dataset.get_batch(sess,
+                                                                                                     train_dataset)
+                        model.train(train_batch_state, train_batch_policy, train_batch_value, learning_rate)
+                        # save model
+                        if batch_step > 0 and batch_step % FLAGS.batch_interval_to_save == 0:
+                            if test_dataset is not None:
+                                while (True):
+                                    try:
+                                        test_batch_state, test_batch_policy, test_batch_value = dataset.get_batch(sess,
+                                                                                                                  test_dataset)
+                                        cost = model.eval(test_batch_state, test_batch_policy, test_batch_value)
+                                        print("eval cost", cost)
+                                        break
+                                    except tf.errors.OutOfRangeError:
+                                        dataset.initializer(sess, test_dataset)
+                            print("save model")
+                            saver.save(sess, checkpoint_path)
+                            # todo : evaluate best player
+                        if batch_step > 0 and batch_step % FLAGS.learning_rate_decay_interval == 0:
+                            print("decay learning rate")
+                            learning_rate = learning_rate * FLAGS.learning_rate_decay
+                        batch_step += 1
+                    except tf.errors.OutOfRangeError:
+                        dataset.initializer(sess, train_dataset)
+                        break
+            saver.save(sess, checkpoint_path)
         os.remove(train_data_path)
         os.remove(test_data_path)
         train_f = open(train_data_path, "w+")
