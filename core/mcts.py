@@ -36,11 +36,14 @@ class Mcts(object):
             [edge.get_action_probs(self.root_node.edges, self.temperature) for edge in self.root_node.edges])
 
         if self.use_best:
-            arg_max_list = np.argwhere(action_probs == np.amax(action_probs)).flatten()
-            if len(arg_max_list) > 1:
-                action_idx = np.random.choice(arg_max_list, 1)[0]
+            if (action_probs == 0).all():
+                action_idx = np.random.choice(range(len(action_probs)), 1)[0]
             else:
-                action_idx = action_probs.argmax()
+                arg_max_list = np.argwhere(action_probs == np.amax(action_probs)).flatten()
+                if len(arg_max_list) > 1:
+                    action_idx = np.random.choice(arg_max_list, 1)[0]
+                else:
+                    action_idx = action_probs.argmax()
             searched_action = self.root_node.edges[action_idx].action
             self.root_node = self.root_node.edges[action_idx].node
             return action_probs, searched_action
@@ -59,11 +62,14 @@ class Mcts(object):
             return True
         select_scores = np.array(
             [edge.get_select_score(self.current_node.edges, self.c_puct) for edge in self.current_node.edges])
-        arg_max_list = np.argwhere(select_scores == np.amax(select_scores)).flatten()
-        if len(arg_max_list) > 1:
-            edge_idx = np.random.choice(arg_max_list, 1)[0]
+        if (select_scores == 0).all():
+            edge_idx = np.random.choice(range(len(select_scores)), 1)[0]
         else:
-            edge_idx = select_scores.argmax()
+            arg_max_list = np.argwhere(select_scores == np.amax(select_scores)).flatten()
+            if len(arg_max_list) > 1:
+                edge_idx = np.random.choice(arg_max_list, 1)[0]
+            else:
+                edge_idx = select_scores.argmax()
 
         self.selected_edges.append(self.current_node.edges[edge_idx])
         self.current_node = self.current_node.edges[edge_idx].node
