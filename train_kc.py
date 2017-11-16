@@ -95,9 +95,6 @@ for i_episode in range(FLAGS.max_episode):
             continue
 
         if len(actions) != len(search_action_probs):
-            print(len(actions), len(search_action_probs))
-            print(actions)
-            print(search_action_probs)
             sys.exit("error!!! action count!!")
         mcts_history.append(env.convert_action_probs_to_policy_probs(actions, search_action_probs))
 
