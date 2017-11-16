@@ -13,7 +13,7 @@ init_state[0][6][4] = c.CAR
 init_state[0][5][4] = c.CAR
 # env = Game.make("KoreanChess-v1", {"init_state": init_state})
 # env = Game.make("KoreanChess-v1", {"interval": 0.1})
-env = Game.make("KoreanChess-v1", {"use_check": False, "limit_step": 400, "interval": 2})
+env = Game.make("KoreanChess-v1", {"use_check": False, "limit_step": 400, "interval": 2, "use_color_print": False})
 episodes = 1000
 for i in range(episodes):
     env.reset()

@@ -10,7 +10,17 @@ import time
 from game import korean_chess_constant as c
 from game import korean_chess_util as u
 from colorama import Fore
-import numpy as np
+import os
+
+if os.name == "posix":
+    empty_str = "--"
+    empty_str_kor = "----"
+elif os.name == "nt":
+    empty_str = "--"
+    empty_str_kor = "------"
+else:
+    empty_str = "--"
+    empty_str_kor = "----"
 
 
 class KoreanChessV1:
@@ -18,7 +28,7 @@ class KoreanChessV1:
     RED_COLOR = Fore.RED
     LAST_COLOR = Fore.MAGENTA
     EMPTY_COLOR = Fore.WHITE
-    PIECE_MAP_KOR = \
+    PIECE_MAP_COLOR = \
         {c.R_SD: RED_COLOR + '졸' + EMPTY_COLOR, c.R_SG: RED_COLOR + '상' + EMPTY_COLOR,
          c.R_GD: RED_COLOR + '사' + EMPTY_COLOR, c.R_HS: RED_COLOR + '마' + EMPTY_COLOR,
          c.R_CN: RED_COLOR + '포' + EMPTY_COLOR, c.R_CR: RED_COLOR + '차' + EMPTY_COLOR,
@@ -27,9 +37,9 @@ class KoreanChessV1:
          c.B_GD: Fore.BLUE + '사' + EMPTY_COLOR, c.B_HS: Fore.BLUE + '마' + EMPTY_COLOR,
          c.B_CN: Fore.BLUE + '포' + EMPTY_COLOR, c.B_CR: Fore.BLUE + '차' + EMPTY_COLOR,
          c.B_KG: Fore.BLUE + '궁' + EMPTY_COLOR,
-         0: EMPTY_COLOR + '---' + EMPTY_COLOR}
+         0: EMPTY_COLOR + empty_str + EMPTY_COLOR}
 
-    PIECE_MAP_KOR_NO_COLOR = \
+    PIECE_MAP_COLOR_MOVED = \
         {c.R_SD: LAST_COLOR + '졸' + EMPTY_COLOR, c.R_SG: LAST_COLOR + '상' + EMPTY_COLOR,
          c.R_GD: LAST_COLOR + '사' + EMPTY_COLOR, c.R_HS: LAST_COLOR + '마' + EMPTY_COLOR,
          c.R_CN: LAST_COLOR + '포' + EMPTY_COLOR, c.R_CR: LAST_COLOR + '차' + EMPTY_COLOR,
@@ -38,7 +48,17 @@ class KoreanChessV1:
          c.B_GD: LAST_COLOR + '사' + EMPTY_COLOR, c.B_HS: LAST_COLOR + '마' + EMPTY_COLOR,
          c.B_CN: LAST_COLOR + '포' + EMPTY_COLOR, c.B_CR: LAST_COLOR + '차' + EMPTY_COLOR,
          c.B_KG: LAST_COLOR + '궁' + EMPTY_COLOR,
-         0: LAST_COLOR + '---' + EMPTY_COLOR}
+         0: LAST_COLOR + empty_str + EMPTY_COLOR}
+
+    PIECE_MAP_KOR = \
+        {c.R_SD: '졸(홍)', c.R_SG: '상(홍)', c.R_GD: '사(홍)', c.R_HS: '마(홍)', c.R_CN: '포(홍)', c.R_CR: '차(홍)', c.R_KG: '궁(홍)',
+         c.B_SD: '졸(청)', c.B_SG: '상(청)', c.B_GD: '사(청)', c.B_HS: '마(청)', c.B_CN: '포(청)', c.B_CR: '차(청)', c.B_KG: '궁(청)',
+         0: empty_str_kor}
+
+    PIECE_MAP_KOR_MOVED = \
+        {c.R_SD: '졸(V)', c.R_SG: '상(V)', c.R_GD: '사(V)', c.R_HS: '마(V)', c.R_CN: '포(V)', c.R_CR: '차(V)', c.R_KG: '궁(V)',
+         c.B_SD: '졸(V)', c.B_SG: '상(V)', c.B_GD: '사(V)', c.B_HS: '마(V)', c.B_CN: '포(V)', c.B_CR: '차(V)', c.B_KG: '궁(V)',
+         0: empty_str_kor}
 
     default_state = [
         [c.R_CR, 0, 0, c.R_GD, 0, c.R_GD, 0, 0, c.R_CR],
@@ -92,6 +112,8 @@ class KoreanChessV1:
         self.max_reward = 1
         self.data_format = None
         self.check_repeat = True
+        self.print_mcts_history = None
+        self.use_color_print = None
         self.action_history = {c.BLUE: [], c.RED: []}
 
     def reset(self):
@@ -100,6 +122,8 @@ class KoreanChessV1:
         self.check_repeat = 5
         self.limit_step = 200
         self.max_reward = 1
+        self.print_mcts_history = False
+        self.use_color_print = False
         if self.properties:
             if "interval" in self.properties:
                 self.interval = self.properties["interval"]
@@ -113,6 +137,10 @@ class KoreanChessV1:
                 self.data_format = self.properties["data_format"]
             if "check_repeat" in self.properties:
                 self.check_repeat = self.properties["check_repeat"]
+            if "print_mcts_history" in self.properties:
+                self.print_mcts_history = self.properties["print_mcts_history"]
+            if "use_color_print" in self.properties:
+                self.use_color_print = self.properties["use_color_print"]
 
         if self.properties and "init_state" in self.properties:
             self.current_state, self.current_turn = u.encode_state(self.properties["init_state"], self.data_format)
@@ -226,6 +254,8 @@ class KoreanChessV1:
             state = self.current_state
             turn = self.current_turn
         else:
+            if not self.print_mcts_history:
+                return
             by_mcts = True
             state, turn = u.encode_state(state, self.data_format)
         if self.interval > 0:
@@ -236,13 +266,19 @@ class KoreanChessV1:
             print("%s %s : %d" % ("RED", "Turn", self.current_step))
         if not by_mcts:
             print("Score [ BLUE : %f ] [ RED : %f ]" % (self.blue_score, self.red_score))
-        print("  " + KoreanChessV1.PIECE_MAP_KOR[0].join(["%d" % col_idx for col_idx in range(0, 9)]) + "  X")
+        if self.use_color_print:
+            piece_map = KoreanChessV1.PIECE_MAP_COLOR
+            piece_map_moved = KoreanChessV1.PIECE_MAP_COLOR_MOVED
+        else:
+            piece_map = KoreanChessV1.PIECE_MAP_KOR
+            piece_map_moved = KoreanChessV1.PIECE_MAP_KOR_MOVED
+        print("  " + piece_map[0].join(["%d" % col_idx for col_idx in range(0, 9)]) + "  X")
         for i, line in enumerate(state):
             if to_y == i:
-                line = [KoreanChessV1.PIECE_MAP_KOR_NO_COLOR[piece] if j == to_x else
-                        KoreanChessV1.PIECE_MAP_KOR[piece] for j, piece in enumerate(line)]
+                line = [piece_map_moved[piece] if j == to_x else
+                        piece_map[piece] for j, piece in enumerate(line)]
             else:
-                line = [KoreanChessV1.PIECE_MAP_KOR[piece] for piece in line]
+                line = [piece_map[piece] for piece in line]
             print("%d %s" % (i, ' '.join(line)))
         print("Y")
         if not by_mcts:

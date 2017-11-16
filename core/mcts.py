@@ -98,8 +98,12 @@ class Mcts(object):
         # todo: add noise!! check (DIR(0.03)???)
         if self.root_node is self.current_node:
             # add noise to prior probabilities
-            noise_probs = np.random.dirichlet(legal_action_probs, 1)[0]
             # todo: division error
+            if (legal_action_probs == 0).all():
+                noise_probs = legal_action_probs
+            else:
+                noise_probs = np.random.dirichlet(legal_action_probs, 1)[0]
+
             legal_action_probs = ((1 - 0.25) * legal_action_probs + (noise_probs * 0.25))
 
         self.current_node.edges = [

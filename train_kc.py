@@ -14,10 +14,10 @@ tf.app.flags.DEFINE_string('save_dir', os.path.join(os.path.dirname(os.path.real
 tf.app.flags.DEFINE_string('model_file_name', "model.ckpt", "model name to save")
 tf.app.flags.DEFINE_integer('max_step', 200, "max step in a episode")
 tf.app.flags.DEFINE_integer('max_episode', 1000000, "max episode")
-tf.app.flags.DEFINE_integer('max_simulation', 500, "max simulation count in a mcts search")
+tf.app.flags.DEFINE_integer('max_simulation', 300, "max simulation count in a mcts search")
 tf.app.flags.DEFINE_integer('exploration_step', 20, "exploration step")
-tf.app.flags.DEFINE_integer('batch_interval_to_save', 1000, "batch interval to save model")
-tf.app.flags.DEFINE_integer('episode_interval_to_train', 500, "episode interval to train model")
+tf.app.flags.DEFINE_integer('batch_interval_to_save', 10, "batch interval to save model")
+tf.app.flags.DEFINE_integer('episode_interval_to_train', 1, "episode interval to train model")
 tf.app.flags.DEFINE_integer('epoch', 20, "epoch")
 tf.app.flags.DEFINE_float('weight_decay', 0.0001, "weigh decay for weights l2 regularize")
 tf.app.flags.DEFINE_float('learning_rate', 0.01, "learning rate")
@@ -27,13 +27,17 @@ tf.app.flags.DEFINE_integer('batch_size', 64, "batch size")
 tf.app.flags.DEFINE_float('c_puct', 0.5, "a constant determining the level of exploration")
 tf.app.flags.DEFINE_float('train_fraction', 0.7, "train dataset fraction")
 tf.app.flags.DEFINE_float('momentum', 0.9, "momentum for optimizer")
+tf.app.flags.DEFINE_boolean('print_mcts_history', False, "show mcts search history")
+tf.app.flags.DEFINE_boolean('use_color_print', False, "use color in printing state")
 
 if not os.path.exists(FLAGS.save_dir):
     os.mkdir(FLAGS.save_dir)
 
 data_format = ('channels_first' if tf.test.is_built_with_cuda() else 'channels_last')
 
-env = Game.make("KoreanChess-v1", {"use_check": False, "limit_step": FLAGS.max_step, "data_format": data_format})
+env = Game.make("KoreanChess-v1", {"use_check": False, "limit_step": FLAGS.max_step, "data_format": data_format,
+                                   "print_mcts_history": FLAGS.print_mcts_history,
+                                   "use_color_print": FLAGS.use_color_print})
 
 config = tf.ConfigProto()
 config.gpu_options.allow_growth = True

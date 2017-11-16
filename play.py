@@ -1,1 +1,1 @@
-from play import user_vs_user
+from play import random_vs_random
