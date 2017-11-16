@@ -223,10 +223,9 @@ class KoreanChessV1:
         # draw?
         is_draw = u.is_draw(self.current_state)
 
-        # 장군, 외통수 상태편 수둘때도 고려해서 수정하기
+        # todo: 장군, 외통수 상태편 수둘때도 고려해서 수정하기
         # todo: 먹힌말 print
-        # todo: count, win or lose by count(점수에 의한 승부 정리)
-        # todo: 빅장
+        # todo: 빅장 - count, win or lose by count(점수에 의한 승부 정리)
         # todo: 장군, 가능한 actions, 외통수 등 기능 테스트
 
         # done?
@@ -243,9 +242,23 @@ class KoreanChessV1:
         # decode and return state
         is_game_over = (done or is_draw or self.current_step >= self.limit_step)
         reward = (float(reward) / c.REWARD_LIST[c.KING] * self.max_reward)
+
         info = {"is_check": is_check,
                 "over_limit_step": self.current_step >= self.limit_step,
                 "is_draw": is_draw}
+
+        # who's winner?
+        if info["over_limit_step"] or info["is_draw"]:
+            if self.blue_score > self.red_score:
+                winner = c.BLUE
+            elif self.blue_score < self.red_score:
+                winner = c.RED
+            else:
+                winner = None
+        else:
+            winner = 'b' if self.current_turn == 'r' else 'b'
+        info["winner"] = winner
+
         return u.decode_state(self.current_state, self.current_turn, self.data_format), reward, is_game_over, info
 
     def print_env(self, is_check=False, is_checkmate=False, to_x=10, to_y=10, done=False, is_draw=False, state=None):

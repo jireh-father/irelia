@@ -95,7 +95,7 @@ class Model(object):
 
         self.train_op = tf.train.MomentumOptimizer(self.learning_rate, self.momentum).minimize(self.cost)
 
-        # todo: eval !! legal action probabilities and value scalar
+        # todo: accuracy! legal action probabilities and value scalar
 
     def batch_norm_relu(self, inputs, data_format, name):
         inputs = tf.layers.batch_normalization(

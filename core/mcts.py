@@ -84,12 +84,10 @@ class Mcts(object):
             print("MCTS Game Over")
             return self.winner_reward
 
-        # todo: implement model class
         # todo: !!!<일단 요것만구현>반복수 제한도 걸기(여러 반복수하면 비겨서 계산하는 조건도 알아보기)
         # todo :pass액션 추가 ( 둘다 pass할경우 점수계산으로
         action_probs, state_value = self.model.inference(self.current_node.state)
         print("MCTS Value inference", state_value)
-
         # todo : <<빅장>> 혹은 외통수(장군)등 기능 구현?
         # todo: 비긴 상태 구현해서 적용하기(더 디테일하게)
 
