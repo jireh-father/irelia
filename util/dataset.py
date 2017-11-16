@@ -1,6 +1,10 @@
 import json
 import tensorflow as tf
 import numpy as np
+import os
+import time
+import datetime
+import shutil
 
 
 def write_data(writer, winner, state_history, mcts_history):
@@ -42,3 +46,19 @@ def get_batch(sess, dataset):
 
 def initializer(sess, dataset):
     sess.run(dataset.initializer)
+
+
+def backup_dataset(data_path):
+    if not os.path.exists(data_path):
+        return
+    if os.path.getsize(data_path) != 0:
+        print("empty dataset!! remove!!")
+        os.remove(data_path)
+        return
+    print("backup dataset!")
+    dt = datetime.datetime.fromtimestamp(time.time()).strftime('%Y%m%d%H%M%S')
+    dataset_file_name = os.path.basename(data_path)
+    save_dir = os.path.dirname(data_path)
+    bak_dir = os.path.join(save_dir, "dataset_" + dt)
+    os.makedirs(bak_dir)
+    shutil.move(data_path, os.path.join(bak_dir, dataset_file_name))

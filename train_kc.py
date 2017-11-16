@@ -5,8 +5,8 @@ import os
 from core.model import Model
 from core.mcts import Mcts
 from util import dataset
+from util import common
 import csv
-import numpy as np
 
 FLAGS = tf.app.flags.FLAGS
 
@@ -140,18 +140,8 @@ for i_episode in range(FLAGS.max_episode):
                         print("traind! cost:", train_cost)
                         # save model
                         if batch_step > 0 and batch_step % FLAGS.batch_interval_to_save == 0:
-                            if test_dataset is not None:
-                                while (True):
-                                    try:
-                                        test_batch_state, test_batch_policy, test_batch_value = dataset.get_batch(sess,
-                                                                                                                  test_dataset)
-                                        cost = model.eval(test_batch_state, test_batch_policy, test_batch_value)
-                                        print("eval cost", cost)
-                                        break
-                                    except tf.errors.OutOfRangeError:
-                                        dataset.initializer(sess, test_dataset)
-                            print("save model")
-                            saver.save(sess, checkpoint_path)
+                            common.eval_mode(sess, model, test_dataset)
+                            common.save_model(sess, saver, checkpoint_path)
                             # todo : evaluate best player
                         if batch_step > 0 and batch_step % FLAGS.learning_rate_decay_interval == 0:
                             print("decay learning rate")
@@ -161,9 +151,10 @@ for i_episode in range(FLAGS.max_episode):
                         print("out of range dataset! init!!")
                         dataset.initializer(sess, train_dataset)
                         break
-            saver.save(sess, checkpoint_path)
-        os.remove(train_data_path)
-        os.remove(test_data_path)
+            common.save_model(sess, saver, checkpoint_path)
+        # reset dataset file
+        dataset.backup_dataset(train_data_path)
+        dataset.backup_dataset(test_data_path)
         train_f = open(train_data_path, "w+")
         test_f = open(test_data_path, "w+")
         train_csv = csv.writer(train_f, delimiter=',')
