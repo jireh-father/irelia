@@ -135,7 +135,9 @@ for i_episode in range(FLAGS.max_episode):
                     try:
                         train_batch_state, train_batch_policy, train_batch_value = dataset.get_batch(sess,
                                                                                                      train_dataset)
-                        model.train(train_batch_state, train_batch_policy, train_batch_value, learning_rate)
+                        _, train_cost = model.train(train_batch_state, train_batch_policy, train_batch_value,
+                                                    learning_rate)
+                        print("traind! cost:", train_cost)
                         # save model
                         if batch_step > 0 and batch_step % FLAGS.batch_interval_to_save == 0:
                             if test_dataset is not None:
@@ -156,6 +158,7 @@ for i_episode in range(FLAGS.max_episode):
                             learning_rate = learning_rate * FLAGS.learning_rate_decay
                         batch_step += 1
                     except tf.errors.OutOfRangeError:
+                        print("out of range dataset! init!!")
                         dataset.initializer(sess, train_dataset)
                         break
             saver.save(sess, checkpoint_path)
