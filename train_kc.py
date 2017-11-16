@@ -19,7 +19,6 @@ tf.app.flags.DEFINE_integer('max_step', 200, "max step in a episode")
 tf.app.flags.DEFINE_integer('max_episode', 1000000, "max episode")
 tf.app.flags.DEFINE_integer('max_simulation', 5, "max simulation count in a mcts search")
 tf.app.flags.DEFINE_integer('exploration_step', 20, "exploration step")
-tf.app.flags.DEFINE_integer('batch_interval_to_save', 10, "batch interval to save model")
 tf.app.flags.DEFINE_integer('episode_interval_to_train', 2, "episode interval to train model")
 tf.app.flags.DEFINE_integer('epoch', 20, "epoch")
 tf.app.flags.DEFINE_integer('num_model_layers', 20, "numbers of model layers")
@@ -153,11 +152,7 @@ for i_episode in range(FLAGS.max_episode):
                         _, train_cost = model.train(train_batch_state, train_batch_policy, train_batch_value,
                                                     learning_rate)
                         print("traind! cost:", train_cost)
-                        # save model
-                        if batch_step > 0 and batch_step % FLAGS.batch_interval_to_save == 0:
-                            common.eval_mode(sess, model, test_dataset)
-                            common.save_model(sess, saver, checkpoint_path)
-                            # todo : evaluate best player
+
                         if batch_step > 0 and batch_step % FLAGS.learning_rate_decay_interval == 0:
                             print("decay learning rate")
                             learning_rate = learning_rate * FLAGS.learning_rate_decay
@@ -166,7 +161,10 @@ for i_episode in range(FLAGS.max_episode):
                         print("out of range dataset! init!!")
                         dataset.initializer(sess, train_dataset)
                         break
+            # save model
+            common.eval_mode(sess, model, test_dataset)
             common.save_model(sess, saver, checkpoint_path)
+            # todo : evaluate best player
         else:
             print("empty dataset! no train!!")
         # reset dataset file

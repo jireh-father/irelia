@@ -27,10 +27,9 @@ def eval_mode(sess, model, test_dataset):
     if test_dataset is not None:
         while (True):
             try:
-                test_batch_state, test_batch_policy, test_batch_value = dataset.get_batch(sess,
-                                                                                          test_dataset)
+                test_batch_state, test_batch_policy, test_batch_value = dataset.get_batch(sess, test_dataset)
                 cost = model.eval(test_batch_state, test_batch_policy, test_batch_value)
                 print("eval cost", cost)
-                break
             except tf.errors.OutOfRangeError:
-                dataset.initializer(sess, test_dataset)
+                print("all evaluation finished")
+                break
