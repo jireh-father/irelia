@@ -116,6 +116,8 @@ for i_episode in range(FLAGS.max_episode):
             print("write self-play data for train data")
             # save train data
             dataset.write_data(train_csv, winner, state_history, mcts_history)
+    else:
+        print("draw!! don't write self-play data!")
 
     """train model"""
     if i_episode > 0 and i_episode % FLAGS.episode_interval_to_train == 0:
@@ -154,6 +156,8 @@ for i_episode in range(FLAGS.max_episode):
                         dataset.initializer(sess, train_dataset)
                         break
             common.save_model(sess, saver, checkpoint_path)
+        else:
+            print("empty dataset! no train!!")
         # reset dataset file
         dataset.backup_dataset(train_data_path)
         dataset.backup_dataset(test_data_path)
