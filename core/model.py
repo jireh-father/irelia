@@ -78,14 +78,17 @@ class Model(object):
         self.policy_network = policy_network
         self.value_network = value_network
 
-        # todo: l2!!
-        l2_regularizer = tf.contrib.layers.l2_regularizer(weight_decay)
+        weights = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES)
+        regularizer = 0
+        for weight in weights:
+            regularizer += tf.nn.l2_loss(weight)
+        regularizer *= weight_decay
 
         #     l = (z − v) 2 − πT log p + c||θ||2
         # self.cost = tf.reduce_mean(tf.pow(self.value_label - value_network, 2)) - tf.reduce_mean(
-        #     self.policy_label * tf.log(policy_network)) + l2_regularizer
+        #     self.policy_label * tf.log(policy_network)) + (0.5 * l2_regularizer)
         self.cost = tf.reduce_mean(tf.pow(self.value_label - tf.reshape(value_network, [-1]), 2)) - tf.reduce_mean(
-            tf.nn.softmax(self.policy_label) * tf.log(tf.nn.softmax(policy_network)))
+            tf.nn.softmax(self.policy_label) * tf.log(tf.nn.softmax(policy_network))) + regularizer
 
         # value_loss = tf.losses.mean_squared_error(self.value_label, value_network)
         # policy_loss = tf.losses.softmax_cross_entropy()
