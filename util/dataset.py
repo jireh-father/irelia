@@ -37,7 +37,7 @@ class Dataset(object):
 
     def write_dataset(self, info, state_history, mcts_history, episode_step, train_games):
         if info["winner"]:
-            if episode_step > train_games:
+            if episode_step < train_games:
                 self.write_train_data(info["winner"], state_history, mcts_history)
             else:
                 self.write_test_data(info["winner"], state_history, mcts_history)
