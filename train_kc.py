@@ -7,6 +7,7 @@ from core.mcts import Mcts
 from util import dataset
 from util import common
 import csv
+import time
 import sys, traceback
 
 FLAGS = tf.app.flags.FLAGS
@@ -100,11 +101,16 @@ for i_episode in range(FLAGS.max_episode):
 
         if done:
             if info["over_limit_step"] or info["is_draw"]:
-                # todo: check winner 점수계산?
-                game_results["d"] += 1
+                if env.blue_score > env.red_score:
+                    winner = 'b'
+                elif env.blue_score < env.red_score:
+                    winner = 'r'
             else:
                 winner = 'b' if env.current_turn == 'r' else 'b'
-                game_results[env.next_turn] += 1
+            if winner:
+                game_results[winner] += 1
+            else:
+                game_results["d"] += 1
             break
         state_history.append(state.tolist())
     print("Blue wins : %d, Red winds : %d, Draws : %d" % (game_results["b"], game_results["r"], game_results["d"]))
