@@ -60,5 +60,6 @@ def backup_dataset(data_path):
     dataset_file_name = os.path.basename(data_path)
     save_dir = os.path.dirname(data_path)
     bak_dir = os.path.join(save_dir, "dataset_" + dt)
-    os.makedirs(bak_dir)
+    if not os.path.exists(bak_dir):
+        os.makedirs(bak_dir)
     shutil.move(data_path, os.path.join(bak_dir, dataset_file_name))

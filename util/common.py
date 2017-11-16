@@ -14,7 +14,8 @@ def save_model(sess, saver, checkpoint_path):
         print("backup model")
         dt = datetime.datetime.fromtimestamp(time.time()).strftime('%Y%m%d%H%M%S')
         bak_dir = os.path.join(save_dir, "model_" + dt)
-        os.makedirs(bak_dir)
+        if not os.path.exists(bak_dir):
+            os.makedirs(bak_dir)
         shutil.move(checkpoint_path + ".index", os.path.join(bak_dir, model_file_name + ".index"))
         shutil.move(checkpoint_path + ".data-00000-of-00001",
                     os.path.join(bak_dir, model_file_name + ".data-00000-of-00001"))

@@ -52,6 +52,7 @@ if not os.path.exists(FLAGS.save_dir):
     os.makedirs(FLAGS.save_dir)
 checkpoint_path = os.path.join(FLAGS.save_dir, FLAGS.model_file_name)
 if os.path.exists(checkpoint_path + ".index"):
+    print("restore success!!")
     saver.restore(sess, checkpoint_path)
 tf.summary.FileWriter(FLAGS.save_dir, sess.graph)
 train_data_path = os.path.join(FLAGS.save_dir, "train_dataset.txt")
