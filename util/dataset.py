@@ -51,7 +51,7 @@ def initializer(sess, dataset):
 def backup_dataset(data_path):
     if not os.path.exists(data_path):
         return
-    if os.path.getsize(data_path) != 0:
+    if os.path.getsize(data_path) == 0:
         print("empty dataset!! remove!!")
         os.remove(data_path)
         return
