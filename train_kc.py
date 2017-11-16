@@ -20,6 +20,7 @@ tf.app.flags.DEFINE_integer('exploration_step', 20, "exploration step")
 tf.app.flags.DEFINE_integer('batch_interval_to_save', 10, "batch interval to save model")
 tf.app.flags.DEFINE_integer('episode_interval_to_train', 1, "episode interval to train model")
 tf.app.flags.DEFINE_integer('epoch', 20, "epoch")
+tf.app.flags.DEFINE_integer('num_model_layers', 20, "numbers of model layers")
 tf.app.flags.DEFINE_float('weight_decay', 0.0001, "weigh decay for weights l2 regularize")
 tf.app.flags.DEFINE_float('learning_rate', 0.01, "learning rate")
 tf.app.flags.DEFINE_float('learning_rate_decay', 0.1, "learning rate decay")
@@ -43,7 +44,7 @@ env = Game.make("KoreanChess-v1", {"use_check": False, "limit_step": FLAGS.max_s
 config = tf.ConfigProto()
 config.gpu_options.allow_growth = True
 sess = tf.Session(config=config)
-model = Model(sess, weight_decay=FLAGS.weight_decay, momentum=FLAGS.momentum)
+model = Model(sess, weight_decay=FLAGS.weight_decay, momentum=FLAGS.momentum, num_layers=FLAGS.num_model_layers)
 sess.run(tf.global_variables_initializer())
 saver = tf.train.Saver()
 learning_rate = FLAGS.learning_rate_decay
