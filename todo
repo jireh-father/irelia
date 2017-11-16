@@ -1,0 +1,10 @@
+#todo
+1. 기타 todo 구현
+2. mac os 등 기타 콘솔 프린트 잘되게
+3. only mcts version 구현
+4. 병렬 학습 버전 만들기
+
+#test
+1. model 성능 테스트
+2. mcts 디버깅
+3. 장기 기능 디버깅
