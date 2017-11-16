@@ -341,6 +341,6 @@ class KoreanChessV1:
             action = actions[i]
             action = self.encode_action(action)
             half_prob = prob / 2
-            policy_probs[action[0]] = half_prob
-            policy_probs[action[1]] = half_prob
+            policy_probs[action[0]] += half_prob
+            policy_probs[action[1]] += half_prob
         return policy_probs
