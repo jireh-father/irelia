@@ -6,6 +6,7 @@ from core.model import Model
 from core.mcts import Mcts
 from util import dataset
 import csv
+import numpy as np
 
 FLAGS = tf.app.flags.FLAGS
 
@@ -14,7 +15,7 @@ tf.app.flags.DEFINE_string('save_dir', os.path.join(os.path.dirname(os.path.real
 tf.app.flags.DEFINE_string('model_file_name', "model.ckpt", "model name to save")
 tf.app.flags.DEFINE_integer('max_step', 200, "max step in a episode")
 tf.app.flags.DEFINE_integer('max_episode', 1000000, "max episode")
-tf.app.flags.DEFINE_integer('max_simulation', 300, "max simulation count in a mcts search")
+tf.app.flags.DEFINE_integer('max_simulation', 5, "max simulation count in a mcts search")
 tf.app.flags.DEFINE_integer('exploration_step', 20, "exploration step")
 tf.app.flags.DEFINE_integer('batch_interval_to_save', 10, "batch interval to save model")
 tf.app.flags.DEFINE_integer('episode_interval_to_train', 1, "episode interval to train model")
@@ -81,11 +82,10 @@ for i_episode in range(FLAGS.max_episode):
         if step >= FLAGS.exploration_step:
             print("temperature down")
             temperature = 0
-        search_action_probs = mcts.search(temperature)
-        actions = env.get_all_actions()
-        action = actions[search_action_probs.argmax()]
+        search_action_probs, action = mcts.search(temperature)
         try:
             state, reward, done, info = env.step(action)
+            actions = env.get_all_actions()
             mcts_history.append(env.convert_action_probs_to_policy_probs(actions, search_action_probs))
         except Exception as e:
             print(e)

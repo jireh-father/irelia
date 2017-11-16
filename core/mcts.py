@@ -32,11 +32,19 @@ class Mcts(object):
         for i in range(self.max_simulation):
             self.simulate()
 
-        action_probs = [edge.get_action_probs(self.root_node.edges, self.temperature) for edge in self.root_node.edges]
+        action_probs = np.array(
+            [edge.get_action_probs(self.root_node.edges, self.temperature) for edge in self.root_node.edges])
 
         if self.use_best:
-            self.root_node = self.root_node.edges[np.array(action_probs).argmax()].node
-        return np.array(action_probs)
+            arg_max_list = np.argwhere(action_probs == np.amax(action_probs)).flatten()
+            if len(arg_max_list) > 1:
+                action_idx = np.random.choice(arg_max_list, 1)[0]
+            else:
+                action_idx = action_probs.argmax()
+            searched_action = self.root_node.edges[action_idx].action
+            self.root_node = self.root_node.edges[action_idx].node
+            return action_probs, searched_action
+        return action_probs, False
 
     def simulate(self):
         is_leaf_node = False
@@ -49,16 +57,16 @@ class Mcts(object):
     def select(self):
         if not self.current_node.edges:
             return True
-        max_score = 0
-        max_score_edge = -1
-        for i, edge in enumerate(self.current_node.edges):
-            score = edge.get_select_score(self.current_node.edges, self.c_puct)
-            if max_score < score:
-                max_score = score
-                max_score_edge = i
+        select_scores = np.array(
+            [edge.get_select_score(self.current_node.edges, self.c_puct) for edge in self.current_node.edges])
+        arg_max_list = np.argwhere(select_scores == np.amax(select_scores)).flatten()
+        if len(arg_max_list) > 1:
+            edge_idx = np.random.choice(arg_max_list, 1)[0]
+        else:
+            edge_idx = select_scores.argmax()
 
-        self.selected_edges.append(self.current_node.edges[max_score_edge])
-        self.current_node = self.current_node.edges[max_score_edge].node
+        self.selected_edges.append(self.current_node.edges[edge_idx])
+        self.current_node = self.current_node.edges[edge_idx].node
         print("MCTS select!")
         self.env.print_env(state=self.current_node.state)
         self.current_turn = 'r' if self.current_turn == 'b' else 'b'
@@ -88,17 +96,12 @@ class Mcts(object):
         legal_action_probs = []
         for legal_action in legal_actions:
             legal_action = self.env.encode_action(legal_action)
-            prob = action_probs[legal_action[0]] + action_probs[legal_action[0]]
-            if prob == 0:
-                # todo: 아주작은수 세팅
-                prob = 0.000001
-            legal_action_probs.append(prob)
+            legal_action_probs.append(action_probs[legal_action[0]] + action_probs[legal_action[0]])
 
         legal_action_probs = np.array(legal_action_probs)
         # todo: add noise!! check (DIR(0.03)???)
         if self.root_node is self.current_node:
             # add noise to prior probabilities
-            # todo: division error
             if (legal_action_probs == 0).all():
                 noise_probs = legal_action_probs
             else:
