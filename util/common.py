@@ -27,7 +27,7 @@ def train_model(i_episode, ds, model, learning_rate, sess, saver, checkpoint_pat
         ds.open_dataset(flags.batch_size)
         batch_step = 0
         log("train!")
-        for epoch in range(flags.epochs):
+        for epoch in range(flags.epoch):
             while True:
                 log("epoch: %d, step: %d, episode: %d" % (epoch, batch_step, i_episode))
                 try:
