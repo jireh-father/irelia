@@ -114,7 +114,7 @@ class Mcts(object):
             legal_action_probs = ((1 - 0.25) * legal_action_probs + (noise_probs * 0.25))
 
         self.current_node.edges = [
-            Edge(action_prob, self.env.simulate(self.current_node.state, legal_actions[i]), legal_actions[i]) for
+            Edge(action_prob, self.env.simulate(self.current_node.state, legal_actions[i], False), legal_actions[i]) for
             i, action_prob in enumerate(legal_action_probs)]
 
         return state_value

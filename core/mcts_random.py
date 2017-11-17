@@ -96,22 +96,26 @@ class Mcts(object):
             return self.loser_reward
 
         self.current_node.edges = [
-            Edge(self.env.simulate(self.current_node.state, action), action) for
+            Edge(self.env.simulate(self.current_node.state, action, False), action) for
             i, action in enumerate(legal_actions)]
 
         return state_value
 
     def rollout(self, state):
+        rewards = 0
         for i in range(self.max_rollout):
             legal_actions = self.env.get_all_actions(self.current_node.state)
             action = legal_actions[random.randint(0, len(legal_actions) - 1)]
-            state = self.env.simulate(state, action)
-            if self.env.is_over(state):
+            state, info = self.env.simulate(state, action)
+            if info["is_game_over"]:
                 if i % 2 == 0:
                     return self.winner_reward
                 else:
                     return self.loser_reward
-        return 0
+            else:
+                if i % 2 == 0:
+                    rewards += info["reward"]
+        return rewards
 
     def backup(self, state_value):
         print("MCTS Backup")

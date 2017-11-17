@@ -335,7 +335,7 @@ class KoreanChessV1:
                         return False
         return True
 
-    def simulate(self, state, action):
+    def simulate(self, state, action, return_info=True):
         state, turn = u.encode_state(state, self.data_format)
         turn = c.RED if turn == c.BLUE else c.BLUE
         to_x = action['to_x']
@@ -343,10 +343,40 @@ class KoreanChessV1:
         from_x = action['from_x']
         from_y = action['from_y']
 
+        reward = 0
+        if state[to_y][to_x] != 0 and return_info:
+            reward = c.REWARD_LIST[int(state[to_y][to_x][1])] / c.KING
+            reward = (float(reward) / c.REWARD_LIST[c.KING] * self.max_reward)
+
         state[to_y][to_x] = state[from_y][from_x]
         state[from_y][from_x] = 0
 
-        return u.decode_state(state, turn, self.data_format)
+        is_draw = u.is_draw(state)
+
+        done = reward >= self.max_reward
+
+        # decode and return state
+        is_game_over = (done or is_draw)
+
+        info = {"is_draw": is_draw, "is_game_over": is_game_over, "winner": None, "reward": reward}
+
+        # who's winner?
+        if is_game_over:
+            if info["is_draw"]:
+                if self.blue_score > self.red_score:
+                    winner = c.BLUE
+                elif self.blue_score < self.red_score:
+                    winner = c.RED
+                else:
+                    winner = None
+            else:
+                winner = 'b' if self.current_turn == 'r' else 'b'
+            info["winner"] = winner
+
+        if return_info:
+            return u.decode_state(state, turn, self.data_format), info
+        else:
+            return u.decode_state(state, turn, self.data_format)
 
     def convert_action_probs_to_policy_probs(self, actions, action_probs):
         policy_probs = [.0] * 90
