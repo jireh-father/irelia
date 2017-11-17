@@ -148,7 +148,7 @@ class Mcts(object):
                 child_nodes.append(edge.node)
         print("%d row: %d nodes" % (row_idx, len(nodes)))
         if child_nodes:
-            self.print_row(child_nodes)
+            self.print_row(child_nodes, row_idx + 1)
 
 
 class Node(object):
