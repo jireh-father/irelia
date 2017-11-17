@@ -10,12 +10,16 @@ import time
 from game import korean_chess_constant as c
 from game import korean_chess_util as u
 from colorama import Fore
-import os
+from sys import platform
 
-if os.name == "posix":
+if platform == "linux" or platform == "linux2":
+    # linux
     empty_str = "--"
     empty_str_kor = "------"
-elif os.name == "nt":
+elif platform == "darwin":
+    empty_str = "--"
+    empty_str_kor = "----"
+elif platform == "win32":
     empty_str = "--"
     empty_str_kor = "------"
 else:
@@ -353,11 +357,7 @@ class KoreanChessV1:
         # decode and return state
         is_game_over = reward >= c.REWARD_LIST[c.KING]
 
-        info = {"is_game_over": is_game_over, "winner": None, "reward": reward}
-
-        # who's winner?
-        if is_game_over:
-            info["winner"] = 'b' if self.current_turn == 'r' else 'b'
+        info = {"is_game_over": is_game_over, "reward": reward}
 
         if return_info:
             return u.decode_state(state, turn, self.data_format), info
