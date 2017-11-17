@@ -34,7 +34,7 @@ def train_model(i_episode, ds, model, learning_rate, sess, saver, checkpoint_pat
                     train_batch_state, train_batch_policy, train_batch_value = ds.get_train_batch()
                     _, train_cost = model.train(train_batch_state, train_batch_policy, train_batch_value,
                                                 learning_rate)
-                    log("trained! cost:", train_cost)
+                    log("trained! cost: %f" % train_cost)
 
                     if batch_step > 0 and batch_step % flags.learning_rate_decay_interval == 0:
                         log("decay learning rate")
