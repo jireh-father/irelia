@@ -46,6 +46,8 @@ for i_episode in range(FLAGS.max_episode):
             temperature = 0
         actions = env.get_all_actions()
         search_action_probs, action = mcts.search(temperature)
+        if FLAGS.print_mcts_tree:
+            mcts.print_tree()
         try:
             state, reward, done, info = env.step(action)
         except Exception as e:
