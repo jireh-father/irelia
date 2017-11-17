@@ -41,6 +41,8 @@ while True:
             continue
     else:
         mcts_action = mcts.search(0, user_action_idx)
+        if FLAGS.print_mcts_tree:
+            mcts.print_tree()
         try:
             new_state, reward, done, _ = env.step(mcts_action)
             if done:
