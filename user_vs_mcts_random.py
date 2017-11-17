@@ -17,7 +17,7 @@ env = Game.make("KoreanChess-v1", {"use_check": False, "limit_step": FLAGS.max_s
 state = env.reset()
 i = 0
 user_action_idx = -1
-mcts = Mcts(state, env, FLAGS.exploration_step, max_rollout=FLAGS.max_rollouts)
+mcts = Mcts(state, env, FLAGS.max_simulation, max_rollout=FLAGS.max_rollouts)
 while True:
     if i % 2 == 0:
         from_x, from_y, to_x, to_y = user_input.get_user_input()
