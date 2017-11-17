@@ -346,13 +346,12 @@ class KoreanChessV1:
         reward = 0
         if state[to_y][to_x] != 0 and return_info:
             reward = c.REWARD_LIST[int(state[to_y][to_x][1])] / c.KING
-            reward = (float(reward) / c.REWARD_LIST[c.KING] * self.max_reward)
 
         state[to_y][to_x] = state[from_y][from_x]
         state[from_y][from_x] = 0
 
         # decode and return state
-        is_game_over = reward >= self.max_reward
+        is_game_over = reward >= c.REWARD_LIST[c.KING]
 
         info = {"is_game_over": is_game_over, "winner": None, "reward": reward}
 

@@ -119,7 +119,7 @@ class Mcts(object):
             else:
                 if i % 2 == 0:
                     rewards += info["reward"]
-        return rewards
+        return float(rewards) / 73 * self.winner_reward
 
     def backup(self, state_value):
         print("MCTS Backup")
