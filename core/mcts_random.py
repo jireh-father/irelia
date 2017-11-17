@@ -75,7 +75,6 @@ class Mcts(object):
 
         self.selected_edges.append(self.current_node.edges[edge_idx])
         self.current_node = self.current_node.edges[edge_idx].node
-        print("MCTS select!")
         self.env.print_env(state=self.current_node.state)
         self.current_turn = 'r' if self.current_turn == 'b' else 'b'
 
