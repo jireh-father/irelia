@@ -5,6 +5,7 @@ from core.mcts_random import Mcts
 from util import common
 from util import user_input
 import traceback
+import time
 
 FLAGS = tf.app.flags.FLAGS
 
@@ -40,7 +41,9 @@ while True:
             traceback.print_exc()
             continue
     else:
+        start_time = time.time()
         mcts_action = mcts.search(0, user_action_idx)
+        print("elased time : %f" % (time.time() - start_time))
         if FLAGS.print_mcts_tree:
             mcts.print_tree()
         try:
