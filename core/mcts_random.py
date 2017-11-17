@@ -106,7 +106,8 @@ class Mcts(object):
         return state_value
 
     def rollout(self, state):
-        rewards = 0
+        first_rewards = 0
+        second_rewards = 0
         for i in range(self.max_rollout):
             legal_actions = self.env.get_all_actions(self.current_node.state)
             action = legal_actions[random.randint(0, len(legal_actions) - 1)]
@@ -118,8 +119,10 @@ class Mcts(object):
                     return self.loser_reward
             else:
                 if i % 2 == 0:
-                    rewards += info["reward"]
-        return float(rewards) / 73 * self.winner_reward
+                    first_rewards += info["reward"]
+                else:
+                    second_rewards += info["reward"]
+        return float(first_rewards - second_rewards) / 73 * self.winner_reward
 
     def backup(self, state_value):
         print("MCTS Backup")
