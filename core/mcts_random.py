@@ -89,6 +89,7 @@ class Mcts(object):
         state_value = 0
         if do_rollout:
             state_value = self.rollout(self.current_node.state)
+            print("state_value %f" % state_value)
 
         legal_actions = self.env.get_all_actions(self.current_node.state)
 
