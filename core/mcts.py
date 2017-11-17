@@ -4,7 +4,7 @@ import numpy as np
 
 
 class Mcts(object):
-    def __init__(self, state, env, model, max_simulation=500, winner_reward=1, loser_reward=-1, c_puct=0.5):
+    def __init__(self, state, env, model, max_simulation=500, winner_reward=1, loser_reward=-1, c_puct=0.05):
         self.env = env
         self.model = model
         self.max_simulation = max_simulation
