@@ -39,6 +39,7 @@ class Mcts(object):
             action_idx = np.random.choice(range(len(action_probs)), 1)[0]
         else:
             arg_max_list = np.argwhere(action_probs == np.amax(action_probs)).flatten()
+            print("MCTS Max score:%f" % arg_max_list[0])
             if len(arg_max_list) > 1:
                 action_idx = np.random.choice(arg_max_list, 1)[0]
             else:
