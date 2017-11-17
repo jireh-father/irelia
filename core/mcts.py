@@ -128,7 +128,9 @@ class Mcts(object):
         self.selected_edges = []
 
     def print_tree(self):
+        print("========== mcts tree trace ==========")
         self.print_row([self.prev_root_node])
+        print("=====================================")
 
     def print_row(self, nodes, row_idx=0):
         child_nodes = []
