@@ -4,7 +4,7 @@ import numpy as np
 
 
 class Mcts(object):
-    def __init__(self, state, env, model, max_simulation=500, winner_reward=1, loser_reward=-1, c_puct=0.05):
+    def __init__(self, state, env, model, max_simulation=500, winner_reward=1, loser_reward=-1, c_puct=0.01):
         self.env = env
         self.model = model
         self.max_simulation = max_simulation
@@ -34,15 +34,23 @@ class Mcts(object):
 
         action_probs = np.array(
             [edge.get_action_probs(self.root_node.edges, self.temperature) for edge in self.root_node.edges])
+        print("MCTS root edges")
+        for i, edge in enumerate(self.root_node.edges):
+            print("%d edge score! visit count: %d, total_value: %f, mean_value: %f " % (
+                i, edge.visit_count, edge.total_action_value, edge.mean_action_value))
         if (action_probs == 0).all():
             action_idx = np.random.choice(range(len(action_probs)), 1)[0]
         else:
             arg_max_list = np.argwhere(action_probs == np.amax(action_probs)).flatten()
+            print("MCTS Max score:%f" % arg_max_list[0])
             if len(arg_max_list) > 1:
                 action_idx = np.random.choice(arg_max_list, 1)[0]
             else:
                 action_idx = action_probs.argmax()
         searched_action = self.root_node.edges[action_idx].action
+        print("MCTS Search Complete! visit count: %d, total_value: %f, mean_value: %f " % (
+            self.root_node.edges[action_idx].visit_count, self.root_node.edges[action_idx].total_action_value,
+            self.root_node.edges[action_idx].mean_action_value))
         self.prev_root_node = self.root_node
         self.root_node = self.root_node.edges[action_idx].node
         return action_probs, searched_action
