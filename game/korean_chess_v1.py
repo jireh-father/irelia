@@ -14,7 +14,7 @@ import os
 
 if os.name == "posix":
     empty_str = "--"
-    empty_str_kor = "-----"
+    empty_str_kor = "------"
 elif os.name == "nt":
     empty_str = "--"
     empty_str_kor = "------"
