@@ -5,10 +5,11 @@ import random
 
 
 class Mcts(object):
-    def __init__(self, state, env, max_simulation=500, winner_reward=1, loser_reward=-1, c_puct=0.5):
+    def __init__(self, state, env, max_simulation=500, winner_reward=1, loser_reward=-1, c_puct=0.5, max_rollout=200):
         self.env = env
         self.max_simulation = max_simulation
         self.root_node = Node(state)
+        self.prev_root_node = None
         self.selected_edges = []
         self.current_node = self.root_node
         self.root_turn = None
@@ -17,6 +18,7 @@ class Mcts(object):
         self.winner_reward = winner_reward
         self.loser_reward = loser_reward
         self.c_puct = c_puct
+        self.max_rollout = max_rollout
 
     def search(self, temperature=0, action_idx=None):
         self.temperature = temperature
@@ -41,6 +43,7 @@ class Mcts(object):
             else:
                 action_idx = action_probs.argmax()
         searched_action = self.root_node.edges[action_idx].action
+        self.prev_root_node = self.root_node
         self.root_node = self.root_node.edges[action_idx].node
         return searched_action
 
@@ -96,7 +99,7 @@ class Mcts(object):
         return state_value
 
     def rollout(self, state):
-        for i in range(500):
+        for i in range(self.max_rollout):
             legal_actions = self.env.get_all_actions(self.current_node.state)
             action = legal_actions[random.randint(0, len(legal_actions) - 1)]
             state = self.env.simulate(state, action)
@@ -117,6 +120,18 @@ class Mcts(object):
 
         self.current_node = self.root_node
         self.selected_edges = []
+
+    def print_tree(self):
+        self.print_row([self.prev_root_node])
+
+    def print_row(self, nodes):
+        child_nodes = []
+        for node in nodes:
+            for edge in node.edges:
+                child_nodes.append(edge.node)
+        print("  ".join([str(i) for i in list(range(len(nodes)))]))
+        if child_nodes:
+            self.print_row(child_nodes)
 
 
 class Node(object):

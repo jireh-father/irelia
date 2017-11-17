@@ -4,8 +4,7 @@ import numpy as np
 
 
 class Mcts(object):
-    def __init__(self, state, env, model, max_simulation=500, winner_reward=1, loser_reward=-1, use_best=True,
-                 c_puct=0.5):
+    def __init__(self, state, env, model, max_simulation=500, winner_reward=1, loser_reward=-1, c_puct=0.5):
         self.env = env
         self.model = model
         self.max_simulation = max_simulation
@@ -17,8 +16,8 @@ class Mcts(object):
         self.temperature = 0
         self.winner_reward = winner_reward
         self.loser_reward = loser_reward
-        self.use_best = use_best
         self.c_puct = c_puct
+        self.prev_root_node = None
 
     def search(self, temperature=0, action_idx=None):
         self.temperature = temperature
@@ -34,19 +33,18 @@ class Mcts(object):
 
         action_probs = np.array(
             [edge.get_action_probs(self.root_node.edges, self.temperature) for edge in self.root_node.edges])
-        if self.use_best:
-            if (action_probs == 0).all():
-                action_idx = np.random.choice(range(len(action_probs)), 1)[0]
+        if (action_probs == 0).all():
+            action_idx = np.random.choice(range(len(action_probs)), 1)[0]
+        else:
+            arg_max_list = np.argwhere(action_probs == np.amax(action_probs)).flatten()
+            if len(arg_max_list) > 1:
+                action_idx = np.random.choice(arg_max_list, 1)[0]
             else:
-                arg_max_list = np.argwhere(action_probs == np.amax(action_probs)).flatten()
-                if len(arg_max_list) > 1:
-                    action_idx = np.random.choice(arg_max_list, 1)[0]
-                else:
-                    action_idx = action_probs.argmax()
-            searched_action = self.root_node.edges[action_idx].action
-            self.root_node = self.root_node.edges[action_idx].node
-            return action_probs, searched_action
-        return action_probs, False
+                action_idx = action_probs.argmax()
+        searched_action = self.root_node.edges[action_idx].action
+        self.prev_root_node = self.root_node
+        self.root_node = self.root_node.edges[action_idx].node
+        return action_probs, searched_action
 
     def simulate(self):
         is_leaf_node = False
@@ -128,6 +126,18 @@ class Mcts(object):
 
         self.current_node = self.root_node
         self.selected_edges = []
+
+    def print_tree(self):
+        self.print_row([self.prev_root_node])
+
+    def print_row(self, nodes):
+        child_nodes = []
+        for node in nodes:
+            for edge in node.edges:
+                child_nodes.append(edge.node)
+        print("  ".join([str(i) for i in list(range(len(nodes)))]))
+        if child_nodes:
+            self.print_row(child_nodes)
 
 
 class Node(object):

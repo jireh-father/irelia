@@ -9,6 +9,7 @@ import traceback
 FLAGS = tf.app.flags.FLAGS
 
 common.set_flags()
+tf.app.flags.DEFINE_integer('max_rollouts', 20, "exploration step")
 
 env = Game.make("KoreanChess-v1", {"use_check": False, "limit_step": FLAGS.max_step,
                                    "print_mcts_history": FLAGS.print_mcts_history,
@@ -16,7 +17,7 @@ env = Game.make("KoreanChess-v1", {"use_check": False, "limit_step": FLAGS.max_s
 state = env.reset()
 i = 0
 user_action_idx = -1
-mcts = Mcts(state, env, 500)
+mcts = Mcts(state, env, FLAGS.exploration_step, max_rollout=FLAGS.max_rollouts)
 while True:
     if i % 2 == 0:
         from_x, from_y, to_x, to_y = user_input.get_user_input()
