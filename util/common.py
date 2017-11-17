@@ -80,7 +80,8 @@ def log(msg):
 
 
 def set_flags():
-    tf.app.flags.DEFINE_string('save_dir', os.path.join(os.path.dirname(os.path.realpath(__file__)), "checkpoint"),
+    tf.app.flags.DEFINE_string('save_dir',
+                               os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "checkpoint"),
                                "save dir")
 
     tf.app.flags.DEFINE_string('model_file_name', "model.ckpt", "model name to save")
