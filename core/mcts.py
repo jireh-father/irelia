@@ -130,14 +130,14 @@ class Mcts(object):
     def print_tree(self):
         self.print_row([self.prev_root_node])
 
-    def print_row(self, nodes):
+    def print_row(self, nodes, row_idx=0):
         child_nodes = []
         for node in nodes:
             for edge in node.edges:
                 child_nodes.append(edge.node)
-        print("  ".join([str(i) for i in list(range(len(nodes)))]))
+        print("%d row: %d nodes" % (row_idx, len(nodes)))
         if child_nodes:
-            self.print_row(child_nodes)
+            self.print_row(child_nodes, row_idx + 1)
 
 
 class Node(object):
