@@ -97,7 +97,7 @@ def set_flags():
     tf.app.flags.DEFINE_float('learning_rate_decay', 0.1, "learning rate decay")
     tf.app.flags.DEFINE_integer('learning_rate_decay_interval', 1000, "learning rate decay interval")
     tf.app.flags.DEFINE_integer('batch_size', 64, "batch size")
-    tf.app.flags.DEFINE_float('c_puct', 0.5, "a constant determining the level of exploration")
+    tf.app.flags.DEFINE_float('c_puct', 0.01, "a constant determining the level of exploration")
     tf.app.flags.DEFINE_float('train_fraction', 0.7, "train dataset fraction")
     tf.app.flags.DEFINE_float('momentum', 0.9, "momentum for optimizer")
     tf.app.flags.DEFINE_boolean('print_mcts_history', False, "show mcts search history")
