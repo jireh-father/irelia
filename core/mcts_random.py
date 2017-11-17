@@ -44,6 +44,9 @@ class Mcts(object):
             else:
                 action_idx = action_probs.argmax()
         searched_action = self.root_node.edges[action_idx].action
+        print("MCTS Search Complete! visit count: %d, total_value: %f, mean_value: %f " % (
+            self.root_node.edges[action_idx].visit_count, self.root_node.edges[action_idx].total_action_value,
+            self.root_node.edges[action_idx].mean_action_value))
         self.prev_root_node = self.root_node
         self.root_node = self.root_node.edges[action_idx].node
         return searched_action
