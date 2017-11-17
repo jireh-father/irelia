@@ -351,27 +351,14 @@ class KoreanChessV1:
         state[to_y][to_x] = state[from_y][from_x]
         state[from_y][from_x] = 0
 
-        is_draw = u.is_draw(state)
-
-        done = reward >= self.max_reward
-
         # decode and return state
-        is_game_over = (done or is_draw)
+        is_game_over = reward >= self.max_reward
 
-        info = {"is_draw": is_draw, "is_game_over": is_game_over, "winner": None, "reward": reward}
+        info = {"is_game_over": is_game_over, "winner": None, "reward": reward}
 
         # who's winner?
         if is_game_over:
-            if info["is_draw"]:
-                if self.blue_score > self.red_score:
-                    winner = c.BLUE
-                elif self.blue_score < self.red_score:
-                    winner = c.RED
-                else:
-                    winner = None
-            else:
-                winner = 'b' if self.current_turn == 'r' else 'b'
-            info["winner"] = winner
+            info["winner"] = 'b' if self.current_turn == 'r' else 'b'
 
         if return_info:
             return u.decode_state(state, turn, self.data_format), info
