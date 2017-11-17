@@ -9,17 +9,17 @@ import csv
 
 
 class Dataset(object):
-    def __init__(self, sess, dataset_dir):
+    def __init__(self, sess, dataset_dir, backup=True):
         self.sess = sess
         self.dataset_dir = dataset_dir
         self.train_data_path = os.path.join(dataset_dir, "train_dataset.txt")
         self.test_data_path = os.path.join(dataset_dir, "test_dataset.txt")
-        if os.path.exists(self.train_data_path):
+        if os.path.exists(self.train_data_path) and backup:
             self.backup_dataset(self.train_data_path)
-        if os.path.exists(self.test_data_path):
+        if os.path.exists(self.test_data_path) and backup:
             self.backup_dataset(self.test_data_path)
-        self.train_f = open(self.train_data_path, "w+")
-        self.test_f = open(self.test_data_path, "w+")
+        self.train_f = open(self.train_data_path, "a+")
+        self.test_f = open(self.test_data_path, "a+")
         self.train_csv = csv.writer(self.train_f, delimiter=',')
         self.test_csv = csv.writer(self.test_f, delimiter=',')
         self.train_dataset = None
@@ -92,16 +92,16 @@ class Dataset(object):
         return base_dataset
 
     def get_train_batch(self):
-        self.get_batch(self.train_dataset)
+        return self.get_batch(self.train_dataset)
 
     def get_test_batch(self):
-        self.get_batch(self.test_dataset)
+        return self.get_batch(self.test_dataset)
 
     def get_batch(self, dataset):
         value_data, state_data, policy_data = self.sess.run(dataset.get_next())
-        state_data = np.array(map(lambda x: np.array(json.loads(x.decode("utf-8"))), state_data))
-        policy_data = np.array(map(lambda x: np.array(json.loads(x.decode("utf-8"))), policy_data))
-        value_data = np.array(map(lambda x: float(x.decode("utf-8")), value_data))
+        state_data = np.array(list(map(lambda x: np.array(json.loads(x.decode("utf-8"))), state_data)))
+        policy_data = np.array(list(map(lambda x: np.array(json.loads(x.decode("utf-8"))), policy_data)))
+        value_data = np.array(list(map(lambda x: float(x.decode("utf-8")), value_data)))
         return state_data, policy_data, value_data
 
     def init_train(self):

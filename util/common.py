@@ -74,7 +74,7 @@ def restore_model(save_dir, model_file_name, saver, sess):
 
 
 def log(msg):
-    dt = datetime.datetime.fromtimestamp(time.time()).strftime('%Y%m%d%H%M%S')
+    dt = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
     print("[%s] %s" % (dt, msg))
     pass
 
