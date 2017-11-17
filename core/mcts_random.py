@@ -5,7 +5,7 @@ import random
 
 
 class Mcts(object):
-    def __init__(self, state, env, max_simulation=500, winner_reward=1, loser_reward=-1, c_puct=0.5, max_rollout=200):
+    def __init__(self, state, env, max_simulation=500, winner_reward=1, loser_reward=-1, c_puct=0.1, max_rollout=200):
         self.env = env
         self.max_simulation = max_simulation
         self.root_node = Node(state)
