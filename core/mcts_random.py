@@ -30,6 +30,7 @@ class Mcts(object):
             self.root_node = self.root_node.edges[action_idx].node
 
         for i in range(self.max_simulation):
+            print("mcts simulate %d " % i)
             self.simulate()
 
         action_probs = np.array(
@@ -49,8 +50,11 @@ class Mcts(object):
 
     def simulate(self):
         is_leaf_node = False
+        i = 0
         while not is_leaf_node:
+            print("mcts select %d" % i)
             is_leaf_node = self.select()
+            i += 1
 
         state_value = self.expand_and_evaluate()
         self.backup(state_value)
