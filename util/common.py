@@ -3,6 +3,7 @@ import shutil
 import datetime
 import time
 import tensorflow as tf
+import time
 
 
 def save_model(sess, saver, checkpoint_path):
@@ -22,32 +23,28 @@ def save_model(sess, saver, checkpoint_path):
     saver.save(sess, checkpoint_path)
 
 
-def train_model(i_episode, ds, model, learning_rate, sess, saver, checkpoint_path, flags):
-    if i_episode > 0 and i_episode % flags.episode_interval_to_train == 0 and ds.has_train_dataset_file():
-        ds.open_dataset(flags.batch_size)
-        batch_step = 0
-        log("train!")
-        for epoch in range(flags.epoch):
-            while True:
-                log("epoch: %d, step: %d, episode: %d" % (epoch, batch_step, i_episode))
-                try:
-                    train_batch_state, train_batch_policy, train_batch_value = ds.get_train_batch()
-                    _, train_cost = model.train(train_batch_state, train_batch_policy, train_batch_value,
-                                                learning_rate)
-                    log("trained! cost: %f" % train_cost)
+def train_model(model, learning_rate, ds, flags):
+    ds.open_dataset(flags.batch_size)
+    batch_step = 0
+    log("train!")
+    for epoch in range(flags.epoch):
+        while True:
+            log("epoch: %d, step: %d" % (epoch, batch_step))
+            try:
+                train_batch_state, train_batch_policy, train_batch_value = ds.get_train_batch()
+                _, train_cost = model.train(train_batch_state, train_batch_policy, train_batch_value,
+                                            learning_rate)
+                log("trained! cost: %f" % train_cost)
 
-                    if batch_step > 0 and batch_step % flags.learning_rate_decay_interval == 0:
-                        log("decay learning rate")
-                        learning_rate = learning_rate * flags.learning_rate_decay
-                    batch_step += 1
-                except tf.errors.OutOfRangeError:
-                    log("out of range dataset! init!!")
-                    ds.init_train()
-                    break
-        # save model
-        eval_model(model, ds)
-        save_model(sess, saver, checkpoint_path)
-        # todo : evaluate best player
+                if batch_step > 0 and batch_step % flags.learning_rate_decay_interval == 0:
+                    log("decay learning rate")
+                    learning_rate = learning_rate * flags.learning_rate_decay
+                batch_step += 1
+            except tf.errors.OutOfRangeError:
+                log("out of range dataset! init!!")
+                ds.init_train()
+                break
+
     return learning_rate
 
 
@@ -63,13 +60,21 @@ def eval_model(model, ds):
                 break
 
 
-def restore_model(save_dir, model_file_name, saver, sess):
+def restore_model(save_dir, model_file_name, saver, sess, restore_pending=True):
     if not os.path.exists(save_dir):
         os.makedirs(save_dir)
     checkpoint_path = os.path.join(save_dir, model_file_name)
-    if os.path.exists(checkpoint_path + ".index"):
-        print("restore success!!")
-        saver.restore(sess, checkpoint_path)
+    while True:
+        if os.path.exists(checkpoint_path + ".data-00000-of-00001"):
+            print("restore success!!")
+            try:
+                saver.restore(sess, checkpoint_path)
+                break
+            except Exception as e:
+                print("restore exception", e)
+        if not restore_pending:
+            break
+        time.sleep(0.5)
     return checkpoint_path
 
 

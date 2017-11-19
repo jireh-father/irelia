@@ -9,25 +9,43 @@ import csv
 
 
 class Dataset(object):
-    def __init__(self, sess, dataset_dir, backup=True):
+    DEF_TRAIN_FILE_NAME = "train_dataset.txt"
+    DEF_TEST_FILE_NAME = "train_dataset.txt"
+
+    def __init__(self, sess, dataset_dir, backup=True, read_only=False, file_name_suffix=None):
         self.sess = sess
         self.dataset_dir = dataset_dir
-        self.train_data_path = os.path.join(dataset_dir, "train_dataset.txt")
-        self.test_data_path = os.path.join(dataset_dir, "test_dataset.txt")
+        train_file_name = Dataset.DEF_TRAIN_FILE_NAME
+        test_file_name = Dataset.DEF_TEST_FILE_NAME
+        if file_name_suffix:
+            train_file_name = "train_dataset_%s.txt" % str(file_name_suffix)
+            test_file_name = "train_dataset_%s.txt" % str(file_name_suffix)
+        self.train_data_path = os.path.join(dataset_dir, train_file_name)
+        self.test_data_path = os.path.join(dataset_dir, test_file_name)
         if os.path.exists(self.train_data_path) and backup:
             self.backup_dataset(self.train_data_path)
         if os.path.exists(self.test_data_path) and backup:
             self.backup_dataset(self.test_data_path)
-        self.train_f = open(self.train_data_path, "a+")
-        self.test_f = open(self.test_data_path, "a+")
-        self.train_csv = csv.writer(self.train_f, delimiter=',')
-        self.test_csv = csv.writer(self.test_f, delimiter=',')
+        self.read_only = read_only
+        self.backup = backup
+        if read_only:
+            self.train_f = None
+            self.test_f = None
+            self.train_csv = None
+            self.test_csv = None
+        else:
+            mode = "a+"
+            self.train_f = open(self.train_data_path, mode)
+            self.test_f = open(self.test_data_path, mode)
+            self.train_csv = csv.writer(self.train_f, delimiter=',')
+            self.test_csv = csv.writer(self.test_f, delimiter=',')
         self.train_dataset = None
         self.test_dataset = None
 
     def close_files(self):
         self.train_f.close()
         self.test_f.close()
+        return self.train_data_path, self.test_data_path
 
     def has_train_dataset_file(self):
         return os.path.getsize(self.train_data_path) != 0
@@ -125,10 +143,24 @@ class Dataset(object):
             os.makedirs(bak_dir)
         shutil.move(data_path, os.path.join(bak_dir, dataset_file_name))
 
-    def reset(self):
-        self.backup_dataset(self.train_data_path)
-        self.backup_dataset(self.test_data_path)
-        self.train_f = open(self.train_data_path, "w+")
-        self.test_f = open(self.test_data_path, "w+")
-        self.train_csv = csv.writer(self.train_f, delimiter=',')
-        self.test_csv = csv.writer(self.test_f, delimiter=',')
+    def reset(self, file_name_suffix=None):
+        if self.backup:
+            self.backup_dataset(self.train_data_path)
+            self.backup_dataset(self.test_data_path)
+        if file_name_suffix:
+            train_file_name = "train_dataset_%s.txt" % str(file_name_suffix)
+            test_file_name = "train_dataset_%s.txt" % str(file_name_suffix)
+            self.train_data_path = os.path.join(os.path.dirname(self.train_data_path), train_file_name)
+            self.test_data_path = os.path.join(os.path.dirname(self.test_data_path), test_file_name)
+
+        if self.read_only:
+            self.train_f = None
+            self.test_f = None
+            self.train_csv = None
+            self.test_csv = None
+        else:
+            mode = "a+"
+            self.train_f = open(self.train_data_path, mode)
+            self.test_f = open(self.test_data_path, mode)
+            self.train_csv = csv.writer(self.train_f, delimiter=',')
+            self.test_csv = csv.writer(self.test_f, delimiter=',')

@@ -6,15 +6,23 @@ from core.mcts import Mcts
 from util.dataset import Dataset
 from util import common
 import sys, traceback
+import os
+import uuid
 
 FLAGS = tf.app.flags.FLAGS
 
 common.set_flags()
 
+tf.app.flags.DEFINE_integer('episode_interval_to_save_data', 10, "episode interval to save data")
+tf.app.flags.DEFINE_boolean('restore_pending', False, "restore pending")
+
 data_format = ('channels_first' if tf.test.is_built_with_cuda() else 'channels_last')
 env = Game.make("KoreanChess-v1", {"use_check": False, "limit_step": FLAGS.max_step, "data_format": data_format,
                                    "print_mcts_history": FLAGS.print_mcts_history,
                                    "use_color_print": FLAGS.use_color_print})
+
+if not os.path.exists(os.path.join(FLAGS.save_dir, "ready")):
+    os.makedirs(os.path.join(FLAGS.save_dir, "ready"))
 
 config = tf.ConfigProto()
 config.gpu_options.allow_growth = True
@@ -22,16 +30,15 @@ sess = tf.Session(config=config)
 model = Model(sess, weight_decay=FLAGS.weight_decay, momentum=FLAGS.momentum, num_layers=FLAGS.num_model_layers)
 sess.run(tf.global_variables_initializer())
 saver = tf.train.Saver()
-learning_rate = FLAGS.learning_rate_decay
+model_file_name = "best_" + FLAGS.model_file_name
 
-checkpoint_path = common.restore_model(FLAGS.save_dir, FLAGS.model_file_name, saver, sess, False)
-ds = Dataset(sess, FLAGS.save_dir)
-# ds = Dataset(sess)
-# ds.open(file_path, mode="w")
+checkpoint_path = common.restore_model(FLAGS.save_dir, model_file_name, saver, sess)
+ds = Dataset(sess, FLAGS.save_dir, False, file_name_suffix=uuid.uuid4())
+
 game_results = {"b": 0, "r": 0, "d": 0}
 train_games = int(FLAGS.episode_interval_to_train * FLAGS.train_fraction)
-
-for i_episode in range(FLAGS.max_episode):
+i_episode = 0
+while True:
     """"""
     """self-play"""
     state = env.reset()
@@ -71,18 +78,15 @@ for i_episode in range(FLAGS.max_episode):
     """save self-play data"""
     ds.write_dataset(info, state_history, mcts_history, FLAGS.max_episode % FLAGS.episode_interval_to_train,
                      train_games)
-    # ds.write(info, state_history, mcts_history)
 
-    """"""
-    """train model"""
-    if i_episode > 0 and i_episode % FLAGS.episode_interval_to_train == 0 and ds.has_train_dataset_file():
-        ds.close_files()
-        # ds.close()
-        learning_rate = common.train_model(model, learning_rate, ds, FLAGS)
-        common.save_model(sess, saver, checkpoint_path)
-        common.eval_model(model, ds)
-        # todo : evaluate best player
-
-        ds.reset()
-        # ds.backup
-        # ds.open()
+    if i_episode != 0 and i_episode % FLAGS.episode_interval_to_save_data == 0:
+        train_data_path, test_data_path = ds.close_files()
+        if os.path.exists(train_data_path):
+            train_file_name = os.path.basename(train_data_path)
+            os.rename(train_data_path, os.path.join(FLAGS.save_dir, "ready", train_file_name))
+        if os.path.exists(test_data_path):
+            test_file_name = os.path.basename(test_data_path)
+            os.rename(test_data_path, os.path.join(FLAGS.save_dir, "ready", test_file_name))
+        ds.reset(file_name_suffix=uuid.uuid4())
+        common.restore_model(FLAGS.save_dir, model_file_name, saver, sess, FLAGS.restore_pending)
+    i_episode += 1
