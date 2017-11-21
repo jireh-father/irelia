@@ -8,14 +8,14 @@ deconv_layers = 7
 deconv_filters = [9, 9, 11, 11, 13, 13, 15]
 
 mnist = input_data.read_data_sets("MNIST_data/", one_hot=True)
-inputs = tf.placeholder(tf.float32, shape=[None, 784], name="inputs")
+x = tf.placeholder(tf.float32, shape=[None, 784], name="x")
 y_ = tf.placeholder(tf.float32, shape=[None, 10], name="y_")
 data_format = ('channels_first' if tf.test.is_built_with_cuda() else 'channels_last')
 if data_format == 'channels_first':
-    inputs = tf.reshape(inputs, [-1, 1, 28, 28], name="reshape_chw")
+    inputs = tf.reshape(x, [-1, 1, 28, 28], name="reshape_chw")
 
 else:
-    inputs = tf.reshape(inputs, [-1, 28, 28, 1], name="reshape_hwc")
+    inputs = tf.reshape(x, [-1, 28, 28, 1], name="reshape_hwc")
 
 gen_image_y = tf.image.resize_images(inputs, [87, 87])
 gen_image_y = tf.reshape(gen_image_y, [-1, 87 * 87])
@@ -37,7 +37,7 @@ gen_image = tf.nn.sigmoid(inputs, name="gen_sigmoid")
 gen_image = tf.reshape(gen_image, [-1, 87 * 87])
 
 inputs = tf.reshape(inputs, [-1, 87 * 87], name="reshape_fc")
-inputs = tf.layers.dense(inputs, 10)
+inputs = tf.layers.dense(inputs, 10, name="dense")
 
 loss = tf.nn.softmax_cross_entropy_with_logits(labels=y_, logits=inputs)
 gen_image_loss = tf.log(tf.nn.softmax_cross_entropy_with_logits(labels=gen_image_y, logits=gen_image))
@@ -54,7 +54,7 @@ sess.run(tf.global_variables_initializer())
 
 for i in range(1000):
     batch_xs, batch_ys = mnist.train.next_batch(64)
-    _, loss_result = sess.run([train_op, loss], feed_dict={inputs: batch_xs, y_: batch_ys})
+    _, loss_result = sess.run([train_op, loss], feed_dict={x: batch_xs, y_: batch_ys})
     print(i, loss_result)
     if i != 0 and i % 20 == 0:
         print(sess.run(accuracy, feed_dict={inputs: mnist.test.images, y_: mnist.test.labels}))
