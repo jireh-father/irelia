@@ -32,10 +32,9 @@ for i in range(deconv_layers):
         scale=True, training=True, fused=True, name="batch" + str(i))
 
     inputs = tf.nn.relu(inputs, name="relu" + str(i))
-
+inputs = tf.layers.conv2d(inputs, 1, 1, 1, padding='same', kernel_initializer=tf.variance_scaling_initializer, data_format=data_format)
 gen_image = tf.nn.sigmoid(inputs, name="gen_sigmoid")
 gen_image = tf.reshape(gen_image, [-1, 87 * 87])
-
 inputs = tf.reshape(inputs, [-1, 87 * 87], name="reshape_fc")
 inputs = tf.layers.dense(inputs, 10, name="dense")
 
