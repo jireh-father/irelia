@@ -50,4 +50,6 @@ for i in range(1000):
     _, loss_result = sess.run([train_op, loss], feed_dict={x: batch_xs, y_: batch_ys})
     print(i, loss_result)
     if i != 0 and i % 20 == 0:
-        print(sess.run(accuracy, feed_dict={inputs: mnist.test.images, y_: mnist.test.labels}))
+        for j in range(10):
+            test_xs, test_ys = mnist.test.next_batch(64)
+            print(sess.run(accuracy, feed_dict={inputs: test_xs, y_: test_ys}))
