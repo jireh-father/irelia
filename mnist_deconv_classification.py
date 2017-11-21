@@ -36,7 +36,6 @@ loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=y_, logits=
 gen_image_loss = tf.log(tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=gen_image_y, logits=gen_image)))
 loss += gen_image_loss
 train_op = tf.train.AdamOptimizer(learning_rate=0.01).minimize(loss)
-
 correct_prediction = tf.equal(tf.argmax(inputs, 1), tf.argmax(y_, 1))
 accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 
@@ -52,4 +51,4 @@ for i in range(1000):
     if i != 0 and i % 20 == 0:
         for j in range(10):
             test_xs, test_ys = mnist.test.next_batch(64)
-            print(sess.run(accuracy, feed_dict={inputs: test_xs, y_: test_ys}))
+            print(sess.run(accuracy, feed_dict={x: test_xs, y_: test_ys}))
