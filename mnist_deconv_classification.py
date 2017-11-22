@@ -66,9 +66,9 @@ for epoch in range(epochs):
         batch_xs, batch_ys = mnist.train.next_batch(batch_size)
         _, class_loss, gen_loss, total_loss, summary = sess.run(
             [train_op, class_loss_op, gen_loss_op, total_loss_op, merged], feed_dict={x: batch_xs, y_: batch_ys})
-        now = datetime.now().strftime('%Y/%m/%d %H:%M:%S')
-        print("[%s TRAIN %d epoch, %d step] total_loss: %f, class_loss: %f, gen_loss: %f" % (
-            now, epoch, train_step, total_loss, class_loss, gen_loss))
+        now = datetime.now().strftime('%m/%d %H:%M:%S')
+        print("[%s TRAIN %d epoch, %d/%d step] total_loss: %f, class_loss: %f, gen_loss: %f" % (
+            now, epoch, train_step, num_batch, total_loss, class_loss, gen_loss))
         train_writer.add_summary(summary, train_step + num_batch * epoch)
     total_accuracy = 0
     for test_step in range(num_test_batch):
@@ -76,8 +76,8 @@ for epoch in range(epochs):
         accuracy, class_loss, gen_loss, total_loss, summary = sess.run(
             [accuracy_op, class_loss_op, gen_loss_op, total_loss_op, merged], feed_dict={x: test_xs, y_: test_ys})
         total_accuracy += accuracy
-        now = datetime.now().strftime('%Y/%m/%d %H:%M:%S')
-        print("[%s TEST %d epoch, %d step] accuracy: %f, total_loss: %f, class_loss: %f, gen_loss: %f" % (
-            now, epoch, test_step, accuracy, total_loss, class_loss, gen_loss))
+        now = datetime.now().strftime('%m/%d %H:%M:%S')
+        print("[%s TEST %d epoch, %d/%d step] accuracy: %f, total_loss: %f, class_loss: %f, gen_loss: %f" % (
+            now, epoch, test_step, num_test_batch, accuracy, total_loss, class_loss, gen_loss))
         test_writer.add_summary(summary, test_step + num_test_batch * epoch)
     print("Total Accuracy : %f" % (total_accuracy / num_test_batch))
