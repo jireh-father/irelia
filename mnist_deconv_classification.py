@@ -22,7 +22,7 @@ net = tf.image.resize_images(inputs, [image_size, image_size])
 
 for i in range(deconv_layers):
     net = tf.layers.conv2d_transpose(net, filter_size, deconv_filters[i], strides=strides, padding='valid',
-                                     kernel_initializer=tf.variance_scaling_initializer(), name="conv" + str(i))
+                                     kernel_initializer=tf.variance_scaling_initializer(), name="deconv" + str(i))
 
     net = tf.layers.batch_normalization(inputs=net, axis=3, momentum=bn_decay, epsilon=bn_epsilon,
                                         center=True, scale=True, training=True, fused=True, name="batch" + str(i))
@@ -31,23 +31,29 @@ for i in range(deconv_layers):
     tf.summary.histogram('activations_%d' % i, net)
 gen_image_size = net.get_shape()[1]
 gen_y_ = tf.image.resize_images(inputs, [gen_image_size, gen_image_size])
-gen_y_ = tf.reshape(gen_y_, [-1, gen_image_size * gen_image_size])
-net = tf.layers.conv2d(net, 1, 1, 1, padding='same', kernel_initializer=tf.variance_scaling_initializer)
+gen_y_ = tf.reshape(gen_y_, [-1, gen_image_size * gen_image_size], name="gen_y_vectorize")
+net = tf.layers.conv2d(net, 1, 1, 1, padding='same', kernel_initializer=tf.variance_scaling_initializer,
+                       name="last_conv")
 gen_x = tf.nn.sigmoid(net, name="gen_sigmoid")
 tf.summary.image(tensor=gen_x, max_outputs=num_summary_image, name="gen_x")
-gen_x = tf.reshape(gen_x, [-1, gen_image_size * gen_image_size], "gen_image_reshape")
+gen_x = tf.reshape(gen_x, [-1, gen_image_size * gen_image_size], "gen_x_vectorize")
 
-net = tf.reshape(net, [-1, gen_image_size * gen_image_size], name="reshape_fc")
+net = tf.reshape(net, [-1, gen_image_size * gen_image_size], name="net_vectorize")
 net = tf.layers.dense(net, 10, name="dense")
 
-class_loss_op = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=y_, logits=net))
-gen_loss_op = tf.log(tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=gen_y_, logits=gen_x)))
-total_loss_op = class_loss_op + gen_loss_op
+class_loss_op = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=y_, logits=net, name="class_loss"),
+                               name="class_loss_reduce")
+gen_loss_op = tf.log(
+    tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=gen_y_, logits=gen_x, name="gen_loss"),
+                   name="gen_loss_reduce"), name="gen_loss_log")
+total_loss_op = tf.add(class_loss_op, gen_loss_op, name="total_loss")
 tf.summary.scalar('class_loss', class_loss_op)
 tf.summary.scalar('gen_loss', gen_loss_op)
 tf.summary.scalar('total_loss', total_loss_op)
-train_op = tf.train.AdamOptimizer(learning_rate=0.01).minimize(total_loss_op)
-accuracy_op = tf.reduce_mean(tf.cast(tf.equal(tf.argmax(net, 1), tf.argmax(y_, 1)), tf.float32))
+train_op = tf.train.AdamOptimizer(learning_rate=0.01, name="optimizer").minimize(total_loss_op, name="minimize")
+accuracy_op = tf.reduce_mean(
+    tf.cast(tf.equal(tf.argmax(net, 1, name="argmax_y"), tf.argmax(y_, 1, name="argmax_y_"), name="equal_y"),
+            tf.float32, name="equal_y_cast"), name="accuracy_mean")
 tf.summary.scalar('accuracy', accuracy_op)
 
 config = tf.ConfigProto()
