@@ -1,3 +1,4 @@
+channel last로 다 바꾸기
 mcts 한번에 시뮬레이션에서 select할때 반복수 못두게하기
 dataset 심플하게 변경
 value decay?
