@@ -4,7 +4,8 @@ import numpy as np
 
 
 class Mcts(object):
-    def __init__(self, state, env, model, max_simulation=500, winner_reward=1, loser_reward=-1, c_puct=0.01):
+    def __init__(self, state, env, model, max_simulation=500, winner_reward=1, loser_reward=-1, c_puct=0.01,
+                 init_root_edges=False):
         self.env = env
         self.model = model
         self.max_simulation = max_simulation
@@ -18,6 +19,8 @@ class Mcts(object):
         self.loser_reward = loser_reward
         self.c_puct = c_puct
         self.prev_root_node = None
+        if init_root_edges:
+            self.expand_and_evaluate()
 
     def search(self, temperature=0, action_idx=None):
         self.temperature = temperature

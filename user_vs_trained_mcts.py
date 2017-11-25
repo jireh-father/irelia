@@ -52,7 +52,7 @@ while True:
             continue
     else:
         start_time = time.time()
-        mcts_action = mcts.search(0, user_action_idx)
+        action_probs, mcts_action = mcts.search(0, user_action_idx)
         print("elased time : %f" % (time.time() - start_time))
         if FLAGS.print_mcts_tree:
             mcts.print_tree()
