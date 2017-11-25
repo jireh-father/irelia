@@ -11,6 +11,7 @@ from game import korean_chess_constant as c
 from game import korean_chess_util as u
 from colorama import Fore
 from sys import platform
+import numpy as np
 
 if platform == "linux" or platform == "linux2":
     # linux
@@ -151,7 +152,7 @@ class KoreanChessV1:
             self.next_turn = c.RED if self.current_turn == c.BLUE else c.BLUE
         else:
             if not self.properties or (
-                      "position_type" not in self.properties or self.properties['position_type'] == 'random'):
+                            "position_type" not in self.properties or self.properties['position_type'] == 'random'):
                 # random position
                 blue_rand_position = random.randint(0, 3)
                 red_rand_position = random.randint(0, 3)
@@ -365,11 +366,12 @@ class KoreanChessV1:
             return u.decode_state(state, turn, self.data_format)
 
     def convert_action_probs_to_policy_probs(self, actions, action_probs):
-        policy_probs = [.0] * 90
+        policy_probs = np.array([.0] * 90)
         for i, prob in enumerate(action_probs):
             action = actions[i]
             action = self.encode_action(action)
             half_prob = prob / 2
             policy_probs[action[0]] += half_prob
             policy_probs[action[1]] += half_prob
+        policy_probs = policy_probs / policy_probs.sum() * 1.
         return policy_probs
