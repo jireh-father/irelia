@@ -374,4 +374,4 @@ class KoreanChessV1:
             policy_probs[action[0]] += half_prob
             policy_probs[action[1]] += half_prob
         policy_probs = policy_probs / policy_probs.sum() * 1.
-        return policy_probs
+        return list(policy_probs)
