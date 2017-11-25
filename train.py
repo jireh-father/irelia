@@ -26,7 +26,7 @@ saver = tf.train.Saver()
 learning_rate = FLAGS.learning_rate_decay
 
 checkpoint_path = common.restore_model(FLAGS.save_dir, FLAGS.model_file_name, saver, sess, False)
-dataset_path = os.path.joins(FLAGS.save_dir, "dataset.csv")
+dataset_path = os.path.join(FLAGS.save_dir, "dataset.csv")
 ds = Dataset(sess)
 ds.open(dataset_path)
 game_results = {"b": 0, "r": 0, "d": 0}
@@ -74,9 +74,8 @@ for i_episode in range(FLAGS.max_episode):
 
     """"""
     """train model"""
-    if i_episode > 0 and i_episode % FLAGS.episode_interval_to_train == 0 and ds.has_train_dataset_file():
+    if i_episode > 0 and i_episode % FLAGS.episode_interval_to_train == 0 and os.path.getsize(dataset_path) > 0:
         ds.close()
-        # ds.close()
         learning_rate = common.train_model(model, learning_rate, ds, FLAGS)
         common.save_model(sess, saver, checkpoint_path)
         # todo : evaluate best player
