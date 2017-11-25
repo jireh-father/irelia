@@ -199,6 +199,6 @@ class Edge(object):
             else:
                 total_other_edge_visit_count += (pow(edge.visit_count, 1. / temperature))
         if temperature == 0:
-            return self.mean_action_value + self.visit_count / total_other_edge_visit_count
+            return self.visit_count / total_other_edge_visit_count
         else:
-            return self.mean_action_value + pow(self.visit_count, 1. / temperature) / total_other_edge_visit_count
+            return pow(self.visit_count, 1. / temperature) / total_other_edge_visit_count
