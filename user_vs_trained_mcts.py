@@ -28,7 +28,7 @@ sess.run(tf.global_variables_initializer())
 saver = tf.train.Saver()
 
 checkpoint_path = common.restore_model(FLAGS.save_dir, FLAGS.model_file_name, saver, sess, False)
-mcts = Mcts(state, env, model, FLAGS.max_simulation, c_puct=FLAGS.c_puct)
+mcts = Mcts(state, env, model, FLAGS.max_simulation, c_puct=FLAGS.c_puct, init_root_edges=True)
 while True:
     if i % 2 == 0:
         from_x, from_y, to_x, to_y = user_input.get_user_input()

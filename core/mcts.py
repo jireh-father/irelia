@@ -26,9 +26,9 @@ class Mcts(object):
         self.temperature = temperature
         self.root_turn = self.env.current_turn
         self.current_turn = self.env.current_turn
-        if action_idx:
+        if action_idx is not None:
             if not self.root_node.edges:
-                return False
+                self.expand_and_evaluate()
             self.root_node = self.root_node.edges[action_idx].node
 
         for i in range(self.max_simulation):
