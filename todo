@@ -1,3 +1,4 @@
+select랑 actionn계산하는거 변경
 - mcts reward계산 decay 되도록 계산하기
 1. 루트 노드에서는 모든 엣지를 한번씩은 방문하도록?
 mcts 한번에 시뮬레이션에서 select할때 반복수 못두게하기
