@@ -62,8 +62,8 @@ class Dataset(object):
             dataset = dataset.shuffle(shuffle_buffer_size)
         self.dataset = dataset.batch(batch_size).make_initializable_iterator()
 
-    def batch(self, dataset):
-        value_data, state_data, policy_data = self.sess.run(dataset.get_next())
+    def batch(self):
+        value_data, state_data, policy_data = self.sess.run(self.dataset.get_next())
         state_data = np.array(list(map(lambda x: np.array(json.loads(x.decode("utf-8"))), state_data)))
         policy_data = np.array(list(map(lambda x: np.array(json.loads(x.decode("utf-8"))), policy_data)))
         value_data = np.array(list(map(lambda x: float(x.decode("utf-8")), value_data)))
@@ -71,3 +71,5 @@ class Dataset(object):
 
     def init_dataset(self):
         self.sess.run(self.dataset.initializer)
+
+
