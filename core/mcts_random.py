@@ -138,8 +138,9 @@ class Mcts(object):
         self.selected_edges.reverse()
         for i, edge in enumerate(self.selected_edges):
             if i % 2 == 0:
-                state_value = -state_value
-            edge.update(state_value)
+                edge.update(-state_value)
+            else:
+                edge.update(state_value)
 
         self.current_node = self.root_node
         self.selected_edges = []
