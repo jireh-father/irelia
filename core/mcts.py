@@ -39,8 +39,8 @@ class Mcts(object):
             [edge.get_action_probs(self.root_node.edges, self.temperature) for edge in self.root_node.edges])
         print("MCTS root edges")
         for i, edge in enumerate(self.root_node.edges):
-            print("%d edge score! visit count: %d, total_value: %f, mean_value: %f " % (
-                i, edge.visit_count, edge.total_action_value, edge.mean_action_value))
+            print("%d edge score! visit count: %d, total_value: %f, mean_value: %f -> %s" % (
+                i, edge.visit_count, edge.total_action_value, edge.mean_action_value, str(edge.action)))
         if (action_probs == 0).all():
             action_probs = np.array([1. / len(action_probs)] * len(action_probs))
         else:
