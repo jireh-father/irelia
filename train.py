@@ -15,12 +15,13 @@ common.set_flags()
 data_format = ('channels_first' if tf.test.is_built_with_cuda() else 'channels_last')
 env = Game.make("KoreanChess-v1", {"use_check": False, "limit_step": FLAGS.max_step, "data_format": data_format,
                                    "print_mcts_history": FLAGS.print_mcts_history,
-                                   "use_color_print": FLAGS.use_color_print, "use_cache": True})
+                                   "use_color_print": FLAGS.use_color_print, "use_cache": FLAGS.use_cache})
 
 config = tf.ConfigProto()
 config.gpu_options.allow_growth = True
 sess = tf.Session(config=config)
-model = Model(sess, weight_decay=FLAGS.weight_decay, momentum=FLAGS.momentum, num_layers=FLAGS.num_model_layers)
+model = Model(sess, weight_decay=FLAGS.weight_decay, momentum=FLAGS.momentum, num_layers=FLAGS.num_model_layers,
+              use_cache=FLAGS.use_cache)
 sess.run(tf.global_variables_initializer())
 saver = tf.train.Saver()
 learning_rate = FLAGS.learning_rate_decay

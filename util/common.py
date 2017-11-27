@@ -107,3 +107,4 @@ def set_flags():
     tf.app.flags.DEFINE_boolean('print_mcts_history', False, "show mcts search history")
     tf.app.flags.DEFINE_boolean('print_mcts_tree', True, "show mcts search tree")
     tf.app.flags.DEFINE_boolean('use_color_print', False, "use color in printing state")
+    tf.app.flags.DEFINE_boolean('use_cache', True, "use cache")
