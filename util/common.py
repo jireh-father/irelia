@@ -6,66 +6,12 @@ import tensorflow as tf
 import time
 
 
-def save_model(sess, saver, checkpoint_path):
-    print("save model")
-    model_file_name = os.path.basename(checkpoint_path)
-    save_dir = os.path.dirname(checkpoint_path)
-    if os.path.exists(checkpoint_path + ".index"):
-        print("backup model")
-        dt = datetime.datetime.fromtimestamp(time.time()).strftime('%Y%m%d%H%M%S')
-        bak_dir = os.path.join(save_dir, "model_" + dt)
-        if not os.path.exists(bak_dir):
-            os.makedirs(bak_dir)
-        shutil.move(checkpoint_path + ".index", os.path.join(bak_dir, model_file_name + ".index"))
-        shutil.move(checkpoint_path + ".data-00000-of-00001",
-                    os.path.join(bak_dir, model_file_name + ".data-00000-of-00001"))
-        shutil.move(checkpoint_path + ".meta", os.path.join(bak_dir, model_file_name + ".meta"))
-    saver.save(sess, checkpoint_path)
-
-
-def train_model(model, learning_rate, ds, flags):
-    ds.open_dataset(flags.batch_size)
-    batch_step = 0
-    log("train!")
-    for epoch in range(flags.epoch):
-        while True:
-            log("epoch: %d, step: %d" % (epoch, batch_step))
-            try:
-                train_batch_state, train_batch_policy, train_batch_value = ds.get_train_batch()
-                _, train_cost = model.train(train_batch_state, train_batch_policy, train_batch_value,
-                                            learning_rate)
-                log("trained! cost: %f" % train_cost)
-
-                if batch_step > 0 and batch_step % flags.learning_rate_decay_interval == 0:
-                    log("decay learning rate")
-                    learning_rate = learning_rate * flags.learning_rate_decay
-                batch_step += 1
-            except tf.errors.OutOfRangeError:
-                log("out of range dataset! init!!")
-                ds.init_train()
-                break
-
-    return learning_rate
-
-
-def eval_model(model, ds):
-    if ds.test_dataset is not None:
-        while True:
-            try:
-                test_batch_state, test_batch_policy, test_batch_value = ds.get_test_batch()
-                cost = model.eval(test_batch_state, test_batch_policy, test_batch_value)
-                print("eval cost", cost)
-            except tf.errors.OutOfRangeError:
-                print("all evaluation finished")
-                break
-
-
-def restore_model(save_dir, model_file_name, saver, sess, restore_pending=True):
+def restore_model(save_dir, model_file_name, saver, sess, restore_pending=False):
     if not os.path.exists(save_dir):
         os.makedirs(save_dir)
     checkpoint_path = os.path.join(save_dir, model_file_name)
     while True:
-        if os.path.exists(checkpoint_path + ".data-00000-of-00001"):
+        if os.path.exists(checkpoint_path + ".ckpt.data-00000-of-00001"):
             print("restore success!!")
             try:
                 saver.restore(sess, checkpoint_path)

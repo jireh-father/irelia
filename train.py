@@ -25,11 +25,7 @@ sess.run(tf.global_variables_initializer())
 saver = tf.train.Saver()
 learning_rate = FLAGS.learning_rate_decay
 
-if not os.path.exists(FLAGS.save_dir):
-    os.makedirs(FLAGS.save_dir)
-    if os.path.exists(os.path.join(FLAGS.save_dir, FLAGS.model_file_name)):
-        print("restore!!")
-        saver.restore(sess, os.path.join(FLAGS.save_dir, FLAGS.model_file_name))
+common.restore_model(FLAGS.save_dir, FLAGS.model_file_name, saver, sess)
 
 dataset_path = os.path.join(FLAGS.save_dir, "dataset.csv")
 ds = Dataset(sess)
