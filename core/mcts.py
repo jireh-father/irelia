@@ -149,6 +149,9 @@ class Mcts(object):
             for edge in node.edges:
                 child_nodes.append(edge.node)
         print("%d row: %d nodes" % (row_idx, len(nodes)))
+        if row_idx > 996:
+            print("more...")
+            return
         if child_nodes:
             self.print_row(child_nodes, row_idx + 1)
 
