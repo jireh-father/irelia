@@ -5,7 +5,7 @@ import random
 
 
 class Mcts(object):
-    def __init__(self, state, env, max_simulation=500, winner_reward=1, loser_reward=-1, c_puct=0.1, max_rollout=200):
+    def __init__(self, state, env, max_simulation=500, winner_reward=1., loser_reward=-1, c_puct=0.1, max_rollout=200):
         self.env = env
         self.max_simulation = max_simulation
         self.root_node = Node(state)
@@ -14,13 +14,13 @@ class Mcts(object):
         self.current_node = self.root_node
         self.root_turn = None
         self.current_turn = None
-        self.temperature = 0
+        self.temperature = .0
         self.winner_reward = winner_reward
         self.loser_reward = loser_reward
         self.c_puct = c_puct
         self.max_rollout = max_rollout
 
-    def search(self, temperature=0, action_idx=None):
+    def search(self, temperature=.0, action_idx=None):
         self.temperature = temperature
         self.root_turn = self.env.current_turn
         self.current_turn = self.env.current_turn
@@ -40,14 +40,18 @@ class Mcts(object):
             print("%d edge score! visit count: %d, total_value: %f, mean_value: %f " % (
                 i, edge.visit_count, edge.total_action_value, edge.mean_action_value))
         if (action_probs == 0).all():
-            action_idx = np.random.choice(range(len(action_probs)), 1)[0]
+            action_probs = np.array([1. / len(action_probs)] * len(action_probs))
         else:
+            action_probs = action_probs / action_probs.sum() * 1.
+        if self.temperature == 0:
             arg_max_list = np.argwhere(action_probs == np.amax(action_probs)).flatten()
             print("MCTS Max score:%f" % arg_max_list[0])
             if len(arg_max_list) > 1:
                 action_idx = np.random.choice(arg_max_list, 1)[0]
             else:
                 action_idx = action_probs.argmax()
+        else:
+            action_idx = np.random.choice(len(action_probs), 1, p=action_probs)[0]
         searched_action = self.root_node.edges[action_idx].action
         print("MCTS Search Complete! visit count: %d, total_value: %f, mean_value: %f " % (
             self.root_node.edges[action_idx].visit_count, self.root_node.edges[action_idx].total_action_value,
@@ -73,7 +77,7 @@ class Mcts(object):
         select_scores = np.array(
             [edge.get_select_score(self.current_node.edges, self.c_puct) for edge in self.current_node.edges])
         if (select_scores == 0).all():
-            edge_idx = np.random.choice(range(len(select_scores)), 1)[0]
+            edge_idx = np.random.choice(len(select_scores), 1)[0]
         else:
             arg_max_list = np.argwhere(select_scores == np.amax(select_scores)).flatten()
             if len(arg_max_list) > 1:
@@ -94,7 +98,7 @@ class Mcts(object):
             print("MCTS Game Over")
             return self.loser_reward
 
-        state_value = 0
+        state_value = .0
         if do_rollout:
             state_value = self.rollout(self.current_node.state)
             print("state_value %f" % state_value)
@@ -111,8 +115,8 @@ class Mcts(object):
         return state_value
 
     def rollout(self, state):
-        first_rewards = 0
-        second_rewards = 0
+        first_rewards = .0
+        second_rewards = .0
         for i in range(self.max_rollout):
             legal_actions = self.env.get_all_actions(self.current_node.state)
             action = legal_actions[random.randint(0, len(legal_actions) - 1)]
@@ -127,15 +131,16 @@ class Mcts(object):
                     first_rewards += info["reward"]
                 else:
                     second_rewards += info["reward"]
-        return float(first_rewards - second_rewards) / 73 * self.winner_reward
+        return float(first_rewards - second_rewards) / 73. * self.winner_reward
 
     def backup(self, state_value):
         print("MCTS Backup")
         self.selected_edges.reverse()
         for i, edge in enumerate(self.selected_edges):
             if i % 2 == 0:
-                state_value = -state_value
-            edge.update(state_value)
+                edge.update(-state_value)
+            else:
+                edge.update(state_value)
 
         self.current_node = self.root_node
         self.selected_edges = []
@@ -164,37 +169,37 @@ class Node(object):
 class Edge(object):
     def __init__(self, state, action):
         # N
-        self.visit_count = 0
+        self.visit_count = .0
         # W
-        self.total_action_value = 0
+        self.total_action_value = .0
         # Q
-        self.mean_action_value = 0
+        self.mean_action_value = .0
         # P
         self.action = action
         self.node = Node(state)
 
     def update(self, state_value):
-        self.visit_count += 1
+        self.visit_count += 1.
         self.total_action_value += state_value
         self.mean_action_value = self.total_action_value / self.visit_count
 
     def get_select_score(self, edges, c_puct):
         # todo : what is b?? other acitions visit count?? check!!
-        total_other_edge_visit_count = 0
+        total_other_edge_visit_count = .0
         for edge in edges:
             total_other_edge_visit_count += edge.visit_count
-        U = c_puct * (math.sqrt(total_other_edge_visit_count) / (1 + self.visit_count))
+        U = c_puct * (math.sqrt(total_other_edge_visit_count) / (1. + self.visit_count))
         return self.mean_action_value + U
 
     def get_action_probs(self, edges, temperature):
         # todo : what is b?? other acitions visit count?? check!!
-        total_other_edge_visit_count = 0
+        total_other_edge_visit_count = .0
         for edge in edges:
             if temperature == 0:
                 total_other_edge_visit_count += edge.visit_count
             else:
-                total_other_edge_visit_count += (pow(edge.visit_count, 1 / temperature))
+                total_other_edge_visit_count += (pow(edge.visit_count, 1. / temperature))
         if temperature == 0:
-            return self.mean_action_value + self.visit_count / total_other_edge_visit_count
+            return self.visit_count / total_other_edge_visit_count
         else:
-            return self.mean_action_value + pow(self.visit_count, 1 / temperature) / total_other_edge_visit_count
+            return pow(self.visit_count, 1. / temperature) / total_other_edge_visit_count

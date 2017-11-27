@@ -12,65 +12,26 @@ class Dataset(object):
     DEF_TRAIN_FILE_NAME = "train_dataset.txt"
     DEF_TEST_FILE_NAME = "train_dataset.txt"
 
-    def __init__(self, sess, dataset_dir, backup=True, read_only=False, file_name_suffix=None):
+    def __init__(self, sess):
         self.sess = sess
-        self.dataset_dir = dataset_dir
-        train_file_name = Dataset.DEF_TRAIN_FILE_NAME
-        test_file_name = Dataset.DEF_TEST_FILE_NAME
-        if file_name_suffix:
-            train_file_name = "train_dataset_%s.txt" % str(file_name_suffix)
-            test_file_name = "train_dataset_%s.txt" % str(file_name_suffix)
-        self.train_data_path = os.path.join(dataset_dir, train_file_name)
-        self.test_data_path = os.path.join(dataset_dir, test_file_name)
-        if os.path.exists(self.train_data_path) and backup:
-            self.backup_dataset(self.train_data_path)
-        if os.path.exists(self.test_data_path) and backup:
-            self.backup_dataset(self.test_data_path)
-        self.read_only = read_only
-        self.backup = backup
-        if read_only:
-            self.train_f = None
-            self.test_f = None
-            self.train_csv = None
-            self.test_csv = None
-        else:
-            mode = "a+"
-            self.train_f = open(self.train_data_path, mode)
-            self.test_f = open(self.test_data_path, mode)
-            self.train_csv = csv.writer(self.train_f, delimiter=',')
-            self.test_csv = csv.writer(self.test_f, delimiter=',')
-        self.train_dataset = None
-        self.test_dataset = None
+        self.file = None
+        self.csv_writer = None
+        self.dataset = None
 
-    def close_files(self):
-        self.train_f.close()
-        self.test_f.close()
-        return self.train_data_path, self.test_data_path
+    def open(self, file_path, mode="w+"):
+        self.file = open(file_path, mode=mode)
+        self.csv_writer = csv.writer(self.file, delimiter=',')
 
-    def has_train_dataset_file(self):
-        return os.path.getsize(self.train_data_path) != 0
+    def close(self):
+        if self.file is not None:
+            self.file.close()
 
-    def has_test_dataset_file(self):
-        return os.path.getsize(self.test_data_path) != 0
+    def write(self, info, state_history, mcts_history):
+        if self.csv_writer is None:
+            return False
 
-    def write_dataset(self, info, state_history, mcts_history, episode_step, train_games):
-        if info["winner"]:
-            if episode_step < train_games:
-                self.write_train_data(info["winner"], state_history, mcts_history)
-            else:
-                self.write_test_data(info["winner"], state_history, mcts_history)
-
-    def write_train_data(self, winner, state_history, mcts_history):
-        print("write self-play data for train data")
-        self.write_data(self.train_csv, winner, state_history, mcts_history)
-
-    def write_test_data(self, winner, state_history, mcts_history):
-        print("write self-play data for test data")
-        self.write_data(self.test_csv, winner, state_history, mcts_history)
-
-    def write_data(self, writer, winner, state_history, mcts_history):
         values = {}
-        if winner == 'b':
+        if info["winner"] == 'b':
             values["b"] = 1
             values["r"] = -1
         else:
@@ -81,86 +42,34 @@ class Dataset(object):
                 value = values["b"]
             else:
                 value = values["r"]
-            writer.writerow([value, json.dumps(state_history[i]), json.dumps(mcts_history[i])])
+            self.csv_writer.writerow([value, json.dumps(state_history[i]), json.dumps(mcts_history[i])])
 
-    def open_dataset(self, batch_size=64, shuffle=1000):
-        if self.has_train_dataset_file():
-            self.open_train_dataset(batch_size, shuffle)
-            self.init_train()
-        if self.has_test_dataset_file():
-            self.open_test_dataset(batch_size, shuffle)
-            self.init_test()
-
-    def open_train_dataset(self, batch_size=64, shuffle=1000):
-        self.train_dataset = self.get_dataset(self.train_data_path, batch_size, shuffle)
-
-    def open_test_dataset(self, batch_size=64, shuffle=1000):
-        self.test_dataset = self.get_dataset(self.test_data_path, batch_size, shuffle)
-
-    def get_dataset(self, data_path, batch_size=64, shuffle=1000):
+    def make_dataset(self, filenames, batch_size, shuffle_buffer_size=1000, num_dataset_parallel=4):
         def decode_line(line):
             items = tf.decode_csv(line, [[""], [""], [""]], field_delim=",")
             return items
 
-        base_dataset = tf.data.TextLineDataset(data_path).map(decode_line)
+        if len(filenames) > 1:
+            dataset = tf.data.Dataset.from_tensor_slices(filenames)
 
-        if shuffle:
-            base_dataset = base_dataset.shuffle(shuffle)
-        base_dataset = base_dataset.batch(batch_size).make_initializable_iterator()
-        return base_dataset
+            dataset = dataset.flat_map(
+                lambda filename: (
+                    tf.data.TextLineDataset(filename).map(decode_line, num_dataset_parallel)))
+        else:
+            dataset = tf.data.TextLineDataset(filenames).map(decode_line, num_dataset_parallel)
 
-    def get_train_batch(self):
-        return self.get_batch(self.train_dataset)
+        if shuffle_buffer_size > 0:
+            dataset = dataset.shuffle(shuffle_buffer_size)
+        self.dataset = dataset.batch(batch_size).make_initializable_iterator()
 
-    def get_test_batch(self):
-        return self.get_batch(self.test_dataset)
-
-    def get_batch(self, dataset):
-        value_data, state_data, policy_data = self.sess.run(dataset.get_next())
+    def batch(self):
+        value_data, state_data, policy_data = self.sess.run(self.dataset.get_next())
         state_data = np.array(list(map(lambda x: np.array(json.loads(x.decode("utf-8"))), state_data)))
         policy_data = np.array(list(map(lambda x: np.array(json.loads(x.decode("utf-8"))), policy_data)))
         value_data = np.array(list(map(lambda x: float(x.decode("utf-8")), value_data)))
         return state_data, policy_data, value_data
 
-    def init_train(self):
-        self.sess.run(self.train_dataset.initializer)
+    def init_dataset(self):
+        self.sess.run(self.dataset.initializer)
 
-    def init_test(self):
-        self.sess.run(self.test_dataset.initializer)
 
-    def backup_dataset(self, data_path):
-        if not os.path.exists(data_path):
-            return
-        if os.path.getsize(data_path) == 0:
-            print("empty dataset!! remove!!")
-            os.remove(data_path)
-            return
-        print("backup dataset!")
-        dt = datetime.datetime.fromtimestamp(time.time()).strftime('%Y%m%d%H%M%S')
-        dataset_file_name = os.path.basename(data_path)
-        bak_dir = os.path.join(self.dataset_dir, "dataset_" + dt)
-        if not os.path.exists(bak_dir):
-            os.makedirs(bak_dir)
-        shutil.move(data_path, os.path.join(bak_dir, dataset_file_name))
-
-    def reset(self, file_name_suffix=None):
-        if self.backup:
-            self.backup_dataset(self.train_data_path)
-            self.backup_dataset(self.test_data_path)
-        if file_name_suffix:
-            train_file_name = "train_dataset_%s.txt" % str(file_name_suffix)
-            test_file_name = "train_dataset_%s.txt" % str(file_name_suffix)
-            self.train_data_path = os.path.join(os.path.dirname(self.train_data_path), train_file_name)
-            self.test_data_path = os.path.join(os.path.dirname(self.test_data_path), test_file_name)
-
-        if self.read_only:
-            self.train_f = None
-            self.test_f = None
-            self.train_csv = None
-            self.test_csv = None
-        else:
-            mode = "a+"
-            self.train_f = open(self.train_data_path, mode)
-            self.test_f = open(self.test_data_path, mode)
-            self.train_csv = csv.writer(self.train_f, delimiter=',')
-            self.test_csv = csv.writer(self.test_f, delimiter=',')

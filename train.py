@@ -6,6 +6,7 @@ from core.mcts import Mcts
 from util.dataset import Dataset
 from util import common
 import sys, traceback
+import os
 
 FLAGS = tf.app.flags.FLAGS
 
@@ -25,16 +26,16 @@ saver = tf.train.Saver()
 learning_rate = FLAGS.learning_rate_decay
 
 checkpoint_path = common.restore_model(FLAGS.save_dir, FLAGS.model_file_name, saver, sess, False)
-ds = Dataset(sess, FLAGS.save_dir)
-# ds = Dataset(sess)
-# ds.open(file_path, mode="w")
+dataset_path = os.path.join(FLAGS.save_dir, "dataset.csv")
+ds = Dataset(sess)
+ds.open(dataset_path)
 game_results = {"b": 0, "r": 0, "d": 0}
-train_games = int(FLAGS.episode_interval_to_train * FLAGS.train_fraction)
 
 for i_episode in range(FLAGS.max_episode):
     """"""
     """self-play"""
     state = env.reset()
+
     mcts = Mcts(state, env, model, FLAGS.max_simulation, c_puct=FLAGS.c_puct)
     state_history = [state.tolist()]
     mcts_history = []
@@ -69,20 +70,14 @@ for i_episode in range(FLAGS.max_episode):
     common.log("Blue wins : %d, Red winds : %d, Draws : %d" % (game_results["b"], game_results["r"], game_results["d"]))
     """"""
     """save self-play data"""
-    ds.write_dataset(info, state_history, mcts_history, FLAGS.max_episode % FLAGS.episode_interval_to_train,
-                     train_games)
-    # ds.write(info, state_history, mcts_history)
+    ds.write(info, state_history, mcts_history)
 
     """"""
     """train model"""
-    if i_episode > 0 and i_episode % FLAGS.episode_interval_to_train == 0 and ds.has_train_dataset_file():
-        ds.close_files()
-        # ds.close()
+    if i_episode > 0 and i_episode % FLAGS.episode_interval_to_train == 0 and os.path.getsize(dataset_path) > 0:
+        ds.close()
         learning_rate = common.train_model(model, learning_rate, ds, FLAGS)
         common.save_model(sess, saver, checkpoint_path)
-        common.eval_model(model, ds)
         # todo : evaluate best player
 
-        ds.reset()
-        # ds.backup
-        # ds.open()
+        ds.open(dataset_path)
