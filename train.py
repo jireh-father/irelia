@@ -60,6 +60,9 @@ for i_episode in range(FLAGS.max_episode):
         if len(actions) != len(search_action_probs):
             print(len(actions), len(search_action_probs))
             sys.exit("error!!! action count!!")
+
+        if FLAGS.reuse_mcts:
+            mcts = Mcts(state, env, model, FLAGS.max_simulation, c_puct=FLAGS.c_puct)
         mcts_history.append(env.convert_action_probs_to_policy_probs(actions, search_action_probs))
 
         if done:
