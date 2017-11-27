@@ -89,7 +89,7 @@ def set_flags():
                                os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "checkpoint"),
                                "save dir")
 
-    tf.app.flags.DEFINE_string('model_file_name', "model.ckpt", "model name to save")
+    tf.app.flags.DEFINE_string('model_file_name', "model", "model name to save")
     tf.app.flags.DEFINE_integer('max_step', 200, "max step in a episode")
     tf.app.flags.DEFINE_integer('max_episode', 1000000, "max episode")
     tf.app.flags.DEFINE_integer('max_simulation', 5, "max simulation count in a mcts search")

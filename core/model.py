@@ -55,18 +55,14 @@ class Model(object):
         self.policy_label = tf.placeholder(tf.float32, [None, num_classes], "policy_label")
         self.value_label = tf.placeholder(tf.float32, [None], "value_label")
         inputs = self.inputs
-        data_format = ('channels_first' if tf.test.is_built_with_cuda() else 'channels_last')
-
-        if data_format == 'channels_first':
-            inputs = tf.transpose(inputs, [0, 3, 1, 2], name="channel_axis_change")
 
         network = self.conv2d_fixed_padding(
-            inputs=inputs, filters=256, kernel_size=3, strides=1, data_format=data_format, name="start_conv")
+            inputs=inputs, filters=256, kernel_size=3, strides=1, name="start_conv")
 
-        network = self.block_layer(inputs=network, filters=256, blocks=num_layers, strides=1, data_format=data_format)
+        network = self.block_layer(inputs=network, filters=256, blocks=num_layers, strides=1)
 
         value_network = self.conv2d_fixed_padding(inputs=network, filters=1, kernel_size=1, strides=1,
-                                                  data_format=data_format, name="value_conv")
+                                                  name="value_conv")
         value_network = tf.reshape(value_network, [-1, num_classes], name="value_reshape")
         value_network = tf.layers.dense(inputs=value_network, units=64, name="value_dense1")
 
@@ -78,7 +74,7 @@ class Model(object):
         # value_net_inputs = tf.reshape(value_net_inputs, [-1], name="value_scalar_reshape")
 
         policy_network = self.conv2d_fixed_padding(inputs=network, filters=2, kernel_size=1, strides=1,
-                                                   data_format=data_format, name="policy_conv")
+                                                   name="policy_conv")
         policy_network = tf.reshape(policy_network, [-1, num_classes * 2], name="policy_reshape")
         policy_network = tf.layers.dense(inputs=policy_network, units=num_classes, name="policy_dense")
 
@@ -104,66 +100,58 @@ class Model(object):
 
         # todo: accuracy! legal action probabilities and value scalar
 
-    def batch_norm_relu(self, inputs, data_format, name):
+    def batch_norm_relu(self, inputs, name):
         inputs = tf.layers.batch_normalization(
-            inputs=inputs, axis=1 if data_format == 'channels_first' else 3,
-            momentum=_BATCH_NORM_DECAY, epsilon=_BATCH_NORM_EPSILON, center=True,
+            inputs=inputs, axis=3, momentum=_BATCH_NORM_DECAY, epsilon=_BATCH_NORM_EPSILON, center=True,
             scale=True, training=self.is_training, fused=True, name=name + "/batch")
 
         inputs = tf.nn.relu(inputs, name=name + "/relu")
         return inputs
 
-    def batch_norm(self, inputs, data_format, name):
+    def batch_norm(self, inputs, name):
         inputs = tf.layers.batch_normalization(
-            inputs=inputs, axis=1 if data_format == 'channels_first' else 3,
-            momentum=_BATCH_NORM_DECAY, epsilon=_BATCH_NORM_EPSILON, center=True,
+            inputs=inputs, axis=3, momentum=_BATCH_NORM_DECAY, epsilon=_BATCH_NORM_EPSILON, center=True,
             scale=True, training=self.is_training, fused=True, name=name + "/batch")
         return inputs
 
-    def fixed_padding(self, inputs, kernel_size, data_format):
+    def fixed_padding(self, inputs, kernel_size):
         pad_total = kernel_size - 1
         pad_beg = pad_total // 2
         pad_end = pad_total - pad_beg
 
-        if data_format == 'channels_first':
-            padded_inputs = tf.pad(inputs, [[0, 0], [0, 0],
-                                            [pad_beg, pad_end], [pad_beg, pad_end]])
-        else:
-            padded_inputs = tf.pad(inputs, [[0, 0], [pad_beg, pad_end],
-                                            [pad_beg, pad_end], [0, 0]])
+        padded_inputs = tf.pad(inputs, [[0, 0], [pad_beg, pad_end],
+                                        [pad_beg, pad_end], [0, 0]])
         return padded_inputs
 
-    def conv2d_fixed_padding(self, inputs, filters, kernel_size, strides, data_format, name=None, relu=True):
+    def conv2d_fixed_padding(self, inputs, filters, kernel_size, strides, name=None, relu=True):
         if strides > 1:
-            inputs = self.fixed_padding(inputs, kernel_size, data_format)
+            inputs = self.fixed_padding(inputs, kernel_size)
 
         inputs = tf.layers.conv2d(
             inputs=inputs, filters=filters, kernel_size=kernel_size, strides=strides,
             padding=('SAME' if strides == 1 else 'VALID'), use_bias=False,
-            kernel_initializer=tf.variance_scaling_initializer(),
-            data_format=data_format, name=name)
+            kernel_initializer=tf.variance_scaling_initializer(), name=name)
         if relu:
-            return self.batch_norm_relu(inputs, data_format, name)
+            return self.batch_norm_relu(inputs, name)
         else:
-            return self.batch_norm(inputs, data_format, name)
+            return self.batch_norm(inputs, name)
 
-    def building_block(self, inputs, filters, strides, data_format, name=None):
+    def building_block(self, inputs, filters, strides, name=None):
         shortcut = inputs
 
         inputs = self.conv2d_fixed_padding(
             inputs=inputs, filters=filters, kernel_size=3, strides=strides,
-            data_format=data_format, name=name + "/block_start")
+            name=name + "/block_start")
 
         inputs = self.conv2d_fixed_padding(
-            inputs=inputs, filters=filters, kernel_size=3, strides=1,
-            data_format=data_format, relu=False, name=name + "/block_end")
+            inputs=inputs, filters=filters, kernel_size=3, strides=1, relu=False, name=name + "/block_end")
 
         inputs = tf.add(inputs, shortcut, name=name + "/shortcut_add")
 
         return tf.nn.relu(inputs, name=name + "/relu")
 
-    def block_layer(self, inputs, filters, blocks, strides, data_format):
+    def block_layer(self, inputs, filters, blocks, strides):
         for i, _ in enumerate(range(0, blocks)):
-            inputs = self.building_block(inputs, filters, strides, data_format, name="block_" + str(i))
+            inputs = self.building_block(inputs, filters, strides, name="block_" + str(i))
 
         return inputs

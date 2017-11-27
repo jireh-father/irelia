@@ -2,20 +2,19 @@
 import tensorflow as tf
 from game.game import Game
 from core.model import Model
-from core.mcts import Mcts
+from core import optimizer
 from util.dataset import Dataset
 from util import common
-import sys, traceback
 import os
+from core import self_play
 
 FLAGS = tf.app.flags.FLAGS
 
 common.set_flags()
 
-data_format = ('channels_first' if tf.test.is_built_with_cuda() else 'channels_last')
-env = Game.make("KoreanChess-v1", {"use_check": False, "limit_step": FLAGS.max_step, "data_format": data_format,
-                                   "print_mcts_history": FLAGS.print_mcts_history,
-                                   "use_color_print": FLAGS.use_color_print, "use_cache": FLAGS.use_cache})
+env = Game.make("KoreanChess-v1",
+                {"use_check": False, "limit_step": FLAGS.max_step, "print_mcts_history": FLAGS.print_mcts_history,
+                 "use_color_print": FLAGS.use_color_print, "use_cache": FLAGS.use_cache})
 
 config = tf.ConfigProto()
 config.gpu_options.allow_growth = True
@@ -26,52 +25,29 @@ sess.run(tf.global_variables_initializer())
 saver = tf.train.Saver()
 learning_rate = FLAGS.learning_rate_decay
 
-checkpoint_path = common.restore_model(FLAGS.save_dir, FLAGS.model_file_name, saver, sess, False)
+if not os.path.exists(FLAGS.save_dir):
+    os.makedirs(FLAGS.save_dir)
+    if os.path.exists(os.path.join(FLAGS.save_dir, FLAGS.model_file_name)):
+        print("restore!!")
+        saver.restore(sess, os.path.join(FLAGS.save_dir, FLAGS.model_file_name))
+
 dataset_path = os.path.join(FLAGS.save_dir, "dataset.csv")
 ds = Dataset(sess)
 ds.open(dataset_path)
 game_results = {"b": 0, "r": 0, "d": 0}
 
-for i_episode in range(FLAGS.max_episode):
+for episode in range(FLAGS.max_episode):
     """"""
     """self-play"""
-    state = env.reset()
+    print("self-play episode %d" % episode)
+    info, state_history, mcts_history = self_play.self_play(env, model, FLAGS.max_simulation, FLAGS.max_step,
+                                                            FLAGS.c_puct, FLAGS.exploration_step, FLAGS.reuse_mcts,
+                                                            FLAGS.print_mcts_tree)
 
-    mcts = Mcts(state, env, model, FLAGS.max_simulation, c_puct=FLAGS.c_puct)
-    state_history = [state.tolist()]
-    mcts_history = []
-    temperature = 1
-    info = []
-    for step in range(FLAGS.max_step):
-        common.log("episode: %d, step: %d" % (i_episode, step))
-        if step >= FLAGS.exploration_step:
-            common.log("temperature down")
-            temperature = 0
-        actions = env.get_all_actions()
-        search_action_probs, action = mcts.search(temperature)
-        if FLAGS.print_mcts_tree:
-            mcts.print_tree()
-        try:
-            state, reward, done, info = env.step(action)
-        except Exception as e:
-            traceback.print_exc(file=sys.stdout)
-            continue
-
-        if len(actions) != len(search_action_probs):
-            print(len(actions), len(search_action_probs))
-            sys.exit("error!!! action count!!")
-
-        if FLAGS.reuse_mcts:
-            mcts = Mcts(state, env, model, FLAGS.max_simulation, c_puct=FLAGS.c_puct)
-        mcts_history.append(env.convert_action_probs_to_policy_probs(actions, search_action_probs))
-
-        if done:
-            if info["winner"]:
-                game_results[info["winner"]] += 1
-            else:
-                game_results["d"] += 1
-            break
-        state_history.append(state.tolist())
+    if info["winner"]:
+        game_results[info["winner"]] += 1
+    else:
+        game_results["d"] += 1
     common.log("Blue wins : %d, Red winds : %d, Draws : %d" % (game_results["b"], game_results["r"], game_results["d"]))
     """"""
     """save self-play data"""
@@ -79,10 +55,12 @@ for i_episode in range(FLAGS.max_episode):
 
     """"""
     """train model"""
-    if i_episode > 0 and i_episode % FLAGS.episode_interval_to_train == 0 and os.path.getsize(dataset_path) > 0:
+    if episode > 0 and episode % FLAGS.episode_interval_to_train == 0 and os.path.getsize(dataset_path) > 0:
         ds.close()
-        learning_rate = common.train_model(model, learning_rate, ds, FLAGS)
-        common.save_model(sess, saver, checkpoint_path)
+        ds.make_dataset([dataset_path], FLAGS.batch_size)
+        optimizer.train_model(model, learning_rate, ds, FLAGS.epoch, FLAGS.learning_rate_decay,
+                              FLAGS.learning_rate_decay_interval)
+        saver.save(sess, os.path.join(FLAGS.save_dir, "%s_%d.ckpt" % (FLAGS.model_file_name, episode)))
         # todo : evaluate best player
 
         ds.open(dataset_path)
