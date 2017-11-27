@@ -1,3 +1,8 @@
+-- 캐싱하기 ( legal actions, 승패확인, 반복수, inference )
+
+-- 좀더 깔끔하게 모듈화
+-- 분산 self-play만들기
+
 mcts 한번에 시뮬레이션에서 select할때 반복수 못두게하기
 dataset 심플하게 변경
 value decay?

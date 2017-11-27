@@ -23,8 +23,7 @@ def copy_state(state):
     return copy.deepcopy(state)
 
 
-def encode_state(state, data_format):
-    # if data_format == "channels_last":
+def encode_state(state):
     state = np.transpose(state, [2, 0, 1])
     new_state = [[0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9]
     for i, line in enumerate(state[0]):
@@ -37,7 +36,7 @@ def encode_state(state, data_format):
     return new_state, turn
 
 
-def decode_state(state, turn, data_format):
+def decode_state(state, turn):
     new_state = [[[0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9],
                  [[0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9]]
     for i, line in enumerate(state):
@@ -52,7 +51,6 @@ def decode_state(state, turn, data_format):
     else:
         new_state.append([[0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9])
     new_state = np.array(new_state).astype(np.float)
-    # if data_format == "channels_last":
     new_state = np.transpose(new_state, [1, 2, 0])
     return new_state
 

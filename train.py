@@ -15,7 +15,7 @@ common.set_flags()
 data_format = ('channels_first' if tf.test.is_built_with_cuda() else 'channels_last')
 env = Game.make("KoreanChess-v1", {"use_check": False, "limit_step": FLAGS.max_step, "data_format": data_format,
                                    "print_mcts_history": FLAGS.print_mcts_history,
-                                   "use_color_print": FLAGS.use_color_print})
+                                   "use_color_print": FLAGS.use_color_print, "use_cache": True})
 
 config = tf.ConfigProto()
 config.gpu_options.allow_growth = True
@@ -57,6 +57,7 @@ for i_episode in range(FLAGS.max_episode):
             continue
 
         if len(actions) != len(search_action_probs):
+            print(len(actions), len(search_action_probs))
             sys.exit("error!!! action count!!")
         mcts_history.append(env.convert_action_probs_to_policy_probs(actions, search_action_probs))
 

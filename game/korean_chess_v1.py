@@ -115,11 +115,14 @@ class KoreanChessV1:
         self.blue_catch_list = []
         self.limit_step = 200
         self.max_reward = 1
-        self.data_format = None
         self.check_repeat = True
         self.print_mcts_history = None
         self.use_color_print = None
         self.action_history = {c.BLUE: [], c.RED: []}
+        self.use_cache = False
+        self.action_cache = {}
+        self.simulation_cache = {}
+        self.over_cache = {}
 
     def reset(self):
         self.interval = 0
@@ -138,21 +141,21 @@ class KoreanChessV1:
                 self.limit_step = self.properties["limit_step"]
             if "max_reward" in self.properties:
                 self.max_reward = self.properties["max_reward"]
-            if "data_format" in self.properties:
-                self.data_format = self.properties["data_format"]
             if "check_repeat" in self.properties:
                 self.check_repeat = self.properties["check_repeat"]
             if "print_mcts_history" in self.properties:
                 self.print_mcts_history = self.properties["print_mcts_history"]
             if "use_color_print" in self.properties:
                 self.use_color_print = self.properties["use_color_print"]
+            if "use_cache" in self.properties:
+                self.use_cache = self.properties["use_cache"]
 
         if self.properties and "init_state" in self.properties:
-            self.current_state, self.current_turn = u.encode_state(self.properties["init_state"], self.data_format)
+            self.current_state, self.current_turn = u.encode_state(self.properties["init_state"])
             self.next_turn = c.RED if self.current_turn == c.BLUE else c.BLUE
         else:
             if not self.properties or (
-                            "position_type" not in self.properties or self.properties['position_type'] == 'random'):
+                      "position_type" not in self.properties or self.properties['position_type'] == 'random'):
                 # random position
                 blue_rand_position = random.randint(0, 3)
                 red_rand_position = random.randint(0, 3)
@@ -183,7 +186,7 @@ class KoreanChessV1:
         # print environment
         self.print_env()
 
-        return u.decode_state(self.current_state, self.current_turn, self.data_format)
+        return u.decode_state(self.current_state, self.current_turn)
 
     def step(self, action):
         # validate action
@@ -264,7 +267,7 @@ class KoreanChessV1:
             winner = 'b' if self.current_turn == 'r' else 'b'
         info["winner"] = winner
 
-        return u.decode_state(self.current_state, self.current_turn, self.data_format), reward, is_game_over, info
+        return u.decode_state(self.current_state, self.current_turn), reward, is_game_over, info
 
     def print_env(self, is_check=False, is_checkmate=False, to_x=10, to_y=10, done=False, is_draw=False, state=None):
         if state is None:
@@ -275,7 +278,7 @@ class KoreanChessV1:
             if not self.print_mcts_history:
                 return
             by_mcts = True
-            state, turn = u.encode_state(state, self.data_format)
+            state, turn = u.encode_state(state)
         if self.interval > 0:
             time.sleep(self.interval)
         if turn == c.BLUE:
@@ -317,11 +320,27 @@ class KoreanChessV1:
 
         print('======================================================')
 
+    def build_cache_key(self, state, turn, action=None):
+        if action is None:
+            return str(state) + turn
+        else:
+            return str(state) + turn + str(action["from_x"]) + str(action["from_y"]) + str(action["to_x"]) + str(
+                action["to_y"])
+
     def get_all_actions(self, state=None):
-        turn = None
         if state is not None:
-            state, turn = u.encode_state(state, self.data_format)
-        return u.get_all_actions(self.current_state if not state else state, self.current_turn if not turn else turn)
+            state, turn = u.encode_state(state)
+        else:
+            state = self.current_state
+            turn = self.current_turn
+        cache_key = self.build_cache_key(state, turn)
+        if self.use_cache and cache_key in self.action_cache:
+            return self.action_cache[cache_key]
+        all_actions = u.get_all_actions(state, turn)
+        if self.use_cache:
+            self.action_cache[cache_key] = all_actions
+
+        return all_actions
 
     def encode_action(self, action):
         action_from = action["from_y"] * 9 + action["from_x"]
@@ -330,18 +349,32 @@ class KoreanChessV1:
         return [action_from, action_to]
 
     def is_over(self, state):
-        state, turn = u.encode_state(state, self.data_format)
+        state, turn = u.encode_state(state)
+        cache_key = self.build_cache_key(state, turn)
+        if self.use_cache and cache_key in self.over_cache:
+            return self.over_cache[cache_key]
         num_kings = 0
         for line in state:
             for piece in line:
                 if piece != 0 and int(piece[1]) == c.KING:
                     num_kings += 1
                     if num_kings == 2:
+                        if self.use_cache:
+                            self.over_cache[cache_key] = False
                         return False
+        if self.use_cache:
+            self.over_cache[cache_key] = True
         return True
 
     def simulate(self, state, action, return_info=True):
-        state, turn = u.encode_state(state, self.data_format)
+        state, turn = u.encode_state(state)
+        cache_key = self.build_cache_key(state, turn, action)
+        if self.use_cache and cache_key in self.simulation_cache:
+            if return_info:
+                return self.simulation_cache[cache_key][0], self.simulation_cache[cache_key][1]
+            else:
+                return self.simulation_cache[cache_key][0]
+
         turn = c.RED if turn == c.BLUE else c.BLUE
         to_x = action['to_x']
         to_y = action['to_y']
@@ -359,11 +392,13 @@ class KoreanChessV1:
         is_game_over = reward >= c.REWARD_LIST[c.KING]
 
         info = {"is_game_over": is_game_over, "reward": reward}
-
+        decode_state = u.decode_state(state, turn)
+        if self.use_cache:
+            self.simulation_cache[cache_key] = [decode_state, info]
         if return_info:
-            return u.decode_state(state, turn, self.data_format), info
+            return decode_state, info
         else:
-            return u.decode_state(state, turn, self.data_format)
+            return decode_state
 
     def convert_action_probs_to_policy_probs(self, actions, action_probs):
         policy_probs = np.array([.0] * 90)
