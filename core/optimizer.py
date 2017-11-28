@@ -6,6 +6,7 @@ def train_model(model, learning_rate, ds, train_epoch, learning_rate_decay, lear
     batch_step = 0
     log("train!")
     for epoch in range(train_epoch):
+        ds.init_train()
         while True:
             log("epoch: %d, step: %d" % (epoch, batch_step))
             try:
@@ -20,5 +21,4 @@ def train_model(model, learning_rate, ds, train_epoch, learning_rate_decay, lear
                 batch_step += 1
             except tf.errors.OutOfRangeError:
                 log("out of range dataset! init!!")
-                ds.init_train()
                 break
