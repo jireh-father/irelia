@@ -9,9 +9,9 @@ import time
 def restore_model(save_dir, model_file_name, saver, sess, restore_pending=False):
     if not os.path.exists(save_dir):
         os.makedirs(save_dir)
-    checkpoint_path = os.path.join(save_dir, model_file_name)
+    checkpoint_path = os.path.join(save_dir, model_file_name) + ".ckpt"
     while True:
-        if os.path.exists(checkpoint_path + ".ckpt.data-00000-of-00001"):
+        if os.path.exists(checkpoint_path + ".data-00000-of-00001"):
             print("restore success!!")
             try:
                 saver.restore(sess, checkpoint_path)
