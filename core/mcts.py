@@ -12,8 +12,6 @@ class Mcts(object):
         self.root_node = Node(state)
         self.selected_edges = []
         self.current_node = self.root_node
-        self.root_turn = None
-        self.current_turn = None
         self.temperature = .0
         self.winner_reward = winner_reward
         self.loser_reward = loser_reward
@@ -24,12 +22,15 @@ class Mcts(object):
 
     def search(self, temperature=.0, action_idx=None):
         self.temperature = temperature
-        self.root_turn = self.env.current_turn
-        self.current_turn = self.env.current_turn
         if action_idx is not None:
             if not self.root_node.edges:
                 self.expand_and_evaluate()
             self.root_node = self.root_node.edges[action_idx].node
+
+        if self.root_node.edges is not None:
+            noise_probs = np.random.dirichlet([1] * len(self.root_node.edges), 1)[0]
+            for i, edge in enumerate(self.root_node.edges):
+                edge.add_noise(noise_probs[i])
 
         for i in range(self.max_simulation):
             print("mcts simulate %d " % i)
@@ -91,7 +92,6 @@ class Mcts(object):
         self.selected_edges.append(self.current_node.edges[edge_idx])
         self.current_node = self.current_node.edges[edge_idx].node
         # self.env.print_env(state=self.current_node.state)
-        self.current_turn = 'r' if self.current_turn == 'b' else 'b'
 
         return False
 
@@ -119,13 +119,18 @@ class Mcts(object):
             legal_action_probs.append(action_probs[legal_action[0]] + action_probs[legal_action[0]])
 
         legal_action_probs = np.array(legal_action_probs)
+        if (legal_action_probs == 0).all():
+            legal_action_probs = np.array([1. / len(legal_action_probs)] * len(legal_action_probs))
+        else:
+            legal_action_probs = legal_action_probs / legal_action_probs.sum() * 1.
         # todo: add noise!! check (DIR(0.03)???)
         if self.root_node is self.current_node:
             # add noise to prior probabilities
-            if (legal_action_probs == 0).all():
-                noise_probs = legal_action_probs
-            else:
-                noise_probs = np.random.dirichlet(legal_action_probs, 1)[0]
+            # if (legal_action_probs == 0).all():
+            #     noise_probs = legal_action_probs
+            # else:
+            # noise_probs = np.random.dirichlet(legal_action_probs, 1)[0]
+            noise_probs = np.random.dirichlet([1] * len(legal_action_probs), 1)[0]
 
             legal_action_probs = ((1 - 0.25) * legal_action_probs + (noise_probs * 0.25))
 
@@ -183,6 +188,9 @@ class Edge(object):
         self.action_prob = action_prob
         self.action = action
         self.node = Node(state)
+
+    def add_noise(self, noice_prob):
+        self.action_prob = (0.75 * self.action_prob) + (0.25 * noice_prob)
 
     def update(self, state_value):
         self.visit_count += 1.
