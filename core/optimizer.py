@@ -6,7 +6,7 @@ def train_model(model, learning_rate, ds, train_epoch, learning_rate_decay, lear
     batch_step = 0
     log("train!")
     for epoch in range(train_epoch):
-        ds.init_train()
+        ds.init_dataset()
         while True:
             log("epoch: %d, step: %d" % (epoch, batch_step))
             try:
