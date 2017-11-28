@@ -10,7 +10,8 @@
  - 기보 데이터셋으로 학습해보기
 MCTS 검증
  - 정상적으로 플레이되는건지
--- 분산 self-play만들기
+-- 분산
+self-play만들기
 
 
 -- 캐싱하기 시간 건당 테스트해보기? ( legal actions, 승패확인, 반복수, inference )
