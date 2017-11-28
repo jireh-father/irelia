@@ -41,11 +41,14 @@ class Mcts(object):
         print("MCTS root edges")
         for i, edge in enumerate(self.root_node.edges):
             print("%d edge score! N: %d, P: %f, total_value: %f, mean_value: %f -> %s" % (
-                i, edge.visit_count, edge.action_prob, edge.total_action_value, edge.mean_action_value, str(edge.action)))
+                i, edge.visit_count, edge.action_prob, edge.total_action_value, edge.mean_action_value,
+                str(edge.action)))
         if (action_probs == 0).all():
             action_probs = np.array([1. / len(action_probs)] * len(action_probs))
         else:
             action_probs = action_probs / action_probs.sum() * 1.
+        print("action probs!")
+        print(action_probs)
         if self.temperature == 0:
             arg_max_list = np.argwhere(action_probs == np.amax(action_probs)).flatten()
             print("MCTS Max score:%f" % arg_max_list[0])
