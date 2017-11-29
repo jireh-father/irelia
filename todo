@@ -1,4 +1,13 @@
-##매턴 루트 엣지 확률 노이즈로 바꾸기
+1. get all action 중복 체크 하도록 바꾸고 인자도  state_history를 받도록 수정(env와 mcts에서 모두 동일하게
+2. self-play에서 step으로 받은 state를 바깥에서 hisotry로 조립하도록?
+3. inference할때 그때그때 state_history만들도록
+4.
+##매턴 루트 엣지 확률 노이즈로 바꾸기 -> 체크
+방문자수 역하도록 액션확률조정한거랑 노이즈 비율 변경한거 테스트해보기
+get all actions수정하기
+todo 체크하기
+mcts 각노드의 상태확인
+
 상태에 히스토리 상태 추가하기
  -> mcts에서 베스트 액션 구하거나 select할때 불가능한 액션인지 미리계산하기
  -> mcts 한번에 시뮬레이션에서 select할때 반복수 못두게하기

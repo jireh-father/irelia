@@ -40,4 +40,5 @@ def self_play(env, model, max_simulation, max_step, c_puct, exploration_step, re
         step += 1
         if done:
             break
+        state_history.append(state.tolist())
     return info, state_history, mcts_history

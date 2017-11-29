@@ -127,11 +127,12 @@ class KoreanChessV1:
     def reset(self):
         self.interval = 0
         self.use_check = True
-        self.check_repeat = 5
+        self.check_repeat = 4
         self.limit_step = 200
         self.max_reward = 1
         self.print_mcts_history = False
         self.use_color_print = False
+        self.action_history = {c.BLUE: [], c.RED: []}
         if self.properties:
             if "interval" in self.properties:
                 self.interval = self.properties["interval"]
@@ -155,7 +156,7 @@ class KoreanChessV1:
             self.next_turn = c.RED if self.current_turn == c.BLUE else c.BLUE
         else:
             if not self.properties or (
-                      "position_type" not in self.properties or self.properties['position_type'] == 'random'):
+                            "position_type" not in self.properties or self.properties['position_type'] == 'random'):
                 # random position
                 blue_rand_position = random.randint(0, 3)
                 red_rand_position = random.randint(0, 3)
