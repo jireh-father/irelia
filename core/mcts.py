@@ -28,6 +28,11 @@ class Mcts(object):
             self.root_node = self.root_node.edges[action_idx].node
 
         if self.root_node.edges is not None:
+            visits = []
+            for edge in self.root_node.edges:
+                visits.append(edge.visit_count)
+            visits = np.array(visits)
+            visits = visits / visits.max() * -1.
             noise_probs = np.random.dirichlet([1] * len(self.root_node.edges), 1)[0]
             for i, edge in enumerate(self.root_node.edges):
                 edge.add_noise(noise_probs[i])
@@ -193,7 +198,7 @@ class Edge(object):
         self.node = Node(state)
 
     def add_noise(self, noice_prob):
-        self.action_prob = (0.75 * self.action_prob) + (0.25 * noice_prob)
+        self.action_prob = (0.25 * self.action_prob) + (0.75 * noice_prob)
 
     def update(self, state_value):
         self.visit_count += 1.
