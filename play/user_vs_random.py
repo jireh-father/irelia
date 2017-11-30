@@ -13,7 +13,7 @@ init_state[0][8][5] = c.KING
 init_state[0][6][4] = c.CAR
 init_state[0][5][4] = c.CAR
 # env = Game.make("KoreanChess-v1", {"init_state": init_state})
-env = Game.make("KoreanChess-v1", {"interval": 0.1, "check_repeat": 3})
+env = Game.make("KoreanChess-v1", {"interval": 0.1, "limit_repeat": 3})
 
 env.reset()
 i = 0
@@ -23,7 +23,9 @@ while True:
 
         try:
             new_state, reward, done, _ = env.step({"from_x": from_x, "from_y": from_y, "to_x": to_x, "to_y": to_y})
-
+            if reward is False:
+                print("repeat!!")
+                continue
             if done:
                 print("The End")
                 break

@@ -102,10 +102,10 @@ def validate_action(action, state, turn, next_turn, use_check=True):
 
 def check_repeat(action, action_history):
     my_actions = []
-    for i, action in enumerate(action_history):
+    for i, tmp_action in enumerate(action_history):
         if i % 2 == 1:
             continue
-        my_actions.append(action)
+        my_actions.append(tmp_action)
     my_actions.reverse()
     even_action = my_actions[0]
     for i in range(1, len(my_actions)):
@@ -114,8 +114,8 @@ def check_repeat(action, action_history):
         elif i % 2 == 1 and action == my_actions[i]:
             continue
         return False
-
     return True
+
 
 def is_check(state, from_x, from_y, to_x, to_y, turn):
     state = copy_state(state)

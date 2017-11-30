@@ -31,6 +31,7 @@ def self_play(env, model, max_simulation, max_step, c_puct, exploration_step, re
         try:
             state, reward, done, info = env.step(action)
             if reward is False:
+                print("repeat!!")
                 if len(action_probs) == 1:
                     info["winner"] = env.next_turn
                     break

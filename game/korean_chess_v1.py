@@ -161,7 +161,7 @@ class KoreanChessV1:
             self.next_turn = c.RED if self.current_turn == c.BLUE else c.BLUE
         else:
             if not self.properties or (
-                            "position_type" not in self.properties or self.properties['position_type'] == 'random'):
+              "position_type" not in self.properties or self.properties['position_type'] == 'random'):
                 # random position
                 blue_rand_position = random.randint(0, 3)
                 red_rand_position = random.randint(0, 3)
@@ -365,7 +365,6 @@ class KoreanChessV1:
             action_history = self.action_history
         if self.limit_action_history > len(action_history):
             return False
-
         return u.check_repeat(action, action_history)
 
     def encode_action(self, action):
