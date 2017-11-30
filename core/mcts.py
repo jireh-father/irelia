@@ -22,7 +22,7 @@ class Mcts(object):
 
     def search(self, temperature=.0, action_idx_list=None):
         self.temperature = temperature
-        if action_idx_list is not None and len(action_idx_list) > 0:
+        if action_idx_list is not None:
             if not self.root_node.edges:
                 self.expand_and_evaluate()
             for action_idx in action_idx_list:

@@ -22,7 +22,7 @@ def self_play(env, model, max_simulation, max_step, c_puct, exploration_step, re
             common.log("temperature down")
             temperature = 0
         actions = env.get_all_actions()
-        action_probs, action = mcts.search(temperature, [action_idx])
+        action_probs, action = mcts.search(temperature, None if action_idx is None else [action_idx])
         action_idx = mcts.get_action_idx(action_probs)
         action = action_probs[action_idx]
 
