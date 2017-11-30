@@ -55,7 +55,7 @@ def decode_state(state, turn):
     return new_state
 
 
-def validate_action(action, state, turn, next_turn, use_check=True, actions_history=None, check_repeat=None):
+def validate_action(action, state, turn, next_turn, use_check=True):
     to_x = action['to_x']
     to_y = action['to_y']
     from_x = action['from_x']
@@ -91,29 +91,31 @@ def validate_action(action, state, turn, next_turn, use_check=True, actions_hist
         return True
 
     # check this action gets my own check.
+    # todo: modify for oppnent turn
     check = is_check(state, from_x, from_y, to_x, to_y, next_turn)
     if check:
         raise Exception("this action causes opponent's check %d %d %d %d" % (from_x, from_y, to_x, to_y,))
         # return False
 
-    if check_repeat and len(actions_history[turn]) >= (check_repeat - 1):
-        actions_history = actions_history[turn]
-        for i in range(check_repeat - 1):
-            action_idx = -(i + 1)
-            old_action = actions_history[action_idx]
-            if i % 2 == 0:
-                if old_action["to_x"] != action["from_x"] or old_action["to_y"] != action["from_y"] or old_action[
-                    "from_x"] != action["to_x"] or old_action["from_y"] != action["to_y"]:
-                    return True
-            else:
-                if old_action != action:
-                    return True
-        if state[to_y][to_x] != 0:
-            return True
-        raise Exception("repeat action!!")
-
     return True
 
+
+def check_repeat(action, action_history):
+    my_actions = []
+    for i, action in enumerate(action_history):
+        if i % 2 == 1:
+            continue
+        my_actions.append(action)
+    my_actions.reverse()
+    even_action = my_actions[0]
+    for i in range(1, len(my_actions)):
+        if i % 2 == 0 and even_action == my_actions[i]:
+            continue
+        elif i % 2 == 1 and action == my_actions[i]:
+            continue
+        return False
+
+    return True
 
 def is_check(state, from_x, from_y, to_x, to_y, turn):
     state = copy_state(state)

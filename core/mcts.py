@@ -11,22 +11,22 @@ class Mcts(object):
         self.max_simulation = max_simulation
         self.root_node = Node(state)
         self.selected_edges = []
+        self.action_history = []
         self.current_node = self.root_node
         self.temperature = .0
         self.winner_reward = winner_reward
         self.loser_reward = loser_reward
         self.c_puct = c_puct
-        self.prev_root_node = None
         if init_root_edges:
             self.expand_and_evaluate()
 
-    def search(self, temperature=.0, action_idx=None):
+    def search(self, temperature=.0, action_idx_list=None):
         self.temperature = temperature
-        if action_idx is not None:
+        if action_idx_list is not None and len(action_idx_list) > 0:
             if not self.root_node.edges:
                 self.expand_and_evaluate()
-            self.root_node = self.root_node.edges[action_idx].node
-
+            for action_idx in action_idx_list:
+                self.root_node = self.root_node.edges[action_idx].node
         if self.root_node.edges is not None:
             # visits = []
             # for edge in self.root_node.edges:
@@ -56,6 +56,36 @@ class Mcts(object):
             action_probs = action_probs / action_probs.sum() * 1.
         print("action probs!")
         print(action_probs)
+
+        return action_probs
+
+    def simulate(self):
+        is_leaf_node = False
+        i = 0
+        while not is_leaf_node:
+            print("mcts select %d" % i)
+            is_leaf_node = self.select()
+            if is_leaf_node == 2:
+                self.backup(-1)
+                self.init_state()
+                return
+            i += 1
+
+        state_value = self.expand_and_evaluate()
+        self.backup(state_value)
+
+    def choice_edge_idx(self, select_scores):
+        if (select_scores == 0).all():
+            edge_idx = np.random.choice(len(select_scores), 1)[0]
+        else:
+            arg_max_list = np.argwhere(select_scores == np.amax(select_scores)).flatten()
+            if len(arg_max_list) > 1:
+                edge_idx = np.random.choice(arg_max_list, 1)[0]
+            else:
+                edge_idx = select_scores.argmax()
+        return edge_idx
+
+    def get_action_idx(self, action_probs):
         if self.temperature == 0:
             arg_max_list = np.argwhere(action_probs == np.amax(action_probs)).flatten()
             print("MCTS Max score:%f" % arg_max_list[0])
@@ -65,41 +95,25 @@ class Mcts(object):
                 action_idx = action_probs.argmax()
         else:
             action_idx = np.random.choice(len(action_probs), 1, p=action_probs)[0]
-
-        searched_action = self.root_node.edges[action_idx].action
-        print("MCTS Search Complete! visit count: %d, total_value: %f, mean_value: %f " % (
-            self.root_node.edges[action_idx].visit_count, self.root_node.edges[action_idx].total_action_value,
-            self.root_node.edges[action_idx].mean_action_value))
-        self.prev_root_node = self.root_node
-        self.root_node = self.root_node.edges[action_idx].node
-        return action_probs, searched_action
-
-    def simulate(self):
-        is_leaf_node = False
-        i = 0
-        while not is_leaf_node:
-            print("mcts select %d" % i)
-            is_leaf_node = self.select()
-            i += 1
-
-        state_value = self.expand_and_evaluate()
-        self.backup(state_value)
+        print("choice action idx %d" % action_idx)
+        return action_idx
 
     def select(self):
         if not self.current_node.edges:
             return True
         select_scores = np.array(
             [edge.get_select_score(self.current_node.edges, self.c_puct) for edge in self.current_node.edges])
-        if (select_scores == 0).all():
-            edge_idx = np.random.choice(len(select_scores), 1)[0]
-        else:
-            arg_max_list = np.argwhere(select_scores == np.amax(select_scores)).flatten()
-            if len(arg_max_list) > 1:
-                edge_idx = np.random.choice(arg_max_list, 1)[0]
+        edge_idx = self.choice_edge_idx(select_scores)
+
+        if self.env.check_repeat(self.current_node.edges[edge_idx].action, self.action_history):
+            if len(select_scores) == 1:
+                return 2
             else:
-                edge_idx = select_scores.argmax()
+                select_scores = np.delete(select_scores, edge_idx, 0)
+                edge_idx = self.choice_edge_idx(select_scores)
 
         self.selected_edges.append(self.current_node.edges[edge_idx])
+        self.action_history.append(self.current_node.edges[edge_idx].action)
         self.current_node = self.current_node.edges[edge_idx].node
         # self.env.print_env(state=self.current_node.state)
 
@@ -158,13 +172,16 @@ class Mcts(object):
                 edge.update(-state_value)
             else:
                 edge.update(state_value)
+        self.init_state()
 
+    def init_state(self):
         self.current_node = self.root_node
         self.selected_edges = []
+        self.action_history = []
 
     def print_tree(self):
         print("========== mcts tree trace ==========")
-        self.print_row([self.prev_root_node])
+        self.print_row([self.root_node])
         print("=====================================")
 
     def print_row(self, nodes, row_idx=0):

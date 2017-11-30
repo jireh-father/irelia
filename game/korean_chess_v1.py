@@ -115,24 +115,26 @@ class KoreanChessV1:
         self.blue_catch_list = []
         self.limit_step = 200
         self.max_reward = 1
-        self.check_repeat = True
+        self.limit_repeat = 4
         self.print_mcts_history = None
         self.use_color_print = None
-        self.action_history = {c.BLUE: [], c.RED: []}
+        self.action_history = []
         self.use_cache = False
         self.action_cache = {}
         self.simulation_cache = {}
         self.over_cache = {}
+        self.validate_action = True
+        self.limit_action_history = None
 
     def reset(self):
         self.interval = 0
         self.use_check = True
-        self.check_repeat = 4
+        self.limit_repeat = 4
         self.limit_step = 200
         self.max_reward = 1
         self.print_mcts_history = False
         self.use_color_print = False
-        self.action_history = {c.BLUE: [], c.RED: []}
+        self.action_history = []
         if self.properties:
             if "interval" in self.properties:
                 self.interval = self.properties["interval"]
@@ -142,15 +144,18 @@ class KoreanChessV1:
                 self.limit_step = self.properties["limit_step"]
             if "max_reward" in self.properties:
                 self.max_reward = self.properties["max_reward"]
-            if "check_repeat" in self.properties:
-                self.check_repeat = self.properties["check_repeat"]
+            if "limit_repeat" in self.properties:
+                self.limit_repeat = self.properties["limit_repeat"]
             if "print_mcts_history" in self.properties:
                 self.print_mcts_history = self.properties["print_mcts_history"]
             if "use_color_print" in self.properties:
                 self.use_color_print = self.properties["use_color_print"]
             if "use_cache" in self.properties:
                 self.use_cache = self.properties["use_cache"]
+            if "validate_action" in self.properties:
+                self.validate_action = self.properties["validate_action"]
 
+        self.limit_action_history = self.limit_repeat + (self.limit_repeat - 2)
         if self.properties and "init_state" in self.properties:
             self.current_state, self.current_turn = u.encode_state(self.properties["init_state"])
             self.next_turn = c.RED if self.current_turn == c.BLUE else c.BLUE
@@ -191,10 +196,15 @@ class KoreanChessV1:
 
     def step(self, action):
         # validate action
-        if not u.validate_action(action, self.current_state, self.current_turn, self.next_turn, self.use_check,
-                                 self.action_history, self.check_repeat):
-            raise Exception("Invalid action :%s" % action)
-        self.action_history[self.current_turn].append(action)
+        if self.validate_action:
+            if not u.validate_action(action, self.current_state, self.current_turn, self.next_turn,
+                                     self.use_check):
+                raise Exception("Invalid action :%s" % action)
+            if self.check_repeat(action):
+                return False, False, False, False
+        self.action_history.append(action)
+        if len(self.action_history) > self.limit_action_history:
+            self.action_history = self.action_history[-self.limit_action_history:]
         to_x = action['to_x']
         to_y = action['to_y']
         from_x = action['from_x']
@@ -334,14 +344,29 @@ class KoreanChessV1:
         else:
             state = self.current_state
             turn = self.current_turn
-        cache_key = self.build_cache_key(state, turn)
-        if self.use_cache and cache_key in self.action_cache:
-            return self.action_cache[cache_key]
+        # cache_key = self.build_cache_key(state, turn)
+        # if self.use_cache and cache_key in self.action_cache:
+        #     return self.action_cache[cache_key]
         all_actions = u.get_all_actions(state, turn)
-        if self.use_cache:
-            self.action_cache[cache_key] = all_actions
+
+        # if self.use_cache:
+        #     self.action_cache[cache_key] = all_actions
 
         return all_actions
+
+    def check_repeat(self, action, action_history=None):
+        if self.limit_repeat < 2:
+            return False
+
+        if action_history is not None:
+            if len(action_history) > 0:
+                action_history = action_history[-self.limit_action_history:]
+        else:
+            action_history = self.action_history
+        if self.limit_action_history > len(action_history):
+            return False
+
+        return u.check_repeat(action, action_history)
 
     def encode_action(self, action):
         action_from = action["from_y"] * 9 + action["from_x"]

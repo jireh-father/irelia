@@ -1,4 +1,7 @@
-1. get all action 중복 체크 하도록 바꾸고 인자도  state_history를 받도록 수정(env와 mcts에서 모두 동일하게
+##- invalid한 action일때 다른 액션 샘플뽑아서 사용하기(다른 액션 모두 없어지면 진거처리
+##- get_actions는 그냥 할수 있는 수 다 리턴해주도록 그대로 두고
+##- 따로 check_repeat 함수 만들어서 validate_action하고 mcts select할때만 계산하도록 수정
+ ##- mcts select할때 중복수때문에 다음수 둘꺼 없으면 진거처리
 2. self-play에서 step으로 받은 state를 바깥에서 hisotry로 조립하도록?
 3. inference할때 그때그때 state_history만들도록
 4.
