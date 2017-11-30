@@ -24,7 +24,7 @@ def self_play(env, model, max_simulation, max_step, c_puct, exploration_step, re
         actions = env.get_all_actions()
         action_probs = mcts.search(temperature, None if action_idx is None else [action_idx])
         action_idx = mcts.get_action_idx(action_probs)
-        action = action_probs[action_idx]
+        action = actions[action_idx]
 
         if print_mcts_tree:
             mcts.print_tree()
@@ -37,7 +37,7 @@ def self_play(env, model, max_simulation, max_step, c_puct, exploration_step, re
                 else:
                     action_probs = np.delete(action_probs, action_idx, 0)
                     action_idx = mcts.get_action_idx(action_probs)
-                    action = action_probs[action_idx]
+                    action = actions[action_idx]
                     state, reward, done, info = env.step(action)
         except Exception as e:
             traceback.print_exc(file=sys.stdout)
