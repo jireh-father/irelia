@@ -30,7 +30,7 @@ def self_play(env, model, max_simulation, max_step, c_puct, exploration_step, re
             mcts.print_tree()
         try:
             state, reward, done, info = env.step(action)
-            if state == False:
+            if reward is False:
                 if len(action_probs) == 1:
                     info["winner"] = env.next_turn
                     break
