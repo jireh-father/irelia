@@ -1,3 +1,7 @@
+state 채널 위치 transpose하는거 encode, decode_state 에서 하지 말고 inference와 데이터 쓸때만 transpose하기
+데이터 쓸때 17채널로 변경
+inference 할때 17채널로 변경
+모델에서 input 채널 17로 변경
 ##- invalid한 action일때 다른 액션 샘플뽑아서 사용하기(다른 액션 모두 없어지면 진거처리
 ##- get_actions는 그냥 할수 있는 수 다 리턴해주도록 그대로 두고
 ##- 따로 check_repeat 함수 만들어서 validate_action하고 mcts select할때만 계산하도록 수정

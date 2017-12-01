@@ -4,11 +4,11 @@ from core.mcts import Mcts
 import numpy as np
 
 
-def self_play(env, model, max_simulation, max_step, c_puct, exploration_step, reuse_mcts=True,
-              print_mcts_tree=False):
+def self_play(env, model, max_simulation, max_step, c_puct, exploration_step, reuse_mcts=True, print_mcts_tree=False,
+              num_state_history=7):
     state = env.reset()
 
-    mcts = Mcts(state, env, model, max_simulation=max_simulation, c_puct=c_puct)
+    mcts = Mcts(state, env, model, max_simulation=max_simulation, c_puct=c_puct, num_state_history=num_state_history)
     state_history = [state.tolist()]
     mcts_history = []
     temperature = 1
@@ -36,8 +36,13 @@ def self_play(env, model, max_simulation, max_step, c_puct, exploration_step, re
                     info["winner"] = env.next_turn
                     break
                 else:
-                    action_probs = np.delete(action_probs, action_idx, 0)
-                    action_idx = mcts.get_action_idx(action_probs)
+                    action_probs[action_idx] = action_probs.min()
+                    action_probs = action_probs / action_probs.sum()
+                    second_action_idx = action_idx
+                    while action_idx == second_action_idx:
+                        second_action_idx = mcts.get_action_idx(action_probs)
+                    action_idx = second_action_idx
+                    print("retry second action for repeating %d" % action_idx)
                     action = actions[action_idx]
                     state, reward, done, info = env.step(action)
         except Exception as e:

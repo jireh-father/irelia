@@ -4,6 +4,7 @@ import datetime
 import time
 import tensorflow as tf
 import time
+import numpy as np
 
 
 def restore_model(save_dir, model_file_name, saver, sess, restore_pending=False):
@@ -36,12 +37,13 @@ def set_flags():
                                "save dir")
 
     tf.app.flags.DEFINE_string('model_file_name', "model", "model name to save")
-    tf.app.flags.DEFINE_integer('max_step', 200, "max step in a episode")
+    tf.app.flags.DEFINE_integer('max_step', 10, "max step in a episode")
     tf.app.flags.DEFINE_integer('max_episode', 1000000, "max episode")
     tf.app.flags.DEFINE_integer('max_simulation', 5, "max simulation count in a mcts search")
     tf.app.flags.DEFINE_integer('exploration_step', 20, "exploration step")
     tf.app.flags.DEFINE_integer('episode_interval_to_train', 2, "episode interval to train model")
     tf.app.flags.DEFINE_integer('epoch', 20, "epoch")
+    tf.app.flags.DEFINE_integer('num_state_history', 7, "num_state_history")
     tf.app.flags.DEFINE_integer('num_model_layers', 20, "numbers of model layers")
     tf.app.flags.DEFINE_float('weight_decay', 0.0001, "weigh decay for weights l2 regularize")
     tf.app.flags.DEFINE_float('learning_rate', 0.01, "learning rate")
@@ -55,3 +57,21 @@ def set_flags():
     tf.app.flags.DEFINE_boolean('use_color_print', False, "use color in printing state")
     tf.app.flags.DEFINE_boolean('use_cache', False, "use cache")
     tf.app.flags.DEFINE_boolean('reuse_mcts', False, "reuse mcts")
+
+
+def convert_state_history_to_model_input(state_history, num_state_history):
+    blue_history = []
+    red_history = []
+    if len(state_history) <= num_state_history:
+        for i in range(num_state_history - len(state_history) + 1):
+            blue_history.append([[0] * 9 for i in range(10)])
+            red_history.append([[0] * 9 for i in range(10)])
+    for state in state_history:
+        blue_history.append(state[0])
+        red_history.append(state[1])
+
+    new_state_history = blue_history + red_history
+    new_state_history = (np.array(new_state_history) / 7).tolist()
+    new_state_history.append(state_history[-1][2])
+    new_state_history = np.transpose(np.array(new_state_history), [1, 2, 0])
+    return new_state_history

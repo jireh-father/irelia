@@ -24,7 +24,6 @@ def copy_state(state):
 
 
 def encode_state(state):
-    state = np.transpose(state, [2, 0, 1])
     new_state = [[0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9]
     for i, line in enumerate(state[0]):
         for j, piece in enumerate(line):
@@ -51,7 +50,6 @@ def decode_state(state, turn):
     else:
         new_state.append([[0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9, [0] * 9])
     new_state = np.array(new_state).astype(np.float)
-    new_state = np.transpose(new_state, [1, 2, 0])
     return new_state
 
 

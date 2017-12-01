@@ -435,3 +435,9 @@ class KoreanChessV1:
             policy_probs[action[1]] += half_prob
         policy_probs = policy_probs / policy_probs.sum() * 1.
         return list(policy_probs)
+
+    def encode_state(self, state):
+        return u.encode_state(state)
+
+    def decode_state(self, state, turn):
+        return u.decode_state(state, turn)

@@ -8,7 +8,7 @@ _BATCH_NORM_EPSILON = 1e-5
 
 
 class Model(object):
-    def __init__(self, sess, input_shape=[10, 9, 3], num_layers=20, num_classes=10 * 9, weight_decay=0.01,
+    def __init__(self, sess, input_shape=[10, 9, 17], num_layers=20, num_classes=10 * 9, weight_decay=0.01,
                  momentum=0.9, use_cache=False):
         self.sess = sess
         self.is_training = tf.placeholder(tf.bool, shape=(), name="is_training")
@@ -26,25 +26,22 @@ class Model(object):
         self.inference_cache = {}
 
     def inference(self, state):
-        cache_key = str(state)
-        if self.use_cache and cache_key in self.inference_cache:
-            return self.inference_cache[cache_key][0], self.inference_cache[cache_key][1]
-        input_state = (state / 7)
-        input_state = input_state[np.newaxis, :]
+        # cache_key = str(state)
+        # if self.use_cache and cache_key in self.inference_cache:
+        #     return self.inference_cache[cache_key][0], self.inference_cache[cache_key][1]
+        input_state = state[np.newaxis, :]
         policy, value = self.sess.run([self.policy_network, self.value_network],
                                       feed_dict={self.inputs: input_state, self.is_training: False})
-        if self.use_cache:
-            self.inference_cache[cache_key] = [policy[0], value[0]]
+        # if self.use_cache:
+        #     self.inference_cache[cache_key] = [policy[0], value[0]]
         return policy[0], value[0]
 
     def train(self, state, policy, value, learning_rate):
-        state = (state / 7)
         return self.sess.run([self.train_op, self.cost],
                              feed_dict={self.inputs: state, self.is_training: True, self.policy_label: policy,
                                         self.value_label: value, self.learning_rate: learning_rate})
 
     def eval(self, state, policy, value):
-        state = (state / 7)
         return self.sess.run([self.cost],
                              feed_dict={self.inputs: state, self.is_training: False, self.policy_label: policy,
                                         self.value_label: value})

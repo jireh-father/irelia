@@ -6,6 +6,7 @@ import time
 import datetime
 import shutil
 import csv
+from util import common
 
 
 class Dataset(object):
@@ -26,7 +27,7 @@ class Dataset(object):
         if self.file is not None:
             self.file.close()
 
-    def write(self, info, state_history, mcts_history):
+    def write(self, info, state_history, mcts_history, num_state_history=7):
         if self.csv_writer is None:
             return False
 
@@ -42,7 +43,12 @@ class Dataset(object):
                 value = values["b"]
             else:
                 value = values["r"]
-            self.csv_writer.writerow([value, json.dumps(state_history[i]), json.dumps(mcts_history[i])])
+            start_idx = 0 if i - num_state_history < 0 else i - num_state_history
+            end_idx = i + 1
+            history = state_history[start_idx:end_idx]
+            new_state_history = common.convert_state_history_to_model_input(history, num_state_history)
+            new_state_history = new_state_history.tolist()
+            self.csv_writer.writerow([value, json.dumps(new_state_history), json.dumps(mcts_history[i])])
 
     def make_dataset(self, filenames, batch_size, shuffle_buffer_size=100, num_dataset_parallel=4):
         def decode_line(line):
@@ -71,5 +77,3 @@ class Dataset(object):
 
     def init_dataset(self):
         self.sess.run(self.dataset.initializer)
-
-
