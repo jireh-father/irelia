@@ -6,6 +6,11 @@ import tensorflow as tf
 import time
 import numpy as np
 
+num_opt_games = 1000
+num_eval_games = 300
+num_selfplay_games = 100
+num_checkpoint_epochs = 1
+
 
 def restore_model(save_dir, model_file_name, saver, sess, restore_pending=False):
     if not os.path.exists(save_dir):
@@ -20,13 +25,14 @@ def restore_model(save_dir, model_file_name, saver, sess, restore_pending=False)
             except Exception as e:
                 print("restore exception", e)
         if not restore_pending:
-            break
+            return False
+        print("waiting for model...")
         time.sleep(0.5)
     return checkpoint_path
 
 
 def log(msg):
-    dt = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
+    dt = now_date_str()
     print("[%s] %s" % (dt, msg))
     pass
 
@@ -75,3 +81,11 @@ def convert_state_history_to_model_input(state_history, num_state_history):
     new_state_history.append(state_history[-1][2])
     new_state_history = np.transpose(np.array(new_state_history), [1, 2, 0])
     return new_state_history
+
+
+def now_date_str_nums():
+    return datetime.datetime.now().strftime('%Y%m%d%H%M%S')
+
+
+def now_date_str():
+    return datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')

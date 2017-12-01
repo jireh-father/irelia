@@ -20,6 +20,7 @@ class Model(object):
         self.learning_rate = tf.placeholder(tf.float32, shape=(), name="learning_rate")
         self.cost = None
         self.train_op = None
+        self.merged = None
         self.momentum = momentum
         self.use_cache = use_cache
         self.build_model(input_shape, num_layers, num_classes, weight_decay)
@@ -37,7 +38,7 @@ class Model(object):
         return policy[0], value[0]
 
     def train(self, state, policy, value, learning_rate):
-        return self.sess.run([self.train_op, self.cost],
+        return self.sess.run([self.train_op, self.cost, self.merged],
                              feed_dict={self.inputs: state, self.is_training: True, self.policy_label: policy,
                                         self.value_label: value, self.learning_rate: learning_rate})
 
@@ -74,7 +75,7 @@ class Model(object):
                                                    name="policy_conv")
         policy_network = tf.reshape(policy_network, [-1, num_classes * 2], name="policy_reshape")
         policy_network = tf.layers.dense(inputs=policy_network, units=num_classes, name="policy_dense")
-
+        tf.summary.image(tensor=tf.reshape(policy_network, [-1, 10, 9, 1]), max_outputs=100, name="policy")
         self.policy_network = policy_network
         self.value_network = value_network
 
@@ -87,13 +88,21 @@ class Model(object):
         #     l = (z − v) 2 − πT log p + c||θ||2
         # self.cost = tf.reduce_mean(tf.pow(self.value_label - value_network, 2)) - tf.reduce_mean(
         #     self.policy_label * tf.log(policy_network)) + (0.5 * l2_regularizer)
-        self.cost = tf.reduce_mean(tf.pow(self.value_label - tf.reshape(value_network, [-1]), 2)) - tf.reduce_mean(
-            tf.nn.softmax(self.policy_label) * tf.log(tf.nn.softmax(policy_network))) + regularizer
+        value_loss = tf.reduce_mean(tf.pow(self.value_label - tf.reshape(value_network, [-1]), 2))
+        policy_loss = tf.reduce_mean(
+            tf.nn.softmax(self.policy_label) * tf.log(tf.nn.softmax(policy_network)))
+        self.cost = value_loss - policy_loss + regularizer
 
+        tf.summary.scalar('value_loss', value_loss)
+        tf.summary.scalar('policy_loss', policy_loss)
+        tf.summary.scalar('total_loss', self.cost)
+        tf.summary.scalar('regularizer', regularizer)
         # value_loss = tf.losses.mean_squared_error(self.value_label, value_network)
         # policy_loss = tf.losses.softmax_cross_entropy()
 
         self.train_op = tf.train.MomentumOptimizer(self.learning_rate, self.momentum).minimize(self.cost)
+        self.merged = tf.summary.merge_all()
+
 
         # todo: accuracy! legal action probabilities and value scalar
 
@@ -150,5 +159,6 @@ class Model(object):
     def block_layer(self, inputs, filters, blocks, strides):
         for i, _ in enumerate(range(0, blocks)):
             inputs = self.building_block(inputs, filters, strides, name="block_" + str(i))
+            tf.summary.histogram('block_activations_%d' % i, inputs)
 
         return inputs

@@ -23,9 +23,9 @@ class Mcts(object):
         if init_root_edges:
             self.expand_and_evaluate()
 
-    def search(self, temperature=.0, action_idx_list=None):
+    def search(self, temperature=.0, action_idx_list=[]):
         self.temperature = temperature
-        if action_idx_list is not None:
+        if len(action_idx_list) > 0:
             if not self.root_node.edges:
                 self.expand_and_evaluate()
             for action_idx in action_idx_list:

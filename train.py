@@ -6,7 +6,7 @@ from core import optimizer
 from util.dataset import Dataset
 from util import common
 import os
-from core import self_play
+from core import play
 
 FLAGS = tf.app.flags.FLAGS
 
@@ -23,7 +23,7 @@ model = Model(sess, weight_decay=FLAGS.weight_decay, momentum=FLAGS.momentum, nu
               use_cache=FLAGS.use_cache)
 sess.run(tf.global_variables_initializer())
 saver = tf.train.Saver()
-learning_rate = FLAGS.learning_rate_decay
+learning_rate = FLAGS.learning_rate
 
 common.restore_model(FLAGS.save_dir, FLAGS.model_file_name, saver, sess)
 
@@ -36,7 +36,7 @@ for episode in range(FLAGS.max_episode):
     """"""
     """self-play"""
     print("self-play episode %d" % episode)
-    info, state_history, mcts_history = self_play.self_play(env, model, FLAGS.max_simulation, FLAGS.max_step,
+    info, state_history, mcts_history = play.self_play(env, model, FLAGS.max_simulation, FLAGS.max_step,
                                                             FLAGS.c_puct, FLAGS.exploration_step, FLAGS.reuse_mcts,
                                                             FLAGS.print_mcts_tree, FLAGS.num_state_history)
 

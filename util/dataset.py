@@ -26,6 +26,7 @@ class Dataset(object):
     def close(self):
         if self.file is not None:
             self.file.close()
+            self.csv_writer = None
 
     def write(self, info, state_history, mcts_history, num_state_history=7):
         if self.csv_writer is None:
@@ -67,6 +68,10 @@ class Dataset(object):
         if shuffle_buffer_size > 0:
             dataset = dataset.shuffle(shuffle_buffer_size)
         self.dataset = dataset.batch(batch_size).make_initializable_iterator()
+
+    def close_dataset(self):
+        self.dataset.close()
+        self.dataset = None
 
     def batch(self):
         value_data, state_data, policy_data = self.sess.run(self.dataset.get_next())
