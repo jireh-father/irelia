@@ -1,59 +1,16 @@
-state 채널 위치 transpose하는거 encode, decode_state 에서 하지 말고 inference와 데이터 쓸때만 transpose하기
-데이터 쓸때 17채널로 변경
-inference 할때 17채널로 변경
-모델에서 input 채널 17로 변경
-##- invalid한 action일때 다른 액션 샘플뽑아서 사용하기(다른 액션 모두 없어지면 진거처리
-##- get_actions는 그냥 할수 있는 수 다 리턴해주도록 그대로 두고
-##- 따로 check_repeat 함수 만들어서 validate_action하고 mcts select할때만 계산하도록 수정
- ##- mcts select할때 중복수때문에 다음수 둘꺼 없으면 진거처리
-2. self-play에서 step으로 받은 state를 바깥에서 hisotry로 조립하도록?
-3. inference할때 그때그때 state_history만들도록
-4.
-##매턴 루트 엣지 확률 노이즈로 바꾸기 -> 체크
-방문자수 역하도록 액션확률조정한거랑 노이즈 비율 변경한거 테스트해보기
-get all actions수정하기
-todo 체크하기
-mcts 각노드의 상태확인
-
-상태에 히스토리 상태 추가하기
- -> mcts에서 베스트 액션 구하거나 select할때 불가능한 액션인지 미리계산하기
- -> mcts 한번에 시뮬레이션에서 select할때 반복수 못두게하기
- -> getAllActions mcts에서 검색할때 이전 상태들까지 넣어버리기
-병렬 시스템으로 변경
- - 여러파일 데이터셋 로드 만들기
- - 모델 여러개 한프로세스에서 리스토어 하는방법(걍 세션을 하면 될꺼같기도, 글로벌 변수 초기화까지 세션 따로해서 테스트해보기)
-
-모델 검증
- - 기보 데이터셋으로 학습해보기
-MCTS 검증
- - 정상적으로 플레이되는건지
--- 분산
-self-play만들기
-
+초반 액션 확률 노이즈 추가한거 검토하기
+병렬로 학습되도록 구현
+모델만 테스트 실제데이터로
+mcts 성능 테스트
 
 -- 캐싱하기 시간 건당 테스트해보기? ( legal actions, 승패확인, 반복수, inference )
 
 -- 좀더 깔끔하게 모듈화
 
+-- 주요 부분 주석달기
 
+value decay? 고려해보기 (외부와 mcts 내부까지도)
+ - mcts 게임안끝나도 reward로 value값 세팅하도록
+ - mcts reward계산 decay 되도록 계산하기
 
-dataset 심플하게 변경
-value decay?
-
-
-- mcts 게임안끝나도 reward로 value값 세팅하도록
-- mcts reward계산 decay 되도록 계산하기
 1. 루트 노드에서는 모든 엣지를 한번씩은 방문하도록?
-
-#todo
-1. 기타 todo 구현
-2. play 구현
-3. mac os 등 기타 콘솔 프린트 잘되게
-4. 기능별 실행 시간 출력
-5. only mcts version 구현
-6. 병렬 학습 버전 만들기
-
-#test
-1. model 성능 테스트
-2. mcts 디버깅
-3. 장기 기능 디버깅
