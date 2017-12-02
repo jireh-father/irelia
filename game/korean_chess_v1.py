@@ -398,12 +398,12 @@ class KoreanChessV1:
 
     def simulate(self, state, action, return_info=True):
         state, turn = u.encode_state(state)
-        cache_key = self.build_cache_key(state, turn, action)
-        if self.use_cache and cache_key in self.simulation_cache:
-            if return_info:
-                return self.simulation_cache[cache_key][0], self.simulation_cache[cache_key][1]
-            else:
-                return self.simulation_cache[cache_key][0]
+        # cache_key = self.build_cache_key(state, turn, action)
+        # if self.use_cache and cache_key in self.simulation_cache:
+        #     if return_info:
+        #         return self.simulation_cache[cache_key][0], self.simulation_cache[cache_key][1]
+        #     else:
+        #         return self.simulation_cache[cache_key][0]
 
 
         turn = c.RED if turn == c.BLUE else c.BLUE
