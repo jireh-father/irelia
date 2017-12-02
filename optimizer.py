@@ -11,6 +11,8 @@ from util.common import log
 FLAGS = tf.app.flags.FLAGS
 
 common.set_flags()
+common.make_dirs(os.path.join(FLAGS.save_dir, "dataset_ready"))
+common.make_dirs(os.path.join(FLAGS.save_dir, "dataset_bak"))
 
 config = tf.ConfigProto()
 config.gpu_options.allow_growth = True

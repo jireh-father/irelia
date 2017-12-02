@@ -4,7 +4,6 @@ from util import common
 import os
 from core.model import Model
 from game.game import Game
-import uuid
 import glob
 import time
 from util.common import log
@@ -12,6 +11,7 @@ from util.common import log
 FLAGS = tf.app.flags.FLAGS
 
 common.set_flags()
+common.make_dirs(FLAGS.save_dir)
 
 env = Game.make("KoreanChess-v1",
                 {"use_check": False, "limit_step": FLAGS.max_step, "print_mcts_history": FLAGS.print_mcts_history,

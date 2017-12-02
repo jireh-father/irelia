@@ -11,6 +11,7 @@ from util.common import log
 FLAGS = tf.app.flags.FLAGS
 
 common.set_flags()
+common.make_dirs(FLAGS.save_dir)
 
 env = Game.make("KoreanChess-v1",
                 {"use_check": False, "limit_step": FLAGS.max_step, "log_mcts_history": FLAGS.log_mcts_history,
@@ -27,7 +28,7 @@ saver = tf.train.Saver()
 ds = Dataset(sess)
 
 while True:
-    common.restore_model(FLAGS.save_dir, "best_model.ckpt", saver, sess, restore_pending=True)
+    common.restore_model(FLAGS.save_dir, "best_model.ckpt", saver, sess)
     now = common.now_date_str_nums()
     dataset_path = os.path.join(FLAGS.save_dir, ("dataset_%s_%s.csv" % (now, uuid.uuid4())))
     ds.open(dataset_path)
@@ -37,8 +38,8 @@ while True:
         """self-play"""
         log("self-play episode %d" % episode)
         info, state_history, mcts_history = play.self_play(env, model, FLAGS.max_simulation, FLAGS.max_step,
-                                                                FLAGS.c_puct, FLAGS.exploration_step, FLAGS.reuse_mcts,
-                                                                FLAGS.log_mcts_tree, FLAGS.num_state_history)
+                                                           FLAGS.c_puct, FLAGS.exploration_step, FLAGS.reuse_mcts,
+                                                           FLAGS.log_mcts_tree, FLAGS.num_state_history)
 
         if info["winner"]:
             game_results[info["winner"]] += 1

@@ -89,3 +89,8 @@ def now_date_str_nums():
 
 def now_date_str():
     return datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+
+def make_dirs(dir):
+    if not os.path.exists(dir):
+        os.makedirs(dir)
