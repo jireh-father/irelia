@@ -51,7 +51,7 @@ while True:
         """"""
         """save self-play data"""
         if info["winner"]:
-            ds.write(info, state_history, mcts_history, FLAGS.num_state_history)()
+            ds.write(info, state_history, mcts_history, FLAGS.num_state_history)
         if game_results["b"] + game_results["r"] == common.num_selfplay_games:
             break
         episode += 1
