@@ -40,7 +40,7 @@ while True:
         log("self-play episode %d" % episode)
         info, state_history, mcts_history = play.self_play(env, model, FLAGS.max_simulation, FLAGS.max_step,
                                                            FLAGS.c_puct, FLAGS.exploration_step, FLAGS.reuse_mcts,
-                                                           FLAGS.log_mcts_tree, FLAGS.num_state_history)
+                                                           FLAGS.print_mcts_tree, FLAGS.num_state_history)
 
         if info["winner"]:
             game_results[info["winner"]] += 1
