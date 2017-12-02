@@ -167,7 +167,9 @@ class Mcts(object):
             next_state, info = self.env.simulate(self.current_node.state, legal_actions[i])
             self.current_node.edges.append(Edge(action_prob, next_state, legal_actions[i], info["reward"]))
         reward = -self.current_node.parent_edge.reward if self.current_node.parent_edge else 0
-        return 0.5 * state_value + reward
+        state_value = 0.5 * state_value + reward
+        print("MCTS state value + reward", state_value)
+        return state_value
 
     def backup(self, state_value):
         print("MCTS Backup")
