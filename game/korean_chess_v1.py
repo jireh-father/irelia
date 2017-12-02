@@ -268,13 +268,16 @@ class KoreanChessV1:
 
         # who's winner?
         if info["over_limit_step"] or info["is_draw"]:
-            if self.blue_score > self.red_score:
-                winner = c.BLUE
-
-            elif self.blue_score < self.red_score:
-                winner = c.RED
-            else:
+            if self.blue_score == 72 and self.red_score == 73.5:
                 winner = None
+            else:
+                if self.blue_score > self.red_score:
+                    winner = c.BLUE
+
+                elif self.blue_score < self.red_score:
+                    winner = c.RED
+                else:
+                    winner = None
             info["score_diff"] = abs(self.blue_score - self.red_score)
         else:
             winner = 'b' if self.current_turn == 'r' else 'b'
