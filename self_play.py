@@ -15,7 +15,7 @@ common.make_dirs(FLAGS.save_dir)
 
 env = Game.make("KoreanChess-v1",
                 {"use_check": False, "limit_step": FLAGS.max_step, "print_mcts_history": FLAGS.print_mcts_history,
-                 "use_color_log": FLAGS.use_color_log, "use_cache": FLAGS.use_cache})
+                 "use_color_print": FLAGS.use_color_print, "use_cache": FLAGS.use_cache})
 
 config = tf.ConfigProto()
 config.gpu_options.allow_growth = True
