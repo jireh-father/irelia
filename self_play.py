@@ -11,7 +11,7 @@ from util.common import log
 FLAGS = tf.app.flags.FLAGS
 
 common.set_flags()
-common.make_dirs(FLAGS.save_dir)
+common.make_dirs(os.path.join(FLAGS.save_dir, "dataset_ready"))
 
 env = Game.make("KoreanChess-v1",
                 {"use_check": False, "limit_step": FLAGS.max_step, "print_mcts_history": FLAGS.print_mcts_history,
@@ -56,3 +56,4 @@ while True:
             break
         episode += 1
     ds.close()
+    os.rename(dataset_path, os.path.join(FLAGS.save_dir, "dataset_ready", os.path.basename(dataset_path)))
