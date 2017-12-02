@@ -411,8 +411,9 @@ class KoreanChessV1:
         to_y = action['to_y']
         from_x = action['from_x']
         from_y = action['from_y']
-
-        reward = c.REWARD_LIST[int(state[to_y][to_x][1])]
+        reward = 0
+        if state[to_y][to_x] != 0:
+            reward = c.REWARD_LIST[int(state[to_y][to_x][1])]
 
         state[to_y][to_x] = state[from_y][from_x]
         state[from_y][from_x] = 0
