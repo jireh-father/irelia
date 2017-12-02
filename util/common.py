@@ -8,7 +8,7 @@ import numpy as np
 
 num_opt_games = 1000
 num_eval_games = 300
-num_selfplay_games = 100
+num_selfplay_games = 50
 num_checkpoint_epochs = 1
 
 

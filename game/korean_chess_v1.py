@@ -161,7 +161,7 @@ class KoreanChessV1:
             self.next_turn = c.RED if self.current_turn == c.BLUE else c.BLUE
         else:
             if not self.properties or (
-              "position_type" not in self.properties or self.properties['position_type'] == 'random'):
+                            "position_type" not in self.properties or self.properties['position_type'] == 'random'):
                 # random position
                 blue_rand_position = random.randint(0, 3)
                 red_rand_position = random.randint(0, 3)
@@ -270,10 +270,12 @@ class KoreanChessV1:
         if info["over_limit_step"] or info["is_draw"]:
             if self.blue_score > self.red_score:
                 winner = c.BLUE
+
             elif self.blue_score < self.red_score:
                 winner = c.RED
             else:
                 winner = None
+            info["score_diff"] = abs(self.blue_score - self.red_score)
         else:
             winner = 'b' if self.current_turn == 'r' else 'b'
         info["winner"] = winner

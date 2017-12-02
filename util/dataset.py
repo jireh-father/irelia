@@ -33,12 +33,15 @@ class Dataset(object):
             return False
 
         values = {}
+        win_value = 1
+        if info["over_limit_step"] or info["is_draw"]:
+            win_value = info["score_diff"] / 73.5
         if info["winner"] == 'b':
-            values["b"] = 1
-            values["r"] = -1
+            values["b"] = win_value
+            values["r"] = -win_value
         else:
-            values["b"] = -1
-            values["r"] = 1
+            values["b"] = -win_value
+            values["r"] = win_value
         for i in range(len(state_history)):
             if i % 2 == 0:
                 value = values["b"]
