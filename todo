@@ -1,7 +1,14 @@
 #비긴 경우 점수비교해서 낮게주기
  -> 테스트해서 데이터셋 만들어진거 검사하기
 reward decay
-inference value + reward? (가중치 다르게 두기?)
+#inference value + reward? (가중치 다르게 두기?)
+ -> 테스트
+
+모델만 테스트 실제데이터로
+ -> 데이터 만 검증
+  1. selfplay
+  2. 실제 기보
+
 
 병렬 코드 디버깅
 병렬 sftp 로 다운받아오는 기능 구현
@@ -9,7 +16,7 @@ inference value + reward? (가중치 다르게 두기?)
 
 
 
-모델만 테스트 실제데이터로
+
 초반 액션 확률 노이즈 추가한거 검토하기
 mcts 성능 테스트
 

@@ -13,7 +13,7 @@ class Dataset(object):
     DEF_TRAIN_FILE_NAME = "train_dataset.txt"
     DEF_TEST_FILE_NAME = "train_dataset.txt"
 
-    def __init__(self, sess):
+    def __init__(self, sess=None):
         self.sess = sess
         self.file = None
         self.csv_writer = None
