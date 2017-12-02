@@ -33,7 +33,8 @@ while True:
     dataset_path = os.path.join(FLAGS.save_dir, ("dataset_%s_%s.csv" % (now, uuid.uuid4())))
     ds.open(dataset_path)
     game_results = {"b": 0, "r": 0, "d": 0}
-    for episode in range(common.num_selfplay_games):
+    episode = 0
+    while True:
         """"""
         """self-play"""
         log("self-play episode %d" % episode)
@@ -49,5 +50,9 @@ while True:
             "Blue wins : %d, Red wins : %d, Draws : %d" % (game_results["b"], game_results["r"], game_results["d"]))
         """"""
         """save self-play data"""
-        ds.write(info, state_history, mcts_history, FLAGS.num_state_history)()
+        if info["winner"]:
+            ds.write(info, state_history, mcts_history, FLAGS.num_state_history)()
+        if game_results["b"] + game_results["r"] == common.num_selfplay_games:
+            break
+        episode += 1
     ds.close()
