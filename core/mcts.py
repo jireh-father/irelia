@@ -129,7 +129,6 @@ class Mcts(object):
             print("MCTS Game Over")
             return self.loser_reward
 
-        # todo: !!!<일단 요것만구현>반복수 제한도 걸기(여러 반복수하면 비겨서 계산하는 조건도 알아보기)
         # todo :pass액션 추가 ( 둘다 pass할경우 점수계산으로
         action_probs, state_value = self.model.inference(
             common.convert_state_history_to_model_input(self.state_history[-self.num_state_history:],
@@ -153,7 +152,6 @@ class Mcts(object):
             legal_action_probs = np.array([1. / len(legal_action_probs)] * len(legal_action_probs))
         else:
             legal_action_probs = legal_action_probs / legal_action_probs.sum() * 1.
-        # todo: add noise!! check (DIR(0.03)???)
         if self.root_node is self.current_node:
             # add noise to prior probabilities
             # if (legal_action_probs == 0).all():
@@ -164,11 +162,12 @@ class Mcts(object):
 
             legal_action_probs = ((1 - 0.25) * legal_action_probs + (noise_probs * 0.25))
 
-        self.current_node.edges = [
-            Edge(action_prob, self.env.simulate(self.current_node.state, legal_actions[i], False), legal_actions[i]) for
-            i, action_prob in enumerate(legal_action_probs)]
+        self.current_node.edges = []
+        for i, action_prob in enumerate(legal_action_probs):
+            next_state, info = self.env.simulate(self.current_node.state, legal_actions[i])
+            self.current_node.edges.append(Edge(action_prob, next_state, legal_actions[i], info["reward"]))
 
-        return state_value
+        return (0.5 * state_value) + (0.5 * -self.current_node.parent_edge.reward)
 
     def backup(self, state_value):
         print("MCTS Backup")
@@ -205,13 +204,14 @@ class Mcts(object):
 
 
 class Node(object):
-    def __init__(self, state):
+    def __init__(self, state, parent_edge=None):
         self.state = state
         self.edges = []
+        self.parent_edge = parent_edge
 
 
 class Edge(object):
-    def __init__(self, action_prob, state, action):
+    def __init__(self, action_prob, state, action, reward):
         # N
         self.visit_count = .0
         # W
@@ -221,7 +221,8 @@ class Edge(object):
         # P
         self.action_prob = action_prob
         self.action = action
-        self.node = Node(state)
+        self.reward = reward
+        self.node = Node(state, self)
 
     def add_noise(self, noice_prob):
         self.action_prob = (0.50 * self.action_prob) + (0.50 * noice_prob)

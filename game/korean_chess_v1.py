@@ -405,27 +405,30 @@ class KoreanChessV1:
             else:
                 return self.simulation_cache[cache_key][0]
 
+
         turn = c.RED if turn == c.BLUE else c.BLUE
         to_x = action['to_x']
         to_y = action['to_y']
         from_x = action['from_x']
         from_y = action['from_y']
 
-        reward = 0
-        if state[to_y][to_x] != 0 and return_info:
-            reward = c.REWARD_LIST[int(state[to_y][to_x][1])] / c.KING
+        reward = c.REWARD_LIST[int(state[to_y][to_x][1])]
 
         state[to_y][to_x] = state[from_y][from_x]
         state[from_y][from_x] = 0
-
-        # decode and return state
-        is_game_over = reward >= c.REWARD_LIST[c.KING]
-
-        info = {"is_game_over": is_game_over, "reward": reward}
         decode_state = u.decode_state(state, turn)
-        if self.use_cache:
-            self.simulation_cache[cache_key] = [decode_state, info]
+
         if return_info:
+            is_game_over = False
+            if reward > 0:
+                if reward == c.REWARD_LIST[c.KING]:
+                    reward = 1.
+                    is_game_over = True
+                else:
+                    reward /= (c.REWARD_LIST[c.CAR] * 2)
+
+            info = {"is_game_over": is_game_over, "reward": reward}
+
             return decode_state, info
         else:
             return decode_state
