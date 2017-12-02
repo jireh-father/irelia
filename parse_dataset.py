@@ -9,8 +9,9 @@ from util.dataset import Dataset
 f = open("records.txt")
 position = {"masangmasang": 0, "masangsangma": 1, "sangmasangma": 2, "sangmamasang": 3}
 ds = Dataset()
-ds.open("parsed_dataset.csv")
-for line in f:
+ds.open("/home/igseo/bigdata/parsed_dataset.csv")
+for n, line in enumerate(f):
+    print(n)
     data = json.loads(line)
     actions = data["records"]
     winner = data["winner"]
@@ -32,6 +33,8 @@ for line in f:
         state[action["y"]][action["x"]] = 0
         state_history.append(env.decode_state(state, turn))
         policy_probs = np.array([.0] * 90)
+        action["from_x"] = action["x"]
+        action["from_y"] = action["y"]
         action = env.encode_action(action)
         policy_probs[action[0]] = 0.5
         policy_probs[action[1]] = 0.5
