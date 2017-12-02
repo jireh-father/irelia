@@ -19,6 +19,7 @@ env = Game.make("KoreanChess-v1",
 config = tf.ConfigProto()
 config.gpu_options.allow_growth = True
 sess = tf.Session(config=config)
+writer = tf.summary.FileWriter(FLAGS.save_dir + '/summary', sess.graph)
 model = Model(sess, weight_decay=FLAGS.weight_decay, momentum=FLAGS.momentum, num_layers=FLAGS.num_model_layers,
               use_cache=FLAGS.use_cache)
 sess.run(tf.global_variables_initializer())
@@ -37,8 +38,8 @@ for episode in range(FLAGS.max_episode):
     """self-play"""
     print("self-play episode %d" % episode)
     info, state_history, mcts_history = play.self_play(env, model, FLAGS.max_simulation, FLAGS.max_step,
-                                                            FLAGS.c_puct, FLAGS.exploration_step, FLAGS.reuse_mcts,
-                                                            FLAGS.print_mcts_tree, FLAGS.num_state_history)
+                                                       FLAGS.c_puct, FLAGS.exploration_step, FLAGS.reuse_mcts,
+                                                       FLAGS.print_mcts_tree, FLAGS.num_state_history)
 
     if info["winner"]:
         game_results[info["winner"]] += 1
@@ -55,7 +56,7 @@ for episode in range(FLAGS.max_episode):
         ds.close()
         ds.make_dataset([dataset_path], FLAGS.batch_size)
         optimizer.train_model(model, learning_rate, ds, FLAGS.epoch, FLAGS.learning_rate_decay,
-                              FLAGS.learning_rate_decay_interval)
+                              FLAGS.learning_rate_decay_interval, writer=writer)
         saver.save(sess, os.path.join(FLAGS.save_dir, "%s_%d.ckpt" % (FLAGS.model_file_name, episode)))
         # todo : evaluate best player
 
