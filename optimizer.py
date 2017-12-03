@@ -40,6 +40,7 @@ while True:
     # common.restore_model(FLAGS.save_dir, "best_model.ckpt", saver, sess, restore_pending=True)
 
     for epoch in range(FLAGS.epoch):
+        print("epoch %d" % epoch)
         optimizer.train_model_epoch(model, learning_rate, ds, writer)
 
         if epoch > 0 and epoch % FLAGS.learning_rate_decay_interval == 0:

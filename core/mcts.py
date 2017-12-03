@@ -89,14 +89,22 @@ class Mcts(object):
         return edge_idx
 
     def choice_no_visited_edge_idx(self, skip_idx=None):
+        no_visited_idx_list = []
         for i, edge in enumerate(self.current_node.edges):
             if edge.visit_count == 0:
-                if skip_idx is None:
-                    return i
-                else:
-                    if skip_idx != i:
-                        return i
-        return None
+                no_visited_idx_list.append(i)
+        if len(no_visited_idx_list) == 0:
+            return None
+        if skip_idx is None:
+            edge_idx = np.random.choice(no_visited_idx_list, 1)[0]
+        else:
+            if len(no_visited_idx_list) == 1:
+                return None
+            edge_idx = skip_idx
+            while edge_idx == skip_idx:
+                edge_idx = np.random.choice(no_visited_idx_list, 1)[0]
+
+        return edge_idx
 
     def get_action_idx(self, action_probs):
         if self.temperature == 0:
@@ -126,11 +134,13 @@ class Mcts(object):
             if len(self.current_node.edges) == 1:
                 return 2
             else:
+                tmp_edge_idx = None
                 if self.current_node == self.root_node:
-                    edge_idx = self.choice_no_visited_edge_idx(edge_idx)
-                else:
+                    tmp_edge_idx = self.choice_no_visited_edge_idx(edge_idx)
+                if tmp_edge_idx is None:
                     select_scores = np.delete(select_scores, edge_idx, 0)
-                    edge_idx = self.choice_edge_idx(select_scores)
+                    tmp_edge_idx = self.choice_edge_idx(select_scores)
+                edge_idx = tmp_edge_idx
 
         self.selected_edges.append(self.current_node.edges[edge_idx])
         self.action_history.append(self.current_node.edges[edge_idx].action)
