@@ -11,6 +11,7 @@ from util.common import log
 FLAGS = tf.app.flags.FLAGS
 
 common.set_flags()
+tf.app.flags.DEFINE_boolean('pending_dataset', False, "pending dataset")
 common.make_dirs(os.path.join(FLAGS.save_dir, "dataset_ready"))
 common.make_dirs(os.path.join(FLAGS.save_dir, "dataset_bak"))
 
@@ -27,10 +28,11 @@ ds = Dataset(sess)
 
 while True:
     files = glob.glob(os.path.join(FLAGS.save_dir, "dataset_ready", "dataset*.csv"))
-    if len(files) < common.num_opt_games / common.num_selfplay_games:
-        log("waiting for dataset... now %d games" % (len(files) * common.num_selfplay_games))
-        time.sleep(10)
-        continue
+    if FLAGS.pending_dataset:
+        if len(files) < common.num_opt_games / common.num_selfplay_games:
+            log("waiting for dataset... now %d games" % (len(files) * common.num_selfplay_games))
+            time.sleep(10)
+            continue
     log("load dataset %d files" % len(files))
     learning_rate = FLAGS.learning_rate
     ds.make_dataset(files, FLAGS.batch_size)
