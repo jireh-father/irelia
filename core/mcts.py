@@ -88,6 +88,16 @@ class Mcts(object):
                 edge_idx = select_scores.argmax()
         return edge_idx
 
+    def choice_no_visited_edge_idx(self, skip_idx=None):
+        for i, edge in enumerate(self.current_node.edges):
+            if edge.visit_count == 0:
+                if skip_idx is None:
+                    return i
+                else:
+                    if skip_idx != i:
+                        return i
+        return None
+
     def get_action_idx(self, action_probs):
         if self.temperature == 0:
             arg_max_list = np.argwhere(action_probs == np.amax(action_probs)).flatten()
@@ -104,16 +114,23 @@ class Mcts(object):
     def select(self):
         if not self.current_node.edges:
             return True
-        select_scores = np.array(
-            [edge.get_select_score(self.current_node.edges, self.c_puct) for edge in self.current_node.edges])
-        edge_idx = self.choice_edge_idx(select_scores)
+        edge_idx = None
+        if self.current_node == self.root_node:
+            edge_idx = self.choice_no_visited_edge_idx()
+        if edge_idx is None:
+            select_scores = np.array(
+                [edge.get_select_score(self.current_node.edges, self.c_puct) for edge in self.current_node.edges])
+            edge_idx = self.choice_edge_idx(select_scores)
 
         if self.env.check_repeat(self.current_node.edges[edge_idx].action, self.action_history):
-            if len(select_scores) == 1:
+            if len(self.current_node.edges) == 1:
                 return 2
             else:
-                select_scores = np.delete(select_scores, edge_idx, 0)
-                edge_idx = self.choice_edge_idx(select_scores)
+                if self.current_node == self.root_node:
+                    edge_idx = self.choice_no_visited_edge_idx(edge_idx)
+                else:
+                    select_scores = np.delete(select_scores, edge_idx, 0)
+                    edge_idx = self.choice_edge_idx(select_scores)
 
         self.selected_edges.append(self.current_node.edges[edge_idx])
         self.action_history.append(self.current_node.edges[edge_idx].action)
