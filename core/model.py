@@ -19,7 +19,8 @@ class Model(object):
         self.value_label = None
         self.learning_rate = tf.placeholder(tf.float32, shape=(), name="learning_rate")
         self.global_step = tf.Variable(0, trainable=False)
-        self.learning_rate = Model.configure_learning_rate(conf.num_steps_per_decay, self.global_step, conf)
+        self.num_samples = tf.placeholder(tf.int32, shape=(), name="num_samples")
+        self.learning_rate = Model.configure_learning_rate(self.num_samples, self.global_step, conf)
         self.optimizer = Model.configure_optimizer(self.learning_rate, conf)
         self.cost = None
         self.train_op = None
@@ -40,10 +41,10 @@ class Model(object):
         #     self.inference_cache[cache_key] = [policy[0], value[0]]
         return policy[0], value[0]
 
-    def train(self, state, policy, value, learning_rate):
+    def train(self, state, policy, value, num_samples):
         return self.sess.run([self.train_op, self.cost, self.merged],
                              feed_dict={self.inputs: state, self.is_training: True, self.policy_label: policy,
-                                        self.value_label: value, self.learning_rate: learning_rate})
+                                        self.value_label: value, self.num_samples: num_samples})
 
     def eval(self, state, policy, value):
         return self.sess.run([self.cost],
@@ -92,8 +93,8 @@ class Model(object):
         # self.cost = tf.reduce_mean(tf.pow(self.value_label - value_network, 2)) - tf.reduce_mean(
         #     self.policy_label * tf.log(policy_network)) + (0.5 * l2_regularizer)
         value_loss = tf.reduce_mean(tf.pow(self.value_label - tf.reshape(value_network, [-1]), 2))
-        policy_loss = tf.reduce_mean(tf.nn.softmax(self.policy_label) * tf.log(tf.nn.softmax(policy_network)))
-        self.cost = value_loss - policy_loss + regularizer
+        policy_loss = -tf.reduce_mean(tf.nn.softmax(self.policy_label) * tf.log(tf.nn.softmax(policy_network)))
+        self.cost = value_loss + policy_loss + regularizer
 
         tf.summary.scalar('value_loss', value_loss)
         tf.summary.scalar('policy_loss', policy_loss)
@@ -192,17 +193,6 @@ class Model(object):
 
     @staticmethod
     def configure_optimizer(learning_rate, conf):
-        """Configures the optimizer used for training.
-
-        Args:
-          learning_rate: A scalar or `Tensor` learning rate.
-
-        Returns:
-          An instance of an optimizer.
-
-        Raises:
-          ValueError: if conf.optimizer is not recognized.
-        """
         if conf.optimizer == 'adadelta':
             optimizer = tf.train.AdadeltaOptimizer(
                 learning_rate,
@@ -243,7 +233,10 @@ class Model(object):
         return optimizer
 
     @staticmethod
-    def configure_learning_rate(decay_steps, global_step, conf):
+    def configure_learning_rate(num_samples_per_epoch, global_step, conf):
+
+        decay_steps = int(num_samples_per_epoch / conf.batch_size *
+                          conf.num_epochs_per_decay)
 
         if conf.learning_rate_decay_type == 'exponential':
             return tf.train.exponential_decay(conf.learning_rate,
@@ -260,7 +253,7 @@ class Model(object):
                                              decay_steps,
                                              conf.end_learning_rate,
                                              power=1.0,
-                                             cycle=conf.cycle_learning_rate,
+                                             cycle=False,
                                              name='polynomial_decay_learning_rate')
         else:
             raise ValueError('learning_rate_decay_type [%s] was not recognized',

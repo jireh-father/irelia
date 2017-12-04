@@ -18,6 +18,7 @@ class Dataset(object):
         self.file = None
         self.csv_writer = None
         self.dataset = None
+        self.num_samples = 0
 
     def open(self, file_path, mode="w+"):
         self.file = open(file_path, mode=mode)
@@ -71,6 +72,18 @@ class Dataset(object):
         if shuffle_buffer_size > 0:
             dataset = dataset.shuffle(shuffle_buffer_size)
         self.dataset = dataset.batch(batch_size).make_initializable_iterator()
+        self.num_samples = Dataset.get_number_of_items(filenames)
+
+    @staticmethod
+    def get_number_of_items(datset_files):
+        nums = 0
+
+        for file in datset_files:
+            f = open(file)
+            for line in f:
+                nums += 1
+            f.close()
+        return nums
 
     def close_dataset(self):
         self.dataset.close()

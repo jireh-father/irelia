@@ -18,6 +18,7 @@ common.make_dirs(os.path.join(FLAGS.save_dir, "dataset_bak"))
 config = tf.ConfigProto()
 config.gpu_options.allow_growth = True
 sess = tf.Session(config=config)
+
 model = Model(sess, weight_decay=FLAGS.weight_decay, momentum=FLAGS.momentum, num_layers=FLAGS.num_model_layers,
               use_cache=FLAGS.use_cache, conf=FLAGS)
 writer = tf.summary.FileWriter(FLAGS.save_dir + '/summary', sess.graph)
@@ -37,19 +38,15 @@ while True:
             log("waiting for dataset... now %d games" % (len(files) * common.num_selfplay_games))
             time.sleep(10)
             continue
+
     log("load dataset %d files" % len(files))
-    learning_rate = FLAGS.learning_rate
     ds.make_dataset(files, FLAGS.batch_size)
 
     # common.restore_model(FLAGS.save_dir, "best_model.ckpt", saver, sess, restore_pending=True)
 
     for epoch in range(FLAGS.epoch):
         print("epoch %d" % epoch)
-        optimizer.train_model_epoch(model, learning_rate, ds, writer)
-
-        if epoch > 0 and epoch % FLAGS.learning_rate_decay_interval == 0:
-            log("decay learning rate")
-            learning_rate = learning_rate * FLAGS.learning_rate_decay
+        optimizer.train_model_epoch(model, ds, writer)
 
         if epoch > 0 and epoch % common.num_checkpoint_epochs == 0:
             now = common.now_date_str_nums()

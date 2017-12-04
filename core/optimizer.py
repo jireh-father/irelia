@@ -25,7 +25,7 @@ def train_model(model, learning_rate, ds, train_epoch, learning_rate_decay, lear
                 break
 
 
-def train_model_epoch(model, learning_rate, ds, writer):
+def train_model_epoch(model, ds, writer):
     batch_step = 0
     log("train!")
     ds.init_dataset()
@@ -34,7 +34,7 @@ def train_model_epoch(model, learning_rate, ds, writer):
         try:
             train_batch_state, train_batch_policy, train_batch_value = ds.batch()
             _, train_cost, summary = model.train(train_batch_state, train_batch_policy, train_batch_value,
-                                                 learning_rate)
+                                                 ds.num_samples)
             log("trained! cost: %f" % train_cost)
             if batch_step != 0 and batch_step % 20 == 0:
                 writer.add_summary(summary, batch_step)
