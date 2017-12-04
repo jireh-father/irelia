@@ -235,8 +235,8 @@ class Model(object):
     @staticmethod
     def configure_learning_rate(num_samples_per_epoch, global_step, conf):
 
-        decay_steps = int(num_samples_per_epoch / conf.batch_size *
-                          conf.num_epochs_per_decay)
+        decay_steps = int(num_samples_per_epoch / tf.constant(conf.batch_size, tf.int32, ()) *
+                          tf.constant(conf.num_epochs_per_decay, tf.float16, ()))
 
         if conf.learning_rate_decay_type == 'exponential':
             return tf.train.exponential_decay(conf.learning_rate,
