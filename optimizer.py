@@ -27,7 +27,11 @@ saver = tf.train.Saver()
 ds = Dataset(sess)
 
 while True:
-    files = glob.glob(os.path.join(FLAGS.save_dir, "dataset_ready", "dataset*.csv"))
+    if FLAGS.dataset_dir:
+        dataset_dir = FLAGS.dataset_dir
+    else:
+        dataset_dir = os.path.join(FLAGS.save_dir, "dataset_ready")
+    files = glob.glob(os.path.join(dataset_dir, "dataset*.csv"))
     if FLAGS.pending_dataset:
         if len(files) < common.num_opt_games / common.num_selfplay_games:
             log("waiting for dataset... now %d games" % (len(files) * common.num_selfplay_games))

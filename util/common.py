@@ -65,6 +65,7 @@ def set_flags():
     tf.app.flags.DEFINE_boolean('use_cache', False, "use cache")
     tf.app.flags.DEFINE_boolean('reuse_mcts', False, "reuse mcts")
     tf.app.flags.DEFINE_boolean('backup_dataset', False, "backup_dataset")
+    tf.app.flags.DEFINE_string('dataset_dir', None, "dataset_dir")
 
     ######################
     # Optimization Flags #
