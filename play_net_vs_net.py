@@ -18,7 +18,7 @@ config = tf.ConfigProto()
 config.gpu_options.allow_growth = True
 sess = tf.Session(config=config)
 model = Model(sess, weight_decay=FLAGS.weight_decay, momentum=FLAGS.momentum, num_layers=FLAGS.num_model_layers,
-              use_cache=FLAGS.use_cache)
+              use_cache=FLAGS.use_cache, conf=FLAGS)
 sess.run(tf.global_variables_initializer())
 saver = tf.train.Saver()
 
