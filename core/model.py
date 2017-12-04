@@ -19,7 +19,7 @@ class Model(object):
         self.value_label = None
         self.learning_rate = tf.placeholder(tf.float32, shape=(), name="learning_rate")
         self.global_step = tf.Variable(0, trainable=False)
-        self.num_samples = tf.placeholder(tf.int32, shape=(), name="num_samples")
+        self.num_samples = tf.placeholder(tf.float32, shape=(), name="num_samples")
         self.learning_rate = Model.configure_learning_rate(self.num_samples, self.global_step, conf)
         self.optimizer = Model.configure_optimizer(self.learning_rate, conf)
         self.cost = None
@@ -235,8 +235,8 @@ class Model(object):
     @staticmethod
     def configure_learning_rate(num_samples_per_epoch, global_step, conf):
 
-        decay_steps = int(num_samples_per_epoch / tf.constant(conf.batch_size, tf.int32, ()) *
-                          tf.constant(conf.num_epochs_per_decay, tf.float16, ()))
+        decay_steps = int(num_samples_per_epoch / tf.constant(conf.batch_size, tf.float32, ()) *
+                          tf.constant(conf.num_epochs_per_decay, tf.float32, ()))
 
         if conf.learning_rate_decay_type == 'exponential':
             return tf.train.exponential_decay(conf.learning_rate,
