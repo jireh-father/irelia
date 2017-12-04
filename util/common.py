@@ -43,7 +43,7 @@ def set_flags():
                                "save dir")
 
     tf.app.flags.DEFINE_string('model_file_name', "model", "model name to save")
-    tf.app.flags.DEFINE_integer('max_step', 10, "max step in a episode")
+    tf.app.flags.DEFINE_integer('max_step', 150, "max step in a episode")
     tf.app.flags.DEFINE_integer('max_episode', 1000000, "max episode")
     tf.app.flags.DEFINE_integer('max_simulation', 5, "max simulation count in a mcts search")
     tf.app.flags.DEFINE_integer('exploration_step', 20, "exploration step")
@@ -60,12 +60,13 @@ def set_flags():
     tf.app.flags.DEFINE_float('momentum', 0.9, "momentum for optimizer")
     tf.app.flags.DEFINE_boolean('print_mcts_history', False, "show mcts search history")
     tf.app.flags.DEFINE_boolean('print_mcts_tree', True, "show mcts search tree")
+    tf.app.flags.DEFINE_boolean('print_mcts_search', True, "show mcts search")
     tf.app.flags.DEFINE_boolean('use_color_print', False, "use color in printing state")
     tf.app.flags.DEFINE_boolean('use_cache', False, "use cache")
     tf.app.flags.DEFINE_boolean('reuse_mcts', False, "reuse mcts")
 
 
-def convert_state_history_to_model_input(state_history, num_state_history):
+def convert_state_history_to_model_input(state_history, num_state_history=7):
     blue_history = []
     red_history = []
     if len(state_history) <= num_state_history:

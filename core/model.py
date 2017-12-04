@@ -103,7 +103,6 @@ class Model(object):
         self.train_op = tf.train.MomentumOptimizer(self.learning_rate, self.momentum).minimize(self.cost)
         self.merged = tf.summary.merge_all()
 
-
         # todo: accuracy! legal action probabilities and value scalar
 
     def batch_norm_relu(self, inputs, name):
@@ -162,3 +161,29 @@ class Model(object):
             tf.summary.histogram('block_activations_%d' % i, inputs)
 
         return inputs
+
+    def filter_action_probs(self, action_probs, legal_actions, env):
+        legal_action_probs = []
+        for legal_action in legal_actions:
+            legal_action = env.encode_action(legal_action)
+            legal_action_probs.append(action_probs[legal_action[0]] + action_probs[legal_action[0]])
+
+        legal_action_probs = np.array(legal_action_probs)
+        if (legal_action_probs == 0).all():
+            legal_action_probs = np.array([1. / len(legal_action_probs)] * len(legal_action_probs))
+        else:
+            legal_action_probs = legal_action_probs / legal_action_probs.sum()
+        return legal_action_probs
+
+    def get_action_idx(self, action_probs, temperature):
+        if temperature == 0:
+            arg_max_list = np.argwhere(action_probs == np.amax(action_probs)).flatten()
+            print("Max score:%f" % arg_max_list[0])
+            if len(arg_max_list) > 1:
+                action_idx = np.random.choice(arg_max_list, 1)[0]
+            else:
+                action_idx = action_probs.argmax()
+        else:
+            action_idx = np.random.choice(len(action_probs), 1, p=action_probs)[0]
+        print("choice action idx %d" % action_idx)
+        return action_idx

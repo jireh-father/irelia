@@ -6,7 +6,7 @@ from util import common
 
 class Mcts(object):
     def __init__(self, state, env, model, max_simulation=500, winner_reward=1., loser_reward=-1., c_puct=0.01,
-                 init_root_edges=False, num_state_history=7):
+                 init_root_edges=False, num_state_history=7, print_mcts_search=True):
         self.env = env
         self.model = model
         self.max_simulation = max_simulation
@@ -20,8 +20,13 @@ class Mcts(object):
         self.loser_reward = loser_reward
         self.c_puct = c_puct
         self.num_state_history = num_state_history
+        self.print_mcts_search = print_mcts_search
         if init_root_edges:
             self.expand_and_evaluate()
+
+    def print(self, *args):
+        if self.print_mcts_search:
+            self.print(args)
 
     def search(self, temperature=.0, action_idx_list=[]):
         self.temperature = temperature
@@ -43,22 +48,22 @@ class Mcts(object):
                 edge.add_noise(noise_probs[i])
 
         for i in range(self.max_simulation):
-            print("mcts simulate %d " % i)
+            self.print("mcts simulate %d " % i)
             self.simulate()
 
         action_probs = np.array(
             [edge.get_action_probs(self.root_node.edges, self.temperature) for edge in self.root_node.edges])
-        print("MCTS root edges")
+        self.print("MCTS root edges")
         for i, edge in enumerate(self.root_node.edges):
-            print("%d edge score! N: %d, P: %f, total_value: %f, mean_value: %f -> %s" % (
+            self.print("%d edge score! N: %d, P: %f, total_value: %f, mean_value: %f -> %s" % (
                 i, edge.visit_count, edge.action_prob, edge.total_action_value, edge.mean_action_value,
                 str(edge.action)))
         if (action_probs == 0).all():
             action_probs = np.array([1. / len(action_probs)] * len(action_probs))
         else:
-            action_probs = action_probs / action_probs.sum() * 1.
-        print("action probs!")
-        print(action_probs)
+            action_probs = action_probs / action_probs.sum()
+        self.print("action probs!")
+        self.print(action_probs)
 
         return action_probs
 
@@ -66,7 +71,7 @@ class Mcts(object):
         is_leaf_node = False
         i = 0
         while not is_leaf_node:
-            print("mcts select %d" % i)
+            self.print("mcts select %d" % i)
             is_leaf_node = self.select()
             if is_leaf_node == 2:
                 self.backup(-1)
@@ -107,23 +112,13 @@ class Mcts(object):
         return edge_idx
 
     def get_action_idx(self, action_probs):
-        if self.temperature == 0:
-            arg_max_list = np.argwhere(action_probs == np.amax(action_probs)).flatten()
-            print("MCTS Max score:%f" % arg_max_list[0])
-            if len(arg_max_list) > 1:
-                action_idx = np.random.choice(arg_max_list, 1)[0]
-            else:
-                action_idx = action_probs.argmax()
-        else:
-            action_idx = np.random.choice(len(action_probs), 1, p=action_probs)[0]
-        print("choice action idx %d" % action_idx)
-        return action_idx
+        return self.model.get_action_idx(action_probs, self.temperature)
 
     def select(self):
         if not self.current_node.edges:
             return True
         edge_idx = None
-        if self.current_node == self.root_node:
+        if self.current_node is self.root_node:
             edge_idx = self.choice_no_visited_edge_idx()
         if edge_idx is None:
             select_scores = np.array(
@@ -135,7 +130,7 @@ class Mcts(object):
                 return 2
             else:
                 tmp_edge_idx = None
-                if self.current_node == self.root_node:
+                if self.current_node is self.root_node:
                     tmp_edge_idx = self.choice_no_visited_edge_idx(edge_idx)
                 if tmp_edge_idx is None:
                     select_scores = np.delete(select_scores, edge_idx, 0)
@@ -151,16 +146,16 @@ class Mcts(object):
         return False
 
     def expand_and_evaluate(self):
-        print("Expand and Evaluate!")
+        self.print("Expand and Evaluate!")
         if self.env.is_over(self.current_node.state):
-            print("MCTS Game Over")
+            self.print("MCTS Game Over")
             return self.loser_reward
 
         # todo :pass액션 추가 ( 둘다 pass할경우 점수계산으로
         action_probs, state_value = self.model.inference(
-            common.convert_state_history_to_model_input(self.state_history[-self.num_state_history:],
+            common.convert_state_history_to_model_input(self.state_history[-(self.num_state_history + 1):],
                                                         self.num_state_history))
-        print("MCTS Value inference", state_value)
+        self.print("MCTS Value inference", state_value)
         # todo : <<빅장>> 혹은 외통수(장군)등 기능 구현?
         # todo: 비긴 상태 구현해서 적용하기(더 디테일하게)
 
@@ -169,16 +164,8 @@ class Mcts(object):
         if not legal_actions:
             return self.loser_reward
 
-        legal_action_probs = []
-        for legal_action in legal_actions:
-            legal_action = self.env.encode_action(legal_action)
-            legal_action_probs.append(action_probs[legal_action[0]] + action_probs[legal_action[0]])
+        legal_action_probs = self.model.filter_action_probs(action_probs, legal_actions, self.env)
 
-        legal_action_probs = np.array(legal_action_probs)
-        if (legal_action_probs == 0).all():
-            legal_action_probs = np.array([1. / len(legal_action_probs)] * len(legal_action_probs))
-        else:
-            legal_action_probs = legal_action_probs / legal_action_probs.sum() * 1.
         if self.root_node is self.current_node:
             # add noise to prior probabilities
             # if (legal_action_probs == 0).all():
@@ -188,18 +175,18 @@ class Mcts(object):
             noise_probs = np.random.dirichlet([1] * len(legal_action_probs), 1)[0]
 
             legal_action_probs = ((1 - 0.25) * legal_action_probs + (noise_probs * 0.25))
-
+            legal_action_probs = legal_action_probs / legal_action_probs.sum()
         self.current_node.edges = []
         for i, action_prob in enumerate(legal_action_probs):
             next_state, info = self.env.simulate(self.current_node.state, legal_actions[i])
             self.current_node.edges.append(Edge(action_prob, next_state, legal_actions[i], info["reward"]))
         reward = -self.current_node.parent_edge.reward if self.current_node.parent_edge else 0
         state_value = 0.5 * state_value + reward
-        print("MCTS state value + reward", state_value)
+        self.print("MCTS state value + reward", state_value)
         return state_value
 
     def backup(self, state_value):
-        print("MCTS Backup")
+        self.print("MCTS Backup")
         self.selected_edges.reverse()
         for i, edge in enumerate(self.selected_edges):
             if i % 2 == 0:
@@ -215,18 +202,18 @@ class Mcts(object):
         self.action_history = []
 
     def print_tree(self):
-        print("========== mcts tree trace ==========")
+        self.print("========== mcts tree trace ==========")
         self.print_row([self.root_node])
-        print("=====================================")
+        self.print("=====================================")
 
     def print_row(self, nodes, row_idx=0):
         child_nodes = []
         for node in nodes:
             for edge in node.edges:
                 child_nodes.append(edge.node)
-        print("%d row: %d nodes" % (row_idx, len(nodes)))
+        self.print("%d row: %d nodes" % (row_idx, len(nodes)))
         if row_idx > 996:
-            print("more...")
+            self.print("more...")
             return
         if child_nodes:
             self.print_row(child_nodes, row_idx + 1)
@@ -254,7 +241,7 @@ class Edge(object):
         self.node = Node(state, self)
 
     def add_noise(self, noice_prob):
-        self.action_prob = (0.50 * self.action_prob) + (0.50 * noice_prob)
+        self.action_prob = (0.75 * self.action_prob) + (0.25 * noice_prob)
 
     def update(self, state_value):
         self.visit_count += 1.
