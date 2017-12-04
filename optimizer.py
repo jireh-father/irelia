@@ -18,9 +18,9 @@ common.make_dirs(os.path.join(FLAGS.save_dir, "dataset_bak"))
 config = tf.ConfigProto()
 config.gpu_options.allow_growth = True
 sess = tf.Session(config=config)
-writer = tf.summary.FileWriter(FLAGS.save_dir + '/summary', sess.graph)
 model = Model(sess, weight_decay=FLAGS.weight_decay, momentum=FLAGS.momentum, num_layers=FLAGS.num_model_layers,
               use_cache=FLAGS.use_cache, conf=FLAGS)
+writer = tf.summary.FileWriter(FLAGS.save_dir + '/summary', sess.graph)
 sess.run(tf.global_variables_initializer())
 saver = tf.train.Saver()
 

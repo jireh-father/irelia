@@ -25,7 +25,7 @@ def train_model(model, learning_rate, ds, train_epoch, learning_rate_decay, lear
                 break
 
 
-def train_model_epoch(model, learning_rate, ds,writer):
+def train_model_epoch(model, learning_rate, ds, writer):
     batch_step = 0
     log("train!")
     ds.init_dataset()
