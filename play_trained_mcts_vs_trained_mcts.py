@@ -9,7 +9,7 @@ from core import play
 FLAGS = tf.app.flags.FLAGS
 
 common.set_flags()
-common.make_dirs(os.path.join(FLAGS.save_dir, "dataset_ready"))
+common.make_dirs(os.path.join(FLAGS.save_dir, "dataset_ ready"))
 
 env = Game.make("KoreanChess-v1",
                 {"use_check": False, "limit_step": FLAGS.max_step, "use_color_print": True})
@@ -24,5 +24,5 @@ saver = tf.train.Saver()
 
 common.restore_model("F:\data\irelia", "new_model_20171204045347", saver, sess)
 
-info = play.eval_play(env, model, model, 300, FLAGS.max_step, 0.1, print_mcts_search=False)
+info = play.eval_play(env, model, model, 300, FLAGS.max_step, 0.1, print_mcts_search=True)
 print(info)

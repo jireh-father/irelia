@@ -26,7 +26,7 @@ class Mcts(object):
 
     def print(self, *args):
         if self.print_mcts_search:
-            self.print(args)
+            print(args)
 
     def search(self, temperature=.0, action_idx_list=[]):
         self.temperature = temperature
@@ -124,6 +124,7 @@ class Mcts(object):
             select_scores = np.array(
                 [edge.get_select_score(self.current_node.edges, self.c_puct) for edge in self.current_node.edges])
             edge_idx = self.choice_edge_idx(select_scores)
+            print(select_scores)
 
         if self.env.check_repeat(self.current_node.edges[edge_idx].action, self.action_history):
             if len(self.current_node.edges) == 1:

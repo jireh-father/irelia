@@ -64,6 +64,7 @@ def set_flags():
     tf.app.flags.DEFINE_boolean('use_color_print', False, "use color in printing state")
     tf.app.flags.DEFINE_boolean('use_cache', False, "use cache")
     tf.app.flags.DEFINE_boolean('reuse_mcts', False, "reuse mcts")
+    tf.app.flags.DEFINE_boolean('backup_dataset', False, "backup_dataset")
 
 
 def convert_state_history_to_model_input(state_history, num_state_history=7):

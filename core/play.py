@@ -78,7 +78,7 @@ def self_play_only_net(env, model, max_step):
         converted_state = common.convert_state_history_to_model_input(state_history[-8:])
         policy, value = model.inference(converted_state)
         print("value %f" % value)
-        # print("policy", policy)
+        print("policy", policy)
 
         action_probs = model.filter_action_probs(policy, actions, env)
         action_idx = model.get_action_idx(action_probs, temperature)

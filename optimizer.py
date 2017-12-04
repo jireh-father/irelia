@@ -52,6 +52,7 @@ while True:
             saver.save(sess, os.path.join(FLAGS.save_dir, "new_model_%s.ckpt" % now))
             log("save model")
     ds.close_dataset()
-    for file in files:
-        os.rename(file, os.path.join(FLAGS.save_dir, "dataset_bak", os.path.basename(file)))
-        # os.remove(file)
+    if FLAGS.backup_dataset:
+        for file in files:
+            os.rename(file, os.path.join(FLAGS.save_dir, "dataset_bak", os.path.basename(file)))
+            # os.remove(file)
