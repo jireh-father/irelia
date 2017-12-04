@@ -92,13 +92,9 @@ class Model(object):
         #     l = (z − v) 2 − πT log p + c||θ||2
         # self.cost = tf.reduce_mean(tf.pow(self.value_label - value_network, 2)) - tf.reduce_mean(
         #     self.policy_label * tf.log(policy_network)) + (0.5 * l2_regularizer)
-        # value_loss = tf.reduce_mean(tf.pow(self.value_label - tf.reshape(value_network, [-1]), 2))
-        # policy_loss = -tf.reduce_mean(tf.nn.softmax(self.policy_label) * tf.log(tf.nn.softmax(policy_network)))
-        # self.cost = value_loss + policy_loss + regularizer
-
-        value_loss = tf.pow(self.value_label - tf.reshape(value_network, [-1]), 2)
-        policy_loss = -tf.nn.softmax(self.policy_label) * tf.log(tf.nn.softmax(policy_network))
-        self.cost = tf.reduce_mean(value_loss + policy_loss + regularizer)
+        value_loss = tf.reduce_mean(tf.pow(self.value_label - tf.reshape(value_network, [-1]), 2))
+        policy_loss = -tf.reduce_mean(tf.nn.softmax(self.policy_label) * tf.log(tf.nn.softmax(policy_network)))
+        self.cost = value_loss + policy_loss + regularizer
 
         tf.summary.scalar('value_loss', value_loss)
         tf.summary.scalar('policy_loss', policy_loss)
