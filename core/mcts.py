@@ -24,7 +24,7 @@ class Mcts(object):
         if init_root_edges:
             self.expand_and_evaluate()
 
-    def print(self, *args):
+    def log(self, *args):
         if self.print_mcts_search:
             print(args)
 
@@ -48,22 +48,22 @@ class Mcts(object):
                 edge.add_noise(noise_probs[i])
 
         for i in range(self.max_simulation):
-            self.print("mcts simulate %d " % i)
+            self.log("mcts simulate %d " % i)
             self.simulate()
 
         action_probs = np.array(
             [edge.get_action_probs(self.root_node.edges, self.temperature) for edge in self.root_node.edges])
-        self.print("MCTS root edges")
+        self.log("MCTS root edges")
         for i, edge in enumerate(self.root_node.edges):
-            self.print("%d edge score! N: %d, P: %f, total_value: %f, mean_value: %f -> %s" % (
+            self.log("%d edge score! N: %d, P: %f, total_value: %f, mean_value: %f -> %s" % (
                 i, edge.visit_count, edge.action_prob, edge.total_action_value, edge.mean_action_value,
                 str(edge.action)))
         if (action_probs == 0).all():
             action_probs = np.array([1. / len(action_probs)] * len(action_probs))
         else:
             action_probs = action_probs / action_probs.sum()
-        self.print("action probs!")
-        self.print(action_probs)
+        self.log("action probs!")
+        self.log(action_probs)
 
         return action_probs
 
@@ -71,7 +71,7 @@ class Mcts(object):
         is_leaf_node = False
         i = 0
         while not is_leaf_node:
-            self.print("mcts select %d" % i)
+            self.log("mcts select %d" % i)
             is_leaf_node = self.select()
             if is_leaf_node == 2:
                 self.backup(-1)
@@ -124,7 +124,7 @@ class Mcts(object):
             select_scores = np.array(
                 [edge.get_select_score(self.current_node.edges, self.c_puct) for edge in self.current_node.edges])
             edge_idx = self.choice_edge_idx(select_scores)
-            print(select_scores)
+            log(select_scores)
 
         if self.env.check_repeat(self.current_node.edges[edge_idx].action, self.action_history):
             if len(self.current_node.edges) == 1:
@@ -147,16 +147,16 @@ class Mcts(object):
         return False
 
     def expand_and_evaluate(self):
-        self.print("Expand and Evaluate!")
+        self.log("Expand and Evaluate!")
         if self.env.is_over(self.current_node.state):
-            self.print("MCTS Game Over")
+            self.log("MCTS Game Over")
             return self.loser_reward
 
         # todo :pass액션 추가 ( 둘다 pass할경우 점수계산으로
         action_probs, state_value = self.model.inference(
             common.convert_state_history_to_model_input(self.state_history[-(self.num_state_history + 1):],
                                                         self.num_state_history))
-        self.print("MCTS Value inference", state_value)
+        self.log("MCTS Value inference", state_value)
         # todo : <<빅장>> 혹은 외통수(장군)등 기능 구현?
         # todo: 비긴 상태 구현해서 적용하기(더 디테일하게)
 
@@ -183,11 +183,11 @@ class Mcts(object):
             self.current_node.edges.append(Edge(action_prob, next_state, legal_actions[i], info["reward"]))
         reward = -self.current_node.parent_edge.reward if self.current_node.parent_edge else 0
         state_value = 0.5 * state_value + reward
-        self.print("MCTS state value + reward", state_value)
+        self.log("MCTS state value + reward", state_value)
         return state_value
 
     def backup(self, state_value):
-        self.print("MCTS Backup")
+        self.log("MCTS Backup")
         self.selected_edges.reverse()
         for i, edge in enumerate(self.selected_edges):
             if i % 2 == 0:
@@ -203,18 +203,18 @@ class Mcts(object):
         self.action_history = []
 
     def print_tree(self):
-        self.print("========== mcts tree trace ==========")
+        self.log("========== mcts tree trace ==========")
         self.print_row([self.root_node])
-        self.print("=====================================")
+        self.log("=====================================")
 
     def print_row(self, nodes, row_idx=0):
         child_nodes = []
         for node in nodes:
             for edge in node.edges:
                 child_nodes.append(edge.node)
-        self.print("%d row: %d nodes" % (row_idx, len(nodes)))
+        self.log("%d row: %d nodes" % (row_idx, len(nodes)))
         if row_idx > 996:
-            self.print("more...")
+            self.log("more...")
             return
         if child_nodes:
             self.print_row(child_nodes, row_idx + 1)
