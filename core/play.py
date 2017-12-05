@@ -21,7 +21,15 @@ def self_play(env, model, max_simulation, max_step, c_puct, exploration_step, re
             common.log("temperature down")
             temperature = 0
         actions = env.get_all_actions()
-        action_probs = mcts.search(temperature, [] if old_action_idx is None else [old_action_idx])
+        if not reuse_mcts:
+            action_probs = mcts.search(temperature)
+        else:
+            action_probs = mcts.search(temperature, [] if old_action_idx is None else [old_action_idx])
+        if len(actions) != len(action_probs):
+            print("legal actions", len(actions), "mcts actions", len(action_probs))
+            print("legal state")
+            env.print_env()
+            sys.exit("error!!! action count!!")
         action_idx = mcts.get_action_idx(action_probs)
         action = actions[action_idx]
 
@@ -48,12 +56,8 @@ def self_play(env, model, max_simulation, max_step, c_puct, exploration_step, re
             traceback.print_exc(file=sys.stdout)
             continue
 
-        if len(actions) != len(action_probs):
-            print(len(actions), len(action_probs))
-            sys.exit("error!!! action count!!")
-
         if not reuse_mcts:
-            mcts = Mcts(state, env, model, max_simulation=max_simulation, c_puct=c_puct)
+            mcts = Mcts(state, env, model, max_simulation=max_simulation, c_puct=c_puct, init_root_edges=True)
         mcts_history.append(env.convert_action_probs_to_policy_probs(actions, action_probs))
 
         old_action_idx = action_idx
@@ -81,6 +85,11 @@ def self_play_only_net(env, model, max_step):
         print("policy", policy)
 
         action_probs = model.filter_action_probs(policy, actions, env)
+
+        if len(actions) != len(action_probs):
+            print(len(actions), len(action_probs))
+            sys.exit("error!!! action count!!")
+
         action_idx = model.get_action_idx(action_probs, temperature)
         action = actions[action_idx]
 
@@ -104,10 +113,6 @@ def self_play_only_net(env, model, max_step):
         except Exception as e:
             traceback.print_exc(file=sys.stdout)
             continue
-
-        if len(actions) != len(action_probs):
-            print(len(actions), len(action_probs))
-            sys.exit("error!!! action count!!")
 
         state_history.append(state)
 
@@ -133,7 +138,15 @@ def eval_play(env, blue_model, red_model, max_simulation, max_step, c_puct, reus
         # for step in range(max_step):
         common.log("step: %d" % step)
         actions = env.get_all_actions()
-        action_probs = mcts.search(temperature, [] if not action_idx_history else action_idx_history[-2:])
+        if not reuse_mcts:
+            action_probs = mcts.search(temperature)
+        else:
+            action_probs = mcts.search(temperature, [] if not action_idx_history else action_idx_history[-2:])
+
+        if len(actions) != len(action_probs):
+            print(len(actions), len(action_probs))
+            sys.exit("error!!! action count!!")
+
         action_idx = mcts.get_action_idx(action_probs)
         action = actions[action_idx]
 
@@ -160,9 +173,6 @@ def eval_play(env, blue_model, red_model, max_simulation, max_step, c_puct, reus
             traceback.print_exc(file=sys.stdout)
             continue
 
-        if len(actions) != len(action_probs):
-            print(len(actions), len(action_probs))
-            sys.exit("error!!! action count!!")
         print("action_idx", action_idx)
         action_idx_history.append(action_idx)
 

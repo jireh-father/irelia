@@ -32,7 +32,7 @@ dataset_path = os.path.join(FLAGS.save_dir, "dataset.csv")
 ds = Dataset(sess)
 ds.open(dataset_path)
 game_results = {"b": 0, "r": 0, "d": 0}
-
+wins = 0
 for episode in range(FLAGS.max_episode):
     """"""
     """self-play"""
@@ -43,6 +43,7 @@ for episode in range(FLAGS.max_episode):
 
     if info["winner"]:
         game_results[info["winner"]] += 1
+        wins += 1
     else:
         game_results["d"] += 1
     common.log("Blue wins : %d, Red winds : %d, Draws : %d" % (game_results["b"], game_results["r"], game_results["d"]))
@@ -52,7 +53,7 @@ for episode in range(FLAGS.max_episode):
         ds.write(info, state_history, mcts_history, FLAGS.num_state_history)
     """"""
     """train model"""
-    if episode > 0 and episode % FLAGS.episode_interval_to_train == 0 and os.path.getsize(dataset_path) > 0:
+    if wins > 0 and wins % FLAGS.episode_interval_to_train == 0 and os.path.getsize(dataset_path) > 0:
         ds.close()
         ds.make_dataset([dataset_path], FLAGS.batch_size)
         optimizer.train_model(model, ds, FLAGS.epoch, FLAGS.batch_size, writer)
