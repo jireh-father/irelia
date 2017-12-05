@@ -1,6 +1,4 @@
 #!/bin/sh
-nohup python -u /home/irelia/train.py --max_simulation=500 --max_step=90 --episode_interval_to_train=30 --num_model_layers=20 --exploration_step=30 --epoch=10 --c_puct=0.001 --save_dir=/home/irelia/checkpoint0.001 > log0.001 &
 nohup python -u /home/irelia/train.py --max_simulation=500 --max_step=90 --episode_interval_to_train=30 --num_model_layers=20 --exploration_step=30 --epoch=10 --c_puct=1 --save_dir=/home/irelia/checkpoint1 > log1 &
-nohup python -u /home/irelia/train.py --max_simulation=500 --max_step=90 --episode_interval_to_train=30 --num_model_layers=20 --exploration_step=30 --epoch=10 --c_puct=2 --save_dir=/home/irelia/checkpoint2 > log2 &
-nohup python -u /home/irelia/train.py --max_simulation=500 --max_step=90 --episode_interval_to_train=30 --num_model_layers=20 --exploration_step=30 --epoch=10 --c_puct=3 --save_dir=/home/irelia/checkpoint3 > log3 &
-nohup python -u /home/irelia/train.py --max_simulation=500 --max_step=90 --episode_interval_to_train=30 --num_model_layers=20 --exploration_step=30 --epoch=10 --c_puct=4 --save_dir=/home/irelia/checkpoint4 > log4 &
+nohup python -u /home/irelia/train.py --max_simulation=500 --max_step=90 --episode_interval_to_train=30 --num_model_layers=20 --exploration_step=30 --epoch=10 --c_puct=5 --save_dir=/home/irelia/checkpoint5 > log5 &
+nohup python -u /home/irelia/train.py --max_simulation=500 --max_step=90 --episode_interval_to_train=30 --num_model_layers=20 --exploration_step=30 --epoch=10 --c_puct=10 --save_dir=/home/irelia/checkpoint10 > log10 &
