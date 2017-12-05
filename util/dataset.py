@@ -17,7 +17,7 @@ class Dataset(object):
         self.sess = sess
         self.file = None
         self.csv_writer = None
-        self.dataset = None
+        self.dataset_iterator = None
         self.num_samples = 0
 
     def open(self, file_path, mode="w+"):
@@ -68,10 +68,10 @@ class Dataset(object):
                     tf.data.TextLineDataset(filename).map(decode_line, num_dataset_parallel)))
         else:
             dataset = tf.data.TextLineDataset(filenames).map(decode_line, num_dataset_parallel)
-
         if shuffle_buffer_size > 0:
             dataset = dataset.shuffle(shuffle_buffer_size)
-        self.dataset = dataset.batch(batch_size).make_initializable_iterator()
+
+        self.dataset_iterator = dataset.batch(batch_size).make_initializable_iterator()
         self.num_samples = Dataset.get_number_of_items(filenames)
 
     @staticmethod
@@ -86,15 +86,14 @@ class Dataset(object):
         return nums
 
     def close_dataset(self):
-        self.dataset.close()
-        self.dataset = None
+        self.dataset_iterator = None
 
     def batch(self):
-        value_data, state_data, policy_data = self.sess.run(self.dataset.get_next())
+        value_data, state_data, policy_data = self.sess.run(self.dataset_iterator.get_next())
         state_data = np.array(list(map(lambda x: np.array(json.loads(x.decode("utf-8"))), state_data)))
         policy_data = np.array(list(map(lambda x: np.array(json.loads(x.decode("utf-8"))), policy_data)))
         value_data = np.array(list(map(lambda x: float(x.decode("utf-8")), value_data)))
         return state_data, policy_data, value_data
 
     def init_dataset(self):
-        self.sess.run(self.dataset.initializer)
+        self.sess.run(self.dataset_iterator.initializer)
