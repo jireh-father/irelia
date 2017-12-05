@@ -11,7 +11,7 @@ def train_model(model, ds, train_epoch, batch_size, writer):
     for epoch in range(train_epoch):
         ds.init_dataset()
         while True:
-            log("epoch: %d, step: %d/%d " % (epoch, batch_step, total_steps))
+            log("epoch: %d, step: %d/%d " % (epoch, batch_step % total_steps, total_steps))
             try:
                 train_batch_state, train_batch_policy, train_batch_value = ds.batch()
                 _, train_cost, summary = model.train(train_batch_state, train_batch_policy, train_batch_value,
