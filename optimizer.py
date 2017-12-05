@@ -48,7 +48,8 @@ while True:
         print("epoch %d" % epoch)
         optimizer.train_model_epoch(model, ds, FLAGS.batch_size, writer)
 
-        if epoch > 0 and epoch % common.num_checkpoint_epochs == 0:
+        if (epoch == 0 and common.num_checkpoint_epochs == 1) or (
+          epoch > 0 and epoch % common.num_checkpoint_epochs == 0):
             now = common.now_date_str_nums()
             saver.save(sess, os.path.join(FLAGS.save_dir, "new_model_%s.ckpt" % now))
             log("save model")
