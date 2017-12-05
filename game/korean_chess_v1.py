@@ -280,7 +280,7 @@ class KoreanChessV1:
                     winner = None
             info["score_diff"] = abs(self.blue_score - self.red_score)
         else:
-            winner = 'b' if self.current_turn == 'r' else 'b'
+            winner = 'b' if self.current_turn == 'r' else 'r'
         info["winner"] = winner
 
         return u.decode_state(self.current_state, self.current_turn), reward, is_game_over, info
