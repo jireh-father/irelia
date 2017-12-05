@@ -55,8 +55,7 @@ for episode in range(FLAGS.max_episode):
     if episode > 0 and episode % FLAGS.episode_interval_to_train == 0 and os.path.getsize(dataset_path) > 0:
         ds.close()
         ds.make_dataset([dataset_path], FLAGS.batch_size)
-        optimizer.train_model(model, learning_rate, ds, FLAGS.epoch, FLAGS.learning_rate_decay,
-                              FLAGS.learning_rate_decay_interval, writer=writer)
+        optimizer.train_model(model, ds, FLAGS.epoch, FLAGS.batch_size, writer)
         saver.save(sess, os.path.join(FLAGS.save_dir, "%s_%d.ckpt" % (FLAGS.model_file_name, episode)))
         # todo : evaluate best player
 

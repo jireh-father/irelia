@@ -46,7 +46,7 @@ while True:
 
     for epoch in range(FLAGS.epoch):
         print("epoch %d" % epoch)
-        optimizer.train_model_epoch(model, ds, writer)
+        optimizer.train_model_epoch(model, ds, FLAGS.batch_size, writer)
 
         if epoch > 0 and epoch % common.num_checkpoint_epochs == 0:
             now = common.now_date_str_nums()
