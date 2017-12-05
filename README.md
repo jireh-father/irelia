@@ -1,8 +1,8 @@
 # irelia
 under construction...
 
-# environment test
-python single_play.py
+# self play and train 
+python train.py
 
 ## review site
 http://irelia.hovits.com/web/review.html
