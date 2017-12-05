@@ -36,6 +36,7 @@ class Mcts(object):
 
     @staticmethod
     def te(msg=None):
+        return
         if msg:
             print("time: ", msg, time.time() - Mcts.START.pop())
         else:
