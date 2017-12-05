@@ -7,6 +7,7 @@ import datetime
 import shutil
 import csv
 from util import common
+import sys
 
 
 class Dataset(object):
@@ -20,8 +21,11 @@ class Dataset(object):
         self.dataset_iterator = None
         self.num_samples = 0
 
-    def open(self, file_path, mode="w+"):
-        self.file = open(file_path, mode=mode)
+    def open(self, file_path, mode="w"):
+        if sys.version_info[0] == 3:
+            self.file = open(file_path, mode=mode, newline='')
+        else:
+            self.file = open(file_path, mode=mode)
         self.csv_writer = csv.writer(self.file, delimiter=',')
 
     def close(self):
