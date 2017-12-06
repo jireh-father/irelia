@@ -7,6 +7,7 @@ from util import user_input
 from core.model import Model
 import traceback
 import time
+import sys
 
 FLAGS = tf.app.flags.FLAGS
 
@@ -52,12 +53,35 @@ while True:
             continue
     else:
         start_time = time.time()
-        action_probs, mcts_action = mcts.search(0, [user_action_idx])
+        actions = env.get_all_actions()
+        action_probs = mcts.search(0, [user_action_idx])
+        if len(actions) != len(action_probs):
+            print("legal actions", len(actions), "mcts actions", len(action_probs))
+            print("legal state")
+            env.print_env()
+            sys.exit("error!!! action count!!")
+        action_idx = mcts.get_action_idx(action_probs)
+        action = actions[action_idx]
         print("elased time : %f" % (time.time() - start_time))
         if FLAGS.print_mcts_tree:
             mcts.print_tree()
         try:
-            new_state, reward, done, _ = env.step(mcts_action)
+            new_state, reward, done, info = env.step(action)
+            if reward is False:
+                print("repeat!!")
+                if len(action_probs) == 1:
+                    info["winner"] = env.next_turn
+                    break
+                else:
+                    action_probs[action_idx] = action_probs.min()
+                    action_probs = action_probs / action_probs.sum()
+                    second_action_idx = action_idx
+                    while action_idx == second_action_idx:
+                        second_action_idx = mcts.get_action_idx(action_probs)
+                    action_idx = second_action_idx
+                    print("retry second action for repeating %d" % action_idx)
+                    action = actions[action_idx]
+                    state, reward, done, info = env.step(action)
             if done:
                 print("The End")
                 break
