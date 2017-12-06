@@ -39,7 +39,8 @@ for episode in range(FLAGS.max_episode):
     print("self-play episode %d" % episode)
     info, state_history, mcts_history = play.self_play(env, model, FLAGS.max_simulation, FLAGS.max_step,
                                                        FLAGS.c_puct, FLAGS.exploration_step, FLAGS.reuse_mcts,
-                                                       FLAGS.print_mcts_tree, FLAGS.num_state_history)
+                                                       FLAGS.print_mcts_tree, FLAGS.num_state_history,
+                                                       FLAGS.print_mcts_search)
 
     if info["winner"]:
         game_results[info["winner"]] += 1

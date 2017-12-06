@@ -84,7 +84,8 @@ while True:
                     print("retry second action for repeating %d" % action_idx)
                     action = actions[action_idx]
                     state, reward, done, info = env.step(action)
-            action_list.append(action_idx)
+            action_list.append(action_idx
+                               )
             if done:
                 print("The End")
                 break

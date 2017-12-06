@@ -4,10 +4,11 @@ from core.mcts import Mcts
 
 
 def self_play(env, model, max_simulation, max_step, c_puct, exploration_step, reuse_mcts=True, print_mcts_tree=False,
-              num_state_history=7):
+              num_state_history=7, print_mcts_search=True):
     state = env.reset()
 
-    mcts = Mcts(state, env, model, max_simulation=max_simulation, c_puct=c_puct, num_state_history=num_state_history)
+    mcts = Mcts(state, env, model, max_simulation=max_simulation, c_puct=c_puct, num_state_history=num_state_history,
+                print_mcts_search=print_mcts_search)
     state_history = [state.tolist()]
     mcts_history = []
     temperature = 1
