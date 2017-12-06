@@ -1,7 +1,7 @@
 # irelia
 under construction...
 
-# sel- play and train 
+# self-play and train 
 python train.py
 
 ## review site
