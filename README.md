@@ -1,12 +1,12 @@
 # irelia
 under construction...
 
-#prerequisite
+# Prerequisite
 - pip install colorama
-...
+- ...
 
 # self-play and train with no dataset
-```bash
+```shell
 python self_play_and_train.py --max_step=100 --max_episode=10000 --max_simulation=200 --episode_interval_to_train=10 --print_mcts_tree=False --print_mcts_search=False
 ```
 
