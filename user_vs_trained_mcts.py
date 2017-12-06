@@ -44,7 +44,7 @@ while True:
                 if legal_action == user_action:
                     user_action_idx = j
                     break
-            action_list.append(user_action)
+            action_list.append(user_action_idx)
             if done:
                 print("The End")
                 break
@@ -84,7 +84,7 @@ while True:
                     print("retry second action for repeating %d" % action_idx)
                     action = actions[action_idx]
                     state, reward, done, info = env.step(action)
-            action_list.append(action)
+            action_list.append(action_idx)
             if done:
                 print("The End")
                 break
