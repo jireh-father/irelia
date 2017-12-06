@@ -40,7 +40,7 @@ while True:
             continue
 
     log("load dataset %d files" % len(files))
-    ds.make_dataset(files, FLAGS.batch_size)
+    ds.make_dataset(files, FLAGS.batch_size, shuffle_buffer_size=FLAGS.shuffle_buffer_size)
 
     # common.restore_model(FLAGS.save_dir, "best_model.ckpt", saver, sess, restore_pending=True)
 

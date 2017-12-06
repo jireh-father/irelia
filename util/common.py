@@ -9,7 +9,7 @@ import numpy as np
 num_opt_games = 1000
 num_eval_games = 300
 num_selfplay_games = 50
-num_checkpoint_epochs = 1
+num_checkpoint_epochs = 5
 
 
 def restore_model(save_dir, model_file_name, saver, sess, restore_pending=False):
@@ -53,6 +53,7 @@ def set_flags():
     tf.app.flags.DEFINE_integer('num_model_layers', 20, "numbers of model layers")
     tf.app.flags.DEFINE_float('weight_decay', 0.0001, "weigh decay for weights l2 regularize")
     tf.app.flags.DEFINE_integer('batch_size', 64, "batch size")
+    tf.app.flags.DEFINE_integer('shuffle_buffer_size', 100, "shuffle_buffer_size")
     tf.app.flags.DEFINE_float('c_puct', 0.01, "a constant determining the level of exploration")
     tf.app.flags.DEFINE_float('momentum', 0.9, "momentum for optimizer")
     tf.app.flags.DEFINE_boolean('print_mcts_history', False, "show mcts search history")
