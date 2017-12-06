@@ -30,6 +30,7 @@ saver = tf.train.Saver()
 
 checkpoint_path = common.restore_model(FLAGS.save_dir, FLAGS.model_file_name, saver, sess, False)
 mcts = Mcts(state, env, model, FLAGS.max_simulation, c_puct=FLAGS.c_puct, init_root_edges=True)
+action_list = []
 while True:
     if i % 2 == 0:
         from_x, from_y, to_x, to_y = user_input.get_user_input()
@@ -43,6 +44,7 @@ while True:
                 if legal_action == user_action:
                     user_action_idx = j
                     break
+            action_list.append(user_action)
             if done:
                 print("The End")
                 break
@@ -54,7 +56,7 @@ while True:
     else:
         start_time = time.time()
         actions = env.get_all_actions()
-        action_probs = mcts.search(0, [user_action_idx])
+        action_probs = mcts.search(0, action_list[-2:])
         if len(actions) != len(action_probs):
             print("legal actions", len(actions), "mcts actions", len(action_probs))
             print("legal state")
@@ -82,6 +84,7 @@ while True:
                     print("retry second action for repeating %d" % action_idx)
                     action = actions[action_idx]
                     state, reward, done, info = env.step(action)
+            action_list.append(action)
             if done:
                 print("The End")
                 break
