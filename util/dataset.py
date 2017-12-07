@@ -94,7 +94,6 @@ class Dataset(object):
     def close_dataset(self):
         self.dataset.__init__()
         self.dataset = None
-        self.dataset_iterator.__init__()
         self.dataset_iterator = None
 
     def batch(self):
