@@ -40,21 +40,23 @@ while True:
             continue
 
     log("load dataset %d files" % len(files))
-    ds.make_dataset(files, FLAGS.batch_size, shuffle_buffer_size=FLAGS.shuffle_buffer_size)
+
 
     # common.restore_model(FLAGS.save_dir, "best_model.ckpt", saver, sess, restore_pending=True)
 
     for epoch in range(FLAGS.epoch):
         print("epoch %d" % epoch)
+        ds.make_dataset(files, FLAGS.batch_size, shuffle_buffer_size=FLAGS.shuffle_buffer_size)
         optimizer.train_model_epoch(model, ds, FLAGS.batch_size, writer)
-
+        ds.close_dataset()
         if (epoch == 0 and common.num_checkpoint_epochs == 1) or (
           epoch > 0 and epoch % common.num_checkpoint_epochs == 0):
             now = common.now_date_str_nums()
             saver.save(sess, os.path.join(FLAGS.save_dir, "new_model_%s.ckpt" % now))
             log("save model")
-    ds.close_dataset()
+
     if FLAGS.backup_dataset:
         for file in files:
             os.rename(file, os.path.join(FLAGS.save_dir, "dataset_bak", os.path.basename(file)))
             # os.remove(file)
+

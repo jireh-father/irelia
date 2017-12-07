@@ -18,6 +18,7 @@ class Dataset(object):
         self.sess = sess
         self.file = None
         self.csv_writer = None
+        self.dataset = None
         self.dataset_iterator = None
         self.num_samples = 0
 
@@ -72,6 +73,7 @@ class Dataset(object):
                     tf.data.TextLineDataset(filename).map(decode_line, num_dataset_parallel)))
         else:
             dataset = tf.data.TextLineDataset(filenames).map(decode_line, num_dataset_parallel)
+
         if shuffle_buffer_size > 0:
             dataset = dataset.shuffle(shuffle_buffer_size)
 
@@ -90,6 +92,9 @@ class Dataset(object):
         return nums
 
     def close_dataset(self):
+        self.dataset.__init__()
+        self.dataset = None
+        self.dataset_iterator.__init__()
         self.dataset_iterator = None
 
     def batch(self):
