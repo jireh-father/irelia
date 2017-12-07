@@ -2,14 +2,19 @@ import json
 import sys
 from util import common
 from game.game import Game
-import copy
+import tensorflow as tf
 import numpy as np
 from util.dataset import Dataset
+import os
 
-f = open("records.txt")
+FLAGS = tf.app.flags.FLAGS
+
+common.set_flags()
+
+f = open(os.path.join(FLAGS.dataset_dir, "korean-chess-records-dataset.txt"))
 position = {"masangmasang": 0, "masangsangma": 1, "sangmasangma": 2, "sangmamasang": 3}
 ds = Dataset()
-ds.open("/home/igseo/bigdata/parsed_dataset.csv")
+ds.open(os.path.join(FLAGS.dataset_dir, "dataset.csv"))
 for n, line in enumerate(f):
     print(n)
     data = json.loads(line)
@@ -41,3 +46,4 @@ for n, line in enumerate(f):
         mcts_history.append(policy_probs.tolist())
     del state_history[-1]
     ds.write(info, state_history, mcts_history)
+ds.close()
