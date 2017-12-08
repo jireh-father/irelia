@@ -30,7 +30,9 @@ class Mcts(object):
 
     def log(self, *args):
         if self.print_mcts_search:
+            Mcts.te()
             print(args)
+            Mcts.te("print in")
 
     @staticmethod
     def te(msg=None):
@@ -44,12 +46,11 @@ class Mcts(object):
         self.temperature = temperature
         if len(action_idx_list) > 0:
             if not self.root_node.edges:
+                Mcts.te()
                 self.expand_and_evaluate()
-
+                Mcts.te("expand and evaluate")
             for action_idx in action_idx_list:
                 self.root_node = self.root_node.edges[action_idx].node
-            self.root_node.parent_edge = None
-            self.root_node.parent_node = None
         if self.root_node.edges is not None:
             # visits = []
             # for edge in self.root_node.edges:
@@ -58,34 +59,37 @@ class Mcts(object):
             # visits = visits / visits.sum() * -1.
             # visits -= visits.min()
             # noise_probs = np.random.dirichlet(visits, 1)[0]
-
+            Mcts.te()
             noise_probs = np.random.dirichlet([1] * len(self.root_node.edges), 1)[0]
-
+            Mcts.te("dirichlet random")
             for i, edge in enumerate(self.root_node.edges):
                 edge.add_noise(noise_probs[i])
 
         for i in range(self.max_simulation):
             self.log("mcts simulate %d " % i)
-
+            Mcts.te()
             self.simulate()
+            Mcts.te("simulate")
 
         action_probs = np.array(
             [edge.get_action_probs(self.root_node.edges, self.temperature) for edge in self.root_node.edges])
         self.log("MCTS root edges")
-
+        Mcts.te()
         for i, edge in enumerate(self.root_node.edges):
             self.log("%d edge score! N: %d, P: %f, total_value: %f, mean_value: %f -> %s" % (
                 i, edge.visit_count, edge.action_prob, edge.total_action_value, edge.mean_action_value,
                 str(edge.action)))
-
+        Mcts.te("edges print")
+        Mcts.te()
         if (action_probs == 0).all():
-
+            Mcts.te()
             action_probs = np.array([1. / len(action_probs)] * len(action_probs))
-
+            Mcts.te("make empty action prob")
         else:
-
+            Mcts.te()
             action_probs = action_probs / action_probs.sum()
-
+            Mcts.te("make np action prob")
+        Mcts.te("make action prob dist")
         self.log("action probs!")
         self.log(action_probs)
 
@@ -96,54 +100,59 @@ class Mcts(object):
         i = 0
         while not is_leaf_node:
             self.log("mcts select %d" % i)
-
+            Mcts.te()
             is_leaf_node = self.select()
-
+            Mcts.te("select!!")
             if is_leaf_node == 2:
+                Mcts.te()
                 self.backup(-1)
-
+                Mcts.te("select backup")
                 self.init_state()
                 return
             i += 1
-
+        Mcts.te()
         state_value = self.expand_and_evaluate()
-
+        Mcts.te("expand and evaluate in simulate")
+        Mcts.te()
         self.backup(state_value)
+        Mcts.te("backup in simulate")
 
     def choice_edge_idx(self, select_scores):
         if (select_scores == 0).all():
             edge_idx = np.random.choice(len(select_scores), 1)[0]
         else:
-
+            Mcts.te()
             arg_max_list = np.argwhere(select_scores == np.amax(select_scores)).flatten()
-
+            Mcts.te("get arg max list")
             if len(arg_max_list) > 1:
                 edge_idx = np.random.choice(arg_max_list, 1)[0]
             else:
-
+                Mcts.te()
                 edge_idx = select_scores.argmax()
-
+                Mcts.te("choice edge idx argmax")
         return edge_idx
 
     def choice_no_visited_edge_idx(self, skip_idx=None):
         no_visited_idx_list = []
-
+        Mcts.te()
         for i, edge in enumerate(self.current_node.edges):
             if edge.visit_count == 0:
                 no_visited_idx_list.append(i)
-
+        Mcts.te("get no visited idx")
         if len(no_visited_idx_list) == 0:
             return None
         if skip_idx is None:
-
+            Mcts.te()
             edge_idx = np.random.choice(no_visited_idx_list, 1)[0]
-
+            Mcts.te("random no visited1")
         else:
             if len(no_visited_idx_list) == 1:
                 return None
             edge_idx = skip_idx
             while edge_idx == skip_idx:
+                Mcts.te()
                 edge_idx = np.random.choice(no_visited_idx_list, 1)[0]
+                Mcts.te("random no visited2")
 
         return edge_idx
 
@@ -159,13 +168,14 @@ class Mcts(object):
         if edge_idx is None:
             select_scores = np.array(
                 [edge.get_select_score(self.current_node.edges, self.c_puct) for edge in self.current_node.edges])
-
+            Mcts.te()
             edge_idx = self.choice_edge_idx(select_scores)
-
+            Mcts.te("choice edge idx")
             self.log(select_scores)
 
+        Mcts.te()
         is_repeat = self.env.check_repeat(self.current_node.edges[edge_idx].action, self.action_history)
-
+        Mcts.te("check repeat")
         if is_repeat:
             if len(self.current_node.edges) == 1:
                 return 2
@@ -178,10 +188,11 @@ class Mcts(object):
                     tmp_edge_idx = self.choice_edge_idx(select_scores)
                 edge_idx = tmp_edge_idx
 
+        Mcts.te()
         self.selected_edges.append(self.current_node.edges[edge_idx])
         self.action_history.append(self.current_node.edges[edge_idx].action)
         self.state_history.append(self.current_node.edges[edge_idx].node.state)
-
+        Mcts.te("append history and edge")
         self.current_node = self.current_node.edges[edge_idx].node
         # self.env.print_env(state=self.current_node.state)
 
@@ -189,29 +200,29 @@ class Mcts(object):
 
     def expand_and_evaluate(self):
         self.log("Expand and Evaluate!")
-
+        Mcts.te()
         if self.env.is_over(self.current_node.state):
             self.log("MCTS Game Over")
-
+            Mcts.te("is_over")
             return self.loser_reward
-
+        Mcts.te("is_over")
         # todo :pass액션 추가 ( 둘다 pass할경우 점수계산으로
-
+        Mcts.te()
         action_probs, state_value = self.model.inference(
             common.convert_state_history_to_model_input(self.state_history[-(self.num_state_history + 1):],
                                                         self.num_state_history))
-
+        Mcts.te("inference")
         self.log("MCTS Value inference", state_value)
         # todo : <<빅장>> 혹은 외통수(장군)등 기능 구현?
         # todo: 비긴 상태 구현해서 적용하기(더 디테일하게)
-
+        Mcts.te()
         legal_actions = self.env.get_all_actions(self.current_node.state)
-
+        Mcts.te("get all actions")
         if not legal_actions:
             return self.loser_reward
-
+        Mcts.te()
         legal_action_probs = self.model.filter_action_probs(action_probs, legal_actions, self.env)
-
+        Mcts.te("filter action probs")
         if self.root_node is self.current_node:
             # add noise to prior probabilities
             # if (legal_action_probs == 0).all():
@@ -219,57 +230,42 @@ class Mcts(object):
             # else:
             # noise_probs = np.random.dirichlet(legal_action_probs, 1)[0]
             noise_probs = np.random.dirichlet([1] * len(legal_action_probs), 1)[0]
-
+            Mcts.te()
             legal_action_probs = ((1 - 0.25) * legal_action_probs + (noise_probs * 0.25))
-
+            Mcts.te("add legal action noise1")
+            Mcts.te()
             legal_action_probs = legal_action_probs / legal_action_probs.sum()
+            Mcts.te("add legal action noise2")
 
         self.current_node.edges = []
-        best_reward = 0
         for i, action_prob in enumerate(legal_action_probs):
+            Mcts.te()
             next_state, info = self.env.simulate(self.current_node.state, legal_actions[i])
-            if info["reward"] > best_reward:
-                best_reward = info["reward"]
-            self.current_node.edges.append(
-                Edge(self.current_node, action_prob, next_state, legal_actions[i], info["reward"]))
-
-        # update reward
-        tmp_node = self.current_node
-        i = 0
-        while tmp_node is not self.root_node:
-            if i > 0:
-                best_reward = 0
-                for edge in tmp_node.edges:
-                    if edge.reward > best_reward:
-                        best_reward = edge.reward
-            if tmp_node.best_reward == best_reward:
-                break
-            diff_reward = best_reward - tmp_node.best_reward
-            tmp_node.parent_edge.reward -= diff_reward
-            tmp_node = tmp_node.parent_node
-            i += 1
-
-        # reward = -self.current_node.parent_edge.reward if self.current_node.parent_edge else 0
-        #
-        # state_value = 0.5 * state_value + 0.5 * reward
-
+            Mcts.te("simulate")
+            self.current_node.edges.append(Edge(action_prob, next_state, legal_actions[i], info["reward"]))
+        Mcts.te()
+        reward = -self.current_node.parent_edge.reward if self.current_node.parent_edge else 0
+        Mcts.te("reward calc")
+        Mcts.te()
+        state_value = 0.5 * state_value + reward
+        Mcts.te("value calc")
         self.log("MCTS state value + reward", state_value)
         return state_value
 
     def backup(self, state_value):
         self.log("MCTS Backup")
-
+        Mcts.te()
         self.selected_edges.reverse()
-
+        Mcts.te("edge reverse")
         for i, edge in enumerate(self.selected_edges):
             if i % 2 == 0:
-
+                Mcts.te()
                 edge.update(-state_value)
-
+                Mcts.te("edge update")
             else:
-
+                Mcts.te()
                 edge.update(state_value)
-
+                Mcts.te("edge update")
         self.init_state()
 
     def init_state(self):
@@ -280,9 +276,9 @@ class Mcts(object):
 
     def print_tree(self):
         self.log("========== mcts tree trace ==========")
-
+        Mcts.te()
         self.print_row([self.root_node])
-
+        Mcts.te("print row")
         self.log("=====================================")
 
     def print_row(self, nodes, row_idx=0):
@@ -299,16 +295,14 @@ class Mcts(object):
 
 
 class Node(object):
-    def __init__(self, state, parent_edge=None, parent_node=None):
+    def __init__(self, state, parent_edge=None):
         self.state = state
         self.edges = []
         self.parent_edge = parent_edge
-        self.parent_node = parent_node
-        self.best_reward = .0
 
 
 class Edge(object):
-    def __init__(self, parent_node, action_prob, state, action, reward):
+    def __init__(self, action_prob, state, action, reward):
         # N
         self.visit_count = .0
         # W
@@ -319,11 +313,12 @@ class Edge(object):
         self.action_prob = action_prob
         self.action = action
         self.reward = reward
-        self.node = Node(state, self, parent_node)
+        self.node = Node(state, self)
 
     def add_noise(self, noice_prob):
-
+        Mcts.te()
         self.action_prob = (0.75 * self.action_prob) + (0.25 * noice_prob)
+        Mcts.te("add_noise")
 
     def update(self, state_value):
         self.visit_count += 1.
@@ -332,20 +327,18 @@ class Edge(object):
 
     def get_select_score(self, edges, c_puct):
         # todo : what is b?? other acitions visit count?? check!!
-
+        Mcts.te()
         total_other_edge_visit_count = .0
         for edge in edges:
             total_other_edge_visit_count += edge.visit_count
         U = c_puct * self.action_prob * (math.sqrt(total_other_edge_visit_count) / (1. + self.visit_count))
-        R = 0.8 * self.reward
-        result = self.mean_action_value + U + R
-        # result = self.reward
-
+        result = self.mean_action_value + U
+        Mcts.te("get select score")
         return result
 
     def get_action_probs(self, edges, temperature):
         # todo : what is b?? other acitions visit count?? check!!
-
+        Mcts.te()
         total_other_edge_visit_count = .0
         for edge in edges:
             if temperature == 0:
@@ -357,4 +350,5 @@ class Edge(object):
         else:
             result = pow(self.visit_count, 1. / temperature) / total_other_edge_visit_count
 
+        Mcts.te("get action probs")
         return result
