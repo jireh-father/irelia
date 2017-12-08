@@ -45,7 +45,7 @@ def set_flags():
     tf.app.flags.DEFINE_string('model_file_name', "model", "model name to save")
     tf.app.flags.DEFINE_integer('max_step', 60, "max step in a episode")
     tf.app.flags.DEFINE_integer('max_episode', 1000000, "max episode")
-    tf.app.flags.DEFINE_integer('max_simulation', 50, "max simulation count in a mcts search")
+    tf.app.flags.DEFINE_integer('max_simulation', 100, "max simulation count in a mcts search")
     tf.app.flags.DEFINE_integer('exploration_step', 20, "exploration step")
     tf.app.flags.DEFINE_integer('episode_interval_to_train', 3, "episode interval to train model")
     tf.app.flags.DEFINE_integer('epoch', 10, "epoch")
