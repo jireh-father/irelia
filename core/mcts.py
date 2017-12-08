@@ -43,10 +43,9 @@ class Mcts(object):
     def search(self, temperature=.0, action_idx_list=[]):
         self.temperature = temperature
         if len(action_idx_list) > 0:
-            if not self.root_node.edges:
-                self.expand_and_evaluate()
-
             for action_idx in action_idx_list:
+                if not self.root_node.edges:
+                    self.expand_and_evaluate()
                 self.root_node = self.root_node.edges[action_idx].node
             self.root_node.parent_edge = None
             self.root_node.parent_node = None
@@ -232,11 +231,10 @@ class Mcts(object):
                 best_reward = info["reward"]
             self.current_node.edges.append(
                 Edge(self.current_node, action_prob, next_state, legal_actions[i], info["reward"]))
-
         # update reward
         tmp_node = self.current_node
         i = 0
-        while tmp_node is not self.root_node:
+        while tmp_node.parent_node is not None:
             if i > 0:
                 best_reward = 0
                 for edge in tmp_node.edges:
@@ -245,6 +243,7 @@ class Mcts(object):
             if tmp_node.best_reward == best_reward:
                 break
             diff_reward = best_reward - tmp_node.best_reward
+
             tmp_node.parent_edge.reward -= diff_reward
             tmp_node = tmp_node.parent_node
             i += 1
