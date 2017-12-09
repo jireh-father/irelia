@@ -2,6 +2,7 @@ class Greedy(object):
     def __init__(self, env):
         self.env = env
         self.root_node = None
+        self.record = open("greedy_history", mode="w+")
         pass
 
     def search(self, state, action_idx=None):
@@ -14,6 +15,7 @@ class Greedy(object):
                 current_node = stack.pop()
                 if not current_node.extended:
                     print(i)
+                    self.record.write(str(i))
                     i += 1
                     legal_actions = self.env.get_all_actions(current_node.state)
                     for legal_action in legal_actions:
@@ -27,7 +29,7 @@ class Greedy(object):
 
                 for child_node in current_node.child_nodes:
                     stack.append(child_node)
-
+            self.record.close()
         if action_idx:
             self.root_node = self.root_node.child_nodes[action_idx]
 
