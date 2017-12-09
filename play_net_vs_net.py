@@ -11,7 +11,7 @@ common.set_flags()
 common.make_dirs(os.path.join(FLAGS.save_dir, "dataset_ready"))
 
 env = Game.make("KoreanChess-v1",
-                {"use_check": False, "limit_step": FLAGS.max_step, "use_color_print": True,
+                {"use_check": False, "limit_step": FLAGS.max_step, "use_color_print": FLAGS.use_color_print,
                  "interval": 1})
 
 config = tf.ConfigProto()
