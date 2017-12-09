@@ -41,8 +41,8 @@ while True:
 
     log("load dataset %d files" % len(files))
 
-
-    # common.restore_model(FLAGS.save_dir, "best_model.ckpt", saver, sess, restore_pending=True)
+    if FLAGS.restore_model_path:
+        common.restore_model(FLAGS.restore_model_path, saver, sess, restore_pending=False)
 
     for epoch in range(FLAGS.epoch):
         print("epoch %d" % epoch)

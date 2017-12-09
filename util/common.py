@@ -64,6 +64,7 @@ def set_flags():
     tf.app.flags.DEFINE_boolean('reuse_mcts', True, "reuse mcts")
     tf.app.flags.DEFINE_boolean('backup_dataset', False, "backup_dataset")
     tf.app.flags.DEFINE_string('dataset_dir', None, "dataset_dir")
+    tf.app.flags.DEFINE_string('restore_model_path', None, "restore model payh")
 
     ######################
     # Optimization Flags #
