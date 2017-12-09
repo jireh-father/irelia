@@ -13,23 +13,22 @@ class Greedy(object):
             stack = [self.root_node]
             while stack:
                 current_node = stack.pop()
-                if not current_node.extended:
-                    print(i)
-                    self.record.write(str(i) + "\n")
-                    i += 1
-                    legal_actions = self.env.get_all_actions(current_node.state)
-                    for legal_action in legal_actions:
-                        if current_node.parent_node and current_node.parent_node.parent_node and current_node.parent_node.parent_node.action == legal_action:
-                            continue
+                print(i)
+                self.record.write(str(i) + "\n")
+                i += 1
+                legal_actions = self.env.get_all_actions(current_node.state)
+                for legal_action in legal_actions:
+                    if current_node.parent_node and current_node.parent_node.parent_node and current_node.parent_node.parent_node.action == legal_action:
+                        continue
 
-                        next_state, info = self.env.simulate(state, legal_action, True)
+                    next_state, info = self.env.simulate(state, legal_action, True)
 
-                        if info["is_game_over"]:
-                            current_node.update(current_node.turn)
-                        else:
-                            current_node.child_nodes.append(
-                                Node(next_state, 'r' if self.env.current_turn == 'b' else 'b', current_node,
-                                     legal_action))
+                    if info["is_game_over"]:
+                        current_node.update(current_node.turn)
+                    else:
+                        current_node.child_nodes.append(
+                            Node(next_state, 'r' if self.env.current_turn == 'b' else 'b', current_node,
+                                 legal_action))
 
                 for child_node in current_node.child_nodes:
                     stack.append(child_node)
