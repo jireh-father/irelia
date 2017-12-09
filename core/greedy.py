@@ -15,7 +15,7 @@ class Greedy(object):
                 current_node = stack.pop()
                 if not current_node.extended:
                     print(i)
-                    self.record.write(str(i))
+                    self.record.write(str(i)+"\n")
                     i += 1
                     legal_actions = self.env.get_all_actions(current_node.state)
                     for legal_action in legal_actions:
