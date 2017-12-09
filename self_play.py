@@ -41,7 +41,8 @@ while True:
         info, state_history, mcts_history = play.self_play(env, model, FLAGS.max_simulation, FLAGS.max_step,
                                                            FLAGS.c_puct, FLAGS.exploration_step, FLAGS.reuse_mcts,
                                                            FLAGS.print_mcts_tree, FLAGS.num_state_history,
-                                                           use_reward_mcts=FLAGS.use_reward_mcts)
+                                                           use_reward_mcts=FLAGS.use_reward_mcts,
+                                                           begin_temperature=FLAGS.begin_temperature)
 
         if info["winner"]:
             game_results[info["winner"]] += 1

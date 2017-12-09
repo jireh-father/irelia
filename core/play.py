@@ -5,17 +5,18 @@ from core.mcts_reward import Mcts as Mcts_reward
 
 
 def self_play(env, model, max_simulation, max_step, c_puct, exploration_step, reuse_mcts=True, print_mcts_tree=False,
-              num_state_history=7, print_mcts_search=True, use_reward_mcts =False):
+              num_state_history=7, print_mcts_search=True, use_reward_mcts=False, begin_temperature=1):
     state = env.reset()
     MctsClass = Mcts
     if use_reward_mcts:
         MctsClass = Mcts_reward
 
-    mcts = MctsClass(state, env, model, max_simulation=max_simulation, c_puct=c_puct, num_state_history=num_state_history,
-                print_mcts_search=print_mcts_search)
+    mcts = MctsClass(state, env, model, max_simulation=max_simulation, c_puct=c_puct,
+                     num_state_history=num_state_history,
+                     print_mcts_search=print_mcts_search)
     state_history = [state.tolist()]
     mcts_history = []
-    temperature = 1
+    temperature = begin_temperature
     info = None
     step = 0
     old_action_idx = None
