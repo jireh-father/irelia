@@ -13,9 +13,12 @@ num_checkpoint_epochs = 1
 
 
 def restore_model(save_dir, model_file_name, saver, sess, restore_pending=False):
-    if not os.path.exists(save_dir):
-        os.makedirs(save_dir)
-    checkpoint_path = os.path.join(save_dir, model_file_name) + ".ckpt"
+    if model_file_name:
+        if not os.path.exists(save_dir):
+            os.makedirs(save_dir)
+        checkpoint_path = os.path.join(save_dir, model_file_name) + ".ckpt"
+    else:
+        checkpoint_path = save_dir
     while True:
         if os.path.exists(checkpoint_path + ".data-00000-of-00001"):
             print("restore success!!")

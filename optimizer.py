@@ -42,7 +42,7 @@ while True:
     log("load dataset %d files" % len(files))
 
     if FLAGS.restore_model_path:
-        common.restore_model(FLAGS.restore_model_path, saver, sess, restore_pending=False)
+        common.restore_model(FLAGS.restore_model_path, None, saver, sess, restore_pending=False)
 
     for epoch in range(FLAGS.epoch):
         print("epoch %d" % epoch)
@@ -50,7 +50,7 @@ while True:
         optimizer.train_model_epoch(model, ds, FLAGS.batch_size, writer)
         ds.close_dataset()
         if (epoch == 0 and common.num_checkpoint_epochs == 1) or (
-          epoch > 0 and epoch % common.num_checkpoint_epochs == 0):
+                        epoch > 0 and epoch % common.num_checkpoint_epochs == 0):
             now = common.now_date_str_nums()
             saver.save(sess, os.path.join(FLAGS.save_dir, "new_model_%s.ckpt" % now))
             log("save model")
@@ -59,4 +59,3 @@ while True:
         for file in files:
             os.rename(file, os.path.join(FLAGS.save_dir, "dataset_bak", os.path.basename(file)))
             # os.remove(file)
-
