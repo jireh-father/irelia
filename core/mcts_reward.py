@@ -72,10 +72,10 @@ class Mcts(object):
             [edge.get_action_probs(self.root_node.edges, self.temperature) for edge in self.root_node.edges])
         self.log("MCTS root edges")
 
-        # for i, edge in enumerate(self.root_node.edges):
-        #     self.log("%d edge score! N: %d, P: %f, total_value: %f, mean_value: %f -> %s" % (
-        #         i, edge.visit_count, edge.action_prob, edge.total_action_value, edge.mean_action_value,
-        #         str(edge.action)))
+        for i, edge in enumerate(self.root_node.edges):
+            self.log("%d edge score! N: %d, P: %f, total_value: %f, mean_value: %f -> %s" % (
+                i, edge.visit_count, edge.action_prob, edge.total_action_value, edge.mean_action_value,
+                str(edge.action)))
 
         if (action_probs == 0).all():
 
@@ -107,7 +107,7 @@ class Mcts(object):
 
         state_value = self.expand_and_evaluate()
 
-        # self.backup(state_value)
+        self.backup(state_value)
 
     def choice_edge_idx(self, select_scores):
         if (select_scores == 0).all():
@@ -199,8 +199,9 @@ class Mcts(object):
         # action_probs, state_value = self.model.inference(
         #     common.convert_state_history_to_model_input(self.state_history[-(self.num_state_history + 1):],
         #                                                 self.num_state_history))
-
-        # self.log("MCTS Value inference", state_value)
+        state_value = 1
+        action_probs = np.random.dirichlet([1] * 90, 1)[0]
+        self.log("MCTS Value inference", state_value)
         # todo : <<빅장>> 혹은 외통수(장군)등 기능 구현?
         # todo: 비긴 상태 구현해서 적용하기(더 디테일하게)
 
@@ -208,24 +209,23 @@ class Mcts(object):
 
         if not legal_actions:
             return self.loser_reward
+        legal_action_probs = self.model.filter_action_probs(action_probs, legal_actions, self.env)
 
-        # legal_action_probs = self.model.filter_action_probs(action_probs, legal_actions, self.env)
+        if self.root_node is self.current_node:
+            # add noise to prior probabilities
+            # if (legal_action_probs == 0).all():
+            #     noise_probs = legal_action_probs
+            # else:
+            # noise_probs = np.random.dirichlet(legal_action_probs, 1)[0]
+            noise_probs = np.random.dirichlet([1] * len(legal_action_probs), 1)[0]
 
-        # if self.root_node is self.current_node:
-        #     # add noise to prior probabilities
-        #     # if (legal_action_probs == 0).all():
-        #     #     noise_probs = legal_action_probs
-        #     # else:
-        #     # noise_probs = np.random.dirichlet(legal_action_probs, 1)[0]
-        #     noise_probs = np.random.dirichlet([1] * len(legal_action_probs), 1)[0]
-        #
-        #     legal_action_probs = ((1 - 0.25) * legal_action_probs + (noise_probs * 0.25))
-        #
-        #     legal_action_probs = legal_action_probs / legal_action_probs.sum()
+            legal_action_probs = ((1 - 0.25) * legal_action_probs + (noise_probs * 0.25))
+
+            legal_action_probs = legal_action_probs / legal_action_probs.sum()
 
         self.current_node.edges = []
         best_reward = 0
-        for i, action_prob in enumerate(legal_actions):
+        for i, action_prob in enumerate(legal_action_probs):
             next_state, info = self.env.simulate(self.current_node.state, legal_actions[i])
             if info["reward"] > best_reward:
                 best_reward = info["reward"]
@@ -252,8 +252,8 @@ class Mcts(object):
         #
         # state_value = 0.5 * state_value + 0.5 * reward
 
-        # self.log("MCTS state value + reward", state_value)
-        return best_reward
+        self.log("MCTS state value + reward", state_value)
+        return state_value
 
     def backup(self, state_value):
         self.log("MCTS Backup")
@@ -351,8 +351,6 @@ class Edge(object):
                 total_other_edge_visit_count += edge.visit_count
             else:
                 total_other_edge_visit_count += (pow(edge.visit_count, 1. / temperature))
-        if total_other_edge_visit_count == 0:
-            return self.visit_count
         if temperature == 0:
             result = self.visit_count / total_other_edge_visit_count
         else:
