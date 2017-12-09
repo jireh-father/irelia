@@ -64,6 +64,7 @@ def set_flags():
     tf.app.flags.DEFINE_boolean('print_mcts_search', False, "show mcts search")
     tf.app.flags.DEFINE_boolean('use_color_print', False, "use color in printing state")
     tf.app.flags.DEFINE_boolean('use_cache', False, "use cache")
+    tf.app.flags.DEFINE_boolean('use_reward_mcts', True, "use use_reward_mcts")
     tf.app.flags.DEFINE_boolean('reuse_mcts', True, "reuse mcts")
     tf.app.flags.DEFINE_boolean('backup_dataset', False, "backup_dataset")
     tf.app.flags.DEFINE_string('dataset_dir', None, "dataset_dir")

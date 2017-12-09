@@ -1,13 +1,17 @@
 from util import common
 import sys, traceback
 from core.mcts import Mcts
+from core.mcts_reward import Mcts as Mcts_reward
 
 
 def self_play(env, model, max_simulation, max_step, c_puct, exploration_step, reuse_mcts=True, print_mcts_tree=False,
-              num_state_history=7, print_mcts_search=True):
+              num_state_history=7, print_mcts_search=True, use_reward_mcts =False):
     state = env.reset()
+    MctsClass = Mcts
+    if use_reward_mcts:
+        MctsClass = Mcts_reward
 
-    mcts = Mcts(state, env, model, max_simulation=max_simulation, c_puct=c_puct, num_state_history=num_state_history,
+    mcts = MctsClass(state, env, model, max_simulation=max_simulation, c_puct=c_puct, num_state_history=num_state_history,
                 print_mcts_search=print_mcts_search)
     state_history = [state.tolist()]
     mcts_history = []
@@ -58,7 +62,7 @@ def self_play(env, model, max_simulation, max_step, c_puct, exploration_step, re
             continue
 
         if not reuse_mcts:
-            mcts = Mcts(state, env, model, max_simulation=max_simulation, c_puct=c_puct, init_root_edges=True)
+            mcts = MctsClass(state, env, model, max_simulation=max_simulation, c_puct=c_puct, init_root_edges=True)
         mcts_history.append(env.convert_action_probs_to_policy_probs(actions, action_probs))
 
         old_action_idx = action_idx
