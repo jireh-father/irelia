@@ -22,7 +22,10 @@ model = Model(sess, weight_decay=FLAGS.weight_decay, momentum=FLAGS.momentum, nu
 sess.run(tf.global_variables_initializer())
 saver = tf.train.Saver()
 
-common.restore_model(FLAGS.save_dir, FLAGS.model_file_name, saver, sess)
+if FLAGS.restore_model_path:
+    common.restore_model(FLAGS.restore_model_path, None, saver, sess)
+else:
+    common.restore_model(FLAGS.save_dir, FLAGS.model_file_name, saver, sess)
 info = play.self_play_only_net(env, model, FLAGS.max_step)
 
 print(info)
