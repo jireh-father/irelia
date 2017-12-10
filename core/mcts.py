@@ -24,7 +24,6 @@ class Mcts(object):
         self.c_puct = c_puct
         self.num_state_history = num_state_history
         self.print_mcts_search = print_mcts_search
-        self.start = 0
         if init_root_edges:
             self.expand_and_evaluate()
 
