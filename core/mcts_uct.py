@@ -21,12 +21,12 @@ class MctsUct(object):
                 selected = self.select()
             self.expand()
             current_node = self.current_node
-            value = self.simulation()
-            print("simulate value", value)
+            has_winner = self.simulation()
+            last_turn = self.current_node.turn
             self.current_node = current_node
             self.current_node.child_nodes = []
-            if value >= 0:
-                self.update(value)
+            if has_winner:
+                self.update(last_turn)
 
         for i, child_node in enumerate(self.root_node.child_nodes):
             print("child %d : visit - %f, wins - %f, turn - %s" % (
@@ -66,7 +66,7 @@ class MctsUct(object):
             legal_actions = self.env.get_all_actions(self.current_node.state)
             if not legal_actions:
                 print("lose turn no actions", self.current_node.turn)
-                return 0 if self.root_node.turn == self.current_node.turn else 1
+                return True
             action = legal_actions[np.random.choice(len(legal_actions), 1)[0]]
             next_state, info = self.env.simulate(self.current_node.state, action)
             next_node = Node(self.env, next_state, MctsUct.get_opponent_turn(self.current_node.turn),
@@ -77,21 +77,21 @@ class MctsUct(object):
             i += 1
             if self.max_simulation <= i:
                 print("draw!")
-                return -1
+                return False
         print("lose turn", self.current_node.turn)
-        return 0 if self.root_node.turn == self.current_node.turn else 1
+        return True
 
-    def update(self, value):
+    def update(self, last_turn):
         print("in update")
         node = self.current_node
         i = 0
         while node:
-            if node.turn == self.root_node.turn:
-                print("my turn value", value)
-                node.wins += value
+            if last_turn == self.root_node.turn:
+                print("my turn lose")
+                node.wins -= 1
             else:
-                print("your turn value", -value)
-                node.wins += -value
+                print("my turn win")
+                node.wins += 1
             node.visits += 1.
             i += 1
             node = node.parent_node
