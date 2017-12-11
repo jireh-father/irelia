@@ -1,6 +1,5 @@
 from math import sqrt, log
 import numpy as np
-import copy
 
 
 class MctsUct(object):
@@ -27,6 +26,11 @@ class MctsUct(object):
             self.current_node.child_nodes = []
             if value >= 0:
                 self.update(value)
+
+        for i, child_node in enumerate(self.root_node.child_nodes):
+            print("child %d : visit - %f, wins - %f, turn - %s" % (
+                i, float(child_node.visits), float(child_node.wins), child_node.turn), child_node.action)
+
         return sorted(self.root_node.child_nodes, key=lambda c: c.visits)[-1].action
 
     def select(self):
