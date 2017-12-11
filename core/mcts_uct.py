@@ -86,6 +86,8 @@ class MctsUct(object):
         node = self.current_node
         root_value = -1 if last_turn == self.root_node else 1
         opponent_value = -1 if root_value == 1 else 1
+        print("root_value", root_value)
+        print("opponent_value", opponent_value)
         i = 0
         while node:
             if self.root_node.turn == node.turn:
