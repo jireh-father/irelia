@@ -17,7 +17,7 @@ env = Game.make("KoreanChess-v1",
                 {"use_check": False, "limit_step": FLAGS.max_step, "use_color_print": FLAGS.use_color_print,
                  "use_cache": FLAGS.use_cache})
 
-mcts = MctsUct(env)
+mcts = MctsUct(env, FLAGS.max_simulation)
 episode = 0
 state = env.reset()
 while True:
