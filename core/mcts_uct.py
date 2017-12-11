@@ -22,6 +22,7 @@ class MctsUct(object):
             self.expand()
             current_node = self.current_node
             value = self.simulation()
+            print("simulate value", value)
             self.current_node = current_node
             self.current_node.child_nodes = []
             if value >= 0:
@@ -75,11 +76,14 @@ class MctsUct(object):
             is_game_over = info['is_game_over']
             i += 1
             if self.max_simulation <= i:
+                print("draw!")
                 return -1
             print("lose turn", self.current_node.turn)
         return 0 if self.root_node.turn == self.current_node.turn else 1
 
     def update(self, value):
+        print("in update")
+        print(node)
         node = self.current_node
         i = 0
         while node:
