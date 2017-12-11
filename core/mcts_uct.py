@@ -34,7 +34,7 @@ class MctsUct(object):
         return sorted(self.root_node.child_nodes, key=lambda c: c.visits)[-1].action
 
     def select(self):
-        if not self.current_node.child_nodes:
+        if not self.current_node.child_nodes or self.current_node.untried_actions:
             return False
 
         node = self.current_node.select(self.c_puct)
@@ -46,15 +46,17 @@ class MctsUct(object):
         return 'b' if turn == 'r' else 'r'
 
     def expand(self):
-        legal_actions = self.env.get_all_actions(self.current_node.state)
-        if not legal_actions:
+        if not self.current_node.untried_actions:
             return
-        action = legal_actions[np.random.choice(len(legal_actions), 1)[0]]
+        legal_actions = self.current_node.untried_actions
+        action_idx = np.random.choice(len(legal_actions), 1)[0]
+        action = legal_actions[action_idx]
         next_state, info = self.env.simulate(self.current_node.state, action)
         next_node = Node(self.env, next_state, MctsUct.get_opponent_turn(self.current_node.turn), self.current_node,
                          action)
         self.current_node.child_nodes.append(next_node)
         self.current_node = next_node
+        del self.current_node.untried_actions[action_idx]
 
     def simulation(self):
         is_game_over = False
@@ -90,7 +92,6 @@ class MctsUct(object):
 
 
 class Node:
-
     def __init__(self, env, state, turn, parent_node=None, action=None):
         self.action = action
         self.turn = turn
