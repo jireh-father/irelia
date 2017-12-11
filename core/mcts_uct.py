@@ -84,14 +84,17 @@ class MctsUct(object):
     def update(self, last_turn):
         print("in update")
         node = self.current_node
+        root_value = -1 if last_turn == self.root_node else 1
+        opponent_value = -1 if root_value == 1 else 1
         i = 0
         while node:
-            if last_turn == self.root_node.turn:
-                print("my turn lose")
-                node.wins -= 1
+            if self.root_node.turn == node.turn:
+                print("my turn update", root_value)
+                node.wins -= root_value
             else:
-                print("my turn win")
-                node.wins += 1
+                print("your turn update", opponent_value)
+                node.wins += opponent_value
+
             node.visits += 1.
             i += 1
             node = node.parent_node
