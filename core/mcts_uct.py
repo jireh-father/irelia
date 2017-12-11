@@ -78,12 +78,11 @@ class MctsUct(object):
             if self.max_simulation <= i:
                 print("draw!")
                 return -1
-            print("lose turn", self.current_node.turn)
+        print("lose turn", self.current_node.turn)
         return 0 if self.root_node.turn == self.current_node.turn else 1
 
     def update(self, value):
         print("in update")
-        print(node)
         node = self.current_node
         i = 0
         while node:
