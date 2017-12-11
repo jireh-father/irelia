@@ -55,8 +55,8 @@ class MctsUct(object):
         next_node = Node(self.env, next_state, MctsUct.get_opponent_turn(self.current_node.turn), self.current_node,
                          action)
         self.current_node.child_nodes.append(next_node)
-        self.current_node = next_node
         del self.current_node.untried_actions[action_idx]
+        self.current_node = next_node
 
     def simulation(self):
         is_game_over = False
