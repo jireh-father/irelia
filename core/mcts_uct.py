@@ -64,6 +64,7 @@ class MctsUct(object):
         while not is_game_over:
             legal_actions = self.env.get_all_actions(self.current_node.state)
             if not legal_actions:
+                print("lose turn no actions", self.current_node.turn)
                 return 0 if self.root_node.turn == self.current_node.turn else 1
             action = legal_actions[np.random.choice(len(legal_actions), 1)[0]]
             next_state, info = self.env.simulate(self.current_node.state, action)
@@ -75,6 +76,7 @@ class MctsUct(object):
             i += 1
             if self.max_simulation <= i:
                 return -1
+            print("lose turn", self.current_node.turn)
         return 0 if self.root_node.turn == self.current_node.turn else 1
 
     def update(self, value):
@@ -82,8 +84,10 @@ class MctsUct(object):
         i = 0
         while node:
             if node.turn == self.root_node.turn:
+                print("my turn value", value)
                 node.wins += value
             else:
+                print("your turn value", -value)
                 node.wins += -value
             node.visits += 1.
             i += 1
