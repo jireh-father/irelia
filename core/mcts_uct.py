@@ -12,7 +12,7 @@ class MctsUct(object):
         self.c_puct = c_puct
 
     def search(self, state, turn):
-        self.root_node = Node(state, turn)
+        self.root_node = Node(self.env, state, turn)
         self.current_node = self.root_node
         for i in range(self.num_iteration):
             print("iteration %d" % i)
@@ -51,7 +51,8 @@ class MctsUct(object):
             return
         action = legal_actions[np.random.choice(len(legal_actions), 1)[0]]
         next_state, info = self.env.simulate(self.current_node.state, action)
-        next_node = Node(next_state, MctsUct.get_opponent_turn(self.current_node.turn), self.current_node, action)
+        next_node = Node(self.env, next_state, MctsUct.get_opponent_turn(self.current_node.turn), self.current_node,
+                         action)
         self.current_node.child_nodes.append(next_node)
         self.current_node = next_node
 
@@ -64,7 +65,7 @@ class MctsUct(object):
                 return 0 if self.root_node.turn == self.current_node.turn else 1
             action = legal_actions[np.random.choice(len(legal_actions), 1)[0]]
             next_state, info = self.env.simulate(self.current_node.state, action)
-            next_node = Node(next_state, MctsUct.get_opponent_turn(self.current_node.turn),
+            next_node = Node(self.env, next_state, MctsUct.get_opponent_turn(self.current_node.turn),
                              self.current_node, action)
             self.current_node.child_nodes.append(next_node)
             self.current_node = next_node
@@ -89,11 +90,8 @@ class MctsUct(object):
 
 
 class Node:
-    """ A node in the game tree. Note wins is always from the viewpoint of playerJustMoved.
-        Crashes if state not specified.
-    """
 
-    def __init__(self, state, turn, parent_node=None, action=None):
+    def __init__(self, env, state, turn, parent_node=None, action=None):
         self.action = action
         self.turn = turn
         self.parent_node = parent_node
@@ -101,12 +99,9 @@ class Node:
         self.wins = 0.
         self.visits = 0.
         self.state = state
+        self.untried_actions = env.get_all_actions(state)
 
     def select(self, c_puct):
-        """ Use the UCB1 formula to select a child node. Often a constant UCTK is applied so we have
-            lambda c: c.wins/c.visits + UCTK * sqrt(2*log(self.visits)/c.visits to vary the amount of
-            exploration versus exploitation.
-        """
         s = sorted(self.child_nodes, key=lambda c: c.wins / c.visits + sqrt(2 * log(self.visits) / c.visits))[-1]
         # s = sorted(self.child_nodes, key=lambda c: c.wins / c.visits + sqrt(c_puct) * sqrt(self.visits / c.visits))[-1]
         return s
