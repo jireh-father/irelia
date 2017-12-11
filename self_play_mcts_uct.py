@@ -18,12 +18,10 @@ env = Game.make("KoreanChess-v1",
                  "use_cache": FLAGS.use_cache})
 
 mcts = MctsUct(env, FLAGS.max_simulation)
-episode = 0
 state = env.reset()
 while True:
     """"""
     """self-play"""
-    log("self-play episode %d" % episode)
     action = mcts.search(state, env.current_turn)
 
     state, reward, done, info = env.step(action)
