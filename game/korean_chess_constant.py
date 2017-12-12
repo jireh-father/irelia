@@ -51,6 +51,7 @@ REWARD_LIST = {
 
 
 def get_score(state, turn):
+    print("test", state)
     score = 0
     for line in state:
         for piece_num in line:

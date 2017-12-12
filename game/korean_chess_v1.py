@@ -286,7 +286,7 @@ class KoreanChessV1:
         return u.decode_state(self.current_state, self.current_turn), reward, is_game_over, info
 
     def get_winner_by_point(self, state):
-        state = self.encode_state(state)
+        state, _ = self.encode_state(state)
         red_score = c.get_score(state, c.RED)
         blue_score = c.get_score(state, c.BLUE)
         if blue_score > red_score:
