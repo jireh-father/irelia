@@ -116,6 +116,6 @@ class Node:
         self.untried_actions = env.get_all_actions(state)
 
     def select(self, c_puct):
-        s = sorted(self.child_nodes, key=lambda c: c.wins / c.visits + sqrt(2 * log(self.visits) / c.visits))[-1]
-        # s = sorted(self.child_nodes, key=lambda c: c.wins / c.visits + sqrt(c_puct) * sqrt(self.visits / c.visits))[-1]
+        # s = sorted(self.child_nodes, key=lambda c: c.wins / c.visits + sqrt(2 * log(self.visits) / c.visits))[-1]
+        s = sorted(self.child_nodes, key=lambda c: c.wins / c.visits + c_puct * sqrt(log(self.visits) / c.visits))[-1]
         return s
