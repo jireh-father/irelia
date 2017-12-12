@@ -76,10 +76,11 @@ class MctsUct(object):
             i += 1
             if self.max_simulation <= i:
                 print("draw!")
-                winner = self.env.get_winner_by_point(self.current_node.state)
-                if not winner:
-                    return False
-                return 1 if winner == self.root_node.turn else -1
+                return False
+                # winner = self.env.get_winner_by_point(self.current_node.state)
+                # if not winner:
+                #     return False
+                # return 1 if winner == self.root_node.turn else -1
         print("lose turn", self.current_node.turn)
         return -1 if self.current_node.turn == self.root_node.turn else 1
 
