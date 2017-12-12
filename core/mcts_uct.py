@@ -21,12 +21,11 @@ class MctsUct(object):
                 selected = self.select()
             self.expand()
             current_node = self.current_node
-            has_winner = self.simulation()
-            last_turn = self.current_node.turn
+            root_value = self.simulation()
             self.current_node = current_node
             self.current_node.child_nodes = []
-            if has_winner:
-                self.update(last_turn)
+            if root_value is not False:
+                self.update(root_value)
 
         for i, child_node in enumerate(self.root_node.child_nodes):
             print("child %d : visit - %f, wins - %f, turn - %s" % (
@@ -66,7 +65,7 @@ class MctsUct(object):
             legal_actions = self.env.get_all_actions(self.current_node.state)
             if not legal_actions:
                 print("lose turn no actions", self.current_node.turn)
-                return True
+                return -1 if self.current_node.turn == self.root_node.turn else 1
             action = legal_actions[np.random.choice(len(legal_actions), 1)[0]]
             next_state, info = self.env.simulate(self.current_node.state, action)
             next_node = Node(self.env, next_state, MctsUct.get_opponent_turn(self.current_node.turn),
@@ -77,14 +76,14 @@ class MctsUct(object):
             i += 1
             if self.max_simulation <= i:
                 print("draw!")
-                return False
+                winner = self.env.get_winner_by_point(self.current_node.state)
+                if not winner:
+                    return False
+                return 1 if winner == self.root_node.turn else -1
         print("lose turn", self.current_node.turn)
-        return True
+        return -1 if self.current_node.turn == self.root_node.turn else 1
 
-    def update(self, last_turn):
-        print("in update", last_turn, self.root_node.turn)
-        node = self.current_node
-        root_value = -1 if last_turn == self.root_node.turn else 1
+    def update(self, root_value):
         opponent_value = -1 if root_value == 1 else 1
         print("root_value", root_value)
         print("opponent_value", opponent_value)
