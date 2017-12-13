@@ -24,7 +24,9 @@ class MctsUctReward(object):
             red_rewards, blue_rewards = self.simulation()
             self.current_node = current_node
             self.current_node.child_nodes = []
-            self.update(red_rewards, blue_rewards)
+
+            if red_rewards is not False:
+                self.update(red_rewards, blue_rewards)
 
         for i, child_node in enumerate(self.root_node.child_nodes):
             print("child %d : visit - %f, wins - %f, turn - %s" % (
@@ -79,7 +81,7 @@ class MctsUctReward(object):
             is_game_over = info['is_game_over']
             i += 1
             if self.max_simulation <= i:
-                break
+                return False, False
         print("last turn", self.current_node.turn)
         return red_rewards, blue_rewards
 
