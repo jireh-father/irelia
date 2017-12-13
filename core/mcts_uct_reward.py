@@ -82,6 +82,8 @@ class MctsUctReward(object):
             i += 1
             if self.max_simulation <= i:
                 return False, False
+        red_rewards /= (72. / 146 + 1)
+        blue_rewards /= (72. / 146 + 1)
         print("last turn", self.current_node.turn)
         return red_rewards, blue_rewards
 

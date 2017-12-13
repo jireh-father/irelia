@@ -19,7 +19,7 @@ state = env.reset()
 i = 0
 user_action_idx = -1
 
-mcts = MctsUct(env, FLAGS.max_simulation)
+mcts = MctsUct(env, FLAGS.max_simulation, FLAGS.max_step, FLAGS.c_puct)
 while True:
     if i % 2 == 0:
         from_x, from_y, to_x, to_y = user_input.get_user_input()
