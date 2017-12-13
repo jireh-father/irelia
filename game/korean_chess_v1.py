@@ -260,7 +260,10 @@ class KoreanChessV1:
 
         # decode and return state
         is_game_over = (done or is_draw or self.current_step >= self.limit_step)
-        reward = (float(reward) / c.REWARD_LIST[c.KING] * self.max_reward)
+        if reward == c.REWARD_LIST[c.KING]:
+            reward = 1
+        else:
+            reward = float(reward) / (c.REWARD_LIST[c.KING] * 2)
 
         info = {"is_check": is_check,
                 "over_limit_step": self.current_step >= self.limit_step,
@@ -437,7 +440,8 @@ class KoreanChessV1:
                     reward = 1.
                     is_game_over = True
                 else:
-                    reward /= (c.REWARD_LIST[c.CAR] * 2)
+                    # reward /= (c.REWARD_LIST[c.CAR] * 2)
+                    reward /= (c.REWARD_LIST[c.KING] * 2)
 
             info = {"is_game_over": is_game_over, "reward": reward}
 
