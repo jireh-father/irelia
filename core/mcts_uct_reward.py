@@ -88,13 +88,15 @@ class MctsUctReward(object):
             red_rewards = 1.
         if blue_rewards > 1:
             blue_rewards = 1.
+        red_value = red_rewards - blue_rewards
+        blue_value = blue_rewards - red_rewards
         node = self.current_node
         i = 0
         while node:
             if 'b' == node.turn:
-                node.wins -= blue_rewards
+                node.wins += blue_value
             else:
-                node.wins -= red_rewards
+                node.wins += red_value
 
             node.visits += 1.
             i += 1
