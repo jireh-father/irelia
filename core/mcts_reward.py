@@ -337,8 +337,8 @@ class Edge(object):
             total_other_edge_visit_count += edge.visit_count
         U = c_puct * (math.sqrt(total_other_edge_visit_count) / (1. + self.visit_count))
         R = 0.5 * self.reward
-        result = U + R
-        # result = self.reward
+        # result = U + R
+        result = self.reward
 
         return result
 
