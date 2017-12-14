@@ -338,7 +338,7 @@ class Edge(object):
         for edge in edges:
             total_other_edge_visit_count += edge.visit_count
         U = c_puct * self.action_prob * (math.sqrt(total_other_edge_visit_count) / (1. + self.visit_count))
-        R = self.reward_ratio * sqrt(self.reward)
+        R = self.reward_ratio * self.reward
         result = self.mean_action_value + U + R
         # result = self.reward
 
