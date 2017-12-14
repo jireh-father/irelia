@@ -11,10 +11,12 @@ FLAGS = tf.app.flags.FLAGS
 
 common.set_flags()
 
-f = open(os.path.join(FLAGS.dataset_dir, "korean-chess-records-dataset.txt"))
+# f = open(os.path.join(FLAGS.dataset_dir, "korean-chess-records-dataset.txt"))
+f = open("records.txt")
 position = {"masangmasang": 0, "masangsangma": 1, "sangmasangma": 2, "sangmamasang": 3}
 ds = Dataset()
-ds.open(os.path.join(FLAGS.dataset_dir, "dataset.csv"))
+# ds.open(os.path.join(FLAGS.dataset_dir, "dataset.csv"))
+ds.open("dataset.csv")
 for n, line in enumerate(f):
     print(n)
     data = json.loads(line)
