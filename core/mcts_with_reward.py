@@ -3,13 +3,14 @@ import math
 import numpy as np
 from util import common
 import time
+from math import sqrt
 
 
 class Mcts(object):
     START = []
 
     def __init__(self, state, env, model, max_simulation=500, winner_reward=1., loser_reward=-1., c_puct=0.01,
-                 init_root_edges=False, num_state_history=7, print_mcts_search=True):
+                 init_root_edges=False, num_state_history=7, print_mcts_search=True, reward_ratio=1.):
         self.env = env
         self.model = model
         self.max_simulation = max_simulation
@@ -24,6 +25,7 @@ class Mcts(object):
         self.c_puct = c_puct
         self.num_state_history = num_state_history
         self.print_mcts_search = print_mcts_search
+        self.reward_ratio = reward_ratio
         if init_root_edges:
             self.expand_and_evaluate()
 
@@ -229,7 +231,7 @@ class Mcts(object):
             if info["reward"] > best_reward:
                 best_reward = info["reward"]
             self.current_node.edges.append(
-                Edge(self.current_node, action_prob, next_state, legal_actions[i], info["reward"]))
+                Edge(self.current_node, action_prob, next_state, legal_actions[i], info["reward"], self.reward_ratio))
         # update reward
         tmp_node = self.current_node
         i = 0
@@ -306,7 +308,7 @@ class Node(object):
 
 
 class Edge(object):
-    def __init__(self, parent_node, action_prob, state, action, reward):
+    def __init__(self, parent_node, action_prob, state, action, reward, reward_ratio):
         # N
         self.visit_count = .0
         # W
@@ -317,6 +319,7 @@ class Edge(object):
         self.action_prob = action_prob
         self.action = action
         self.reward = reward
+        self.reward_ratio = reward_ratio
         self.node = Node(state, self, parent_node)
 
     def add_noise(self, noice_prob):
@@ -335,7 +338,7 @@ class Edge(object):
         for edge in edges:
             total_other_edge_visit_count += edge.visit_count
         U = c_puct * self.action_prob * (math.sqrt(total_other_edge_visit_count) / (1. + self.visit_count))
-        R = 0.8 * self.reward
+        R = self.reward_ratio * sqrt(self.reward)
         result = self.mean_action_value + U + R
         # result = self.reward
 

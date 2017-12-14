@@ -46,9 +46,9 @@ def set_flags():
                                "save dir")
 
     tf.app.flags.DEFINE_string('model_file_name', "model", "model name to save")
-    tf.app.flags.DEFINE_integer('max_step', 60, "max step in a episode")
+    tf.app.flags.DEFINE_integer('max_step', 100, "max step in a episode")
     tf.app.flags.DEFINE_integer('max_episode', 1000000, "max episode")
-    tf.app.flags.DEFINE_integer('max_simulation', 100, "max simulation count in a mcts search")
+    tf.app.flags.DEFINE_integer('max_simulation', 1000, "max simulation count in a mcts search")
     tf.app.flags.DEFINE_integer('exploration_step', 20, "exploration step")
     tf.app.flags.DEFINE_integer('episode_interval_to_train', 3, "episode interval to train model")
     tf.app.flags.DEFINE_integer('epoch', 10, "epoch")
@@ -57,7 +57,7 @@ def set_flags():
     tf.app.flags.DEFINE_float('weight_decay', 0.0001, "weigh decay for weights l2 regularize")
     tf.app.flags.DEFINE_integer('batch_size', 64, "batch size")
     tf.app.flags.DEFINE_integer('shuffle_buffer_size', 100, "shuffle_buffer_size")
-    tf.app.flags.DEFINE_float('c_puct', 0.5, "a constant determining the level of exploration")
+    tf.app.flags.DEFINE_float('c_puct', 2, "a constant determining the level of exploration")
     tf.app.flags.DEFINE_float('momentum', 0.9, "momentum for optimizer")
     tf.app.flags.DEFINE_boolean('print_mcts_history', False, "show mcts search history")
     tf.app.flags.DEFINE_boolean('print_mcts_tree', False, "show mcts search tree")
@@ -68,6 +68,7 @@ def set_flags():
     tf.app.flags.DEFINE_boolean('reuse_mcts', True, "reuse mcts")
     tf.app.flags.DEFINE_boolean('backup_dataset', False, "backup_dataset")
     tf.app.flags.DEFINE_float('begin_temperature', 1., "begin_temperature")
+    tf.app.flags.DEFINE_float('reward_ratio', 1., "reward_ratio")
     tf.app.flags.DEFINE_string('dataset_dir', None, "dataset_dir")
     tf.app.flags.DEFINE_string('restore_model_path', None, "restore model payh")
 
