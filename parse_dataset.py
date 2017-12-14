@@ -2,6 +2,7 @@ import json
 import sys
 from util import common
 from game.game import Game
+from game import korean_chess_util
 import tensorflow as tf
 import numpy as np
 from util.dataset import Dataset
@@ -39,6 +40,8 @@ for n, line in enumerate(f):
     for i, action in enumerate(actions):
         action["from_x"] = action["x"]
         action["from_y"] = action["y"]
+        if i % 2 == 1:
+            [action] = korean_chess_util.reverse_actions([action])
         if i > 0:
             print(action)
             print(actions[i - 1])
@@ -48,8 +51,8 @@ for n, line in enumerate(f):
                 break
         turn = "r" if i % 2 == 0 else "b"
 
-        state[action["to_y"]][action["to_x"]] = state[action["y"]][action["x"]]
-        state[action["y"]][action["x"]] = 0
+        state[action["to_y"]][action["to_x"]] = state[action["from_y"]][action["from_x"]]
+        state[action["from_y"]][action["from_x"]] = 0
 
         print(i, action)
         first_state, reward, done, info = env.step(action)
@@ -60,8 +63,8 @@ for n, line in enumerate(f):
         policy_probs[action[0]] = 0.5
         policy_probs[action[1]] = 0.5
         mcts_history.append(policy_probs.tolist())
-    # sys.exit()
-    # del state_history[-1]
-    # ds.write(info, state_history, mcts_history)
+        # sys.exit()
+        del state_history[-1]
+        ds.write(info, state_history, mcts_history)
 print(error)
 ds.close()
