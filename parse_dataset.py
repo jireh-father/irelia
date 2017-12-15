@@ -30,25 +30,17 @@ for n, line in enumerate(f):
         sys.exit("invalid position!!")
 
     env = Game.make("KoreanChess-v1",
-                    {"position_type": [position[blue_position], position[red_position]]})
+                    {"position_type": [position[blue_position], position[red_position]], "limit_repeat": 6})
     first_state = env.reset()
     info = {"over_limit_step": False, "is_draw": False, "winner": winner}
     state, _ = env.encode_state(first_state)
     state_history = [first_state.tolist()]
-    print(actions)
     mcts_history = []
     for i, action in enumerate(actions):
         action["from_x"] = action["x"]
         action["from_y"] = action["y"]
         if i % 2 == 1:
             [action] = korean_chess_util.reverse_actions([action])
-        if i > 0:
-            print(action)
-            print(actions[i - 1])
-            if action == actions[i - 1]:
-                error += 1
-                print("same actions with before state")
-                break
         turn = "r" if i % 2 == 0 else "b"
 
         state[action["to_y"]][action["to_x"]] = state[action["from_y"]][action["from_x"]]
@@ -56,6 +48,8 @@ for n, line in enumerate(f):
 
         print(i, action)
         first_state, reward, done, info = env.step(action)
+        if info is False:
+            break
         state_history.append(env.decode_state(state, turn).tolist())
         policy_probs = np.array([.0] * 90)
 
@@ -64,7 +58,8 @@ for n, line in enumerate(f):
         policy_probs[action[1]] = 0.5
         mcts_history.append(policy_probs.tolist())
         # sys.exit()
-        del state_history[-1]
+    del state_history[-1]
+    if info:
         ds.write(info, state_history, mcts_history)
 print(error)
 ds.close()

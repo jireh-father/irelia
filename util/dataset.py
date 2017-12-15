@@ -40,6 +40,7 @@ class Dataset(object):
 
         values = {}
         win_value = 1
+        print(info)
         if info["over_limit_step"] or info["is_draw"]:
             win_value = info["score_diff"] / 73.5
         if info["winner"] == 'b':
