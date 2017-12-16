@@ -333,20 +333,25 @@ class Edge(object):
 
     def get_select_score(self, edges, c_puct):
         # todo : what is b?? other acitions visit count?? check!!
-
+        print("select score", self.action)
         total_other_edge_visit_count = .0
         for edge in edges:
             total_other_edge_visit_count += edge.visit_count
+        print("c_puct(%f) * self.action_prob(%f) (math.sqrt(total_visit(%f) / 1. + self.visit_count(%f)" % (
+            c_puct, self.action_prob, total_other_edge_visit_count, self.visit_count
+        ))
         U = c_puct * self.action_prob * (math.sqrt(total_other_edge_visit_count) / (1. + self.visit_count))
+        print("self.reward_ratio(%f) * self.reward(%f)" % (self.reward_ratio, self.reward))
         R = self.reward_ratio * self.reward
         result = self.mean_action_value + U + R
+        print("self.mean.value(%f) + U(%f) + R(%f)" % (self.mean_action_value, U, R))
         # result = self.reward
 
         return result
 
     def get_action_probs(self, edges, temperature):
         # todo : what is b?? other acitions visit count?? check!!
-
+        print("action prob", self.action)
         total_other_edge_visit_count = .0
         for edge in edges:
             if temperature == 0:
@@ -357,5 +362,6 @@ class Edge(object):
             result = self.visit_count / total_other_edge_visit_count
         else:
             result = pow(self.visit_count, 1. / temperature) / total_other_edge_visit_count
-
+        print("temperature %d, visit count %f, total visit %f" % (
+        temperature, self.visit_count, total_other_edge_visit_count))
         return result
