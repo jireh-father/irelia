@@ -185,6 +185,8 @@ def self_play_mcts_with_reward(env, model, max_simulation, max_step, c_puct, exp
             traceback.print_exc(file=sys.stdout)
             continue
 
+        mcts.print_line(action_probs)
+
         if not reuse_mcts:
             mcts = MctsWithReward(state, env, model, max_simulation=max_simulation, c_puct=c_puct, init_root_edges=True)
         mcts_history.append(env.convert_action_probs_to_policy_probs(actions, action_probs))
