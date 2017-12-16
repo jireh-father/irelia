@@ -79,17 +79,30 @@ class Mcts(object):
                 str(edge.action)))
 
         if (action_probs == 0).all():
-
             action_probs = np.array([1. / len(action_probs)] * len(action_probs))
-
         else:
-
             action_probs = action_probs / action_probs.sum()
 
         self.log("action probs!")
         self.log(action_probs)
 
         return action_probs
+
+    def print_line(self, action_idx):
+        edge = self.root_node.edges[action_idx]
+        node = edge.node
+        print("best_reward in node(%f), N : %f, W : %f, Q : %f, P : %f, R : %f" % (
+            self.root_node.best_reward, edge.visit_count, edge.total_action_value, edge.mean_action_value,
+            edge.action_prob,
+            edge.reward))
+        while len(node.edges) > 0:
+            edge_idx = np.random.choice(len(node.edges), 1)[0]
+            edge = node[edge_idx]
+            print("best_reward in node(%f), N : %f, W : %f, Q : %f, P : %f, R : %f" % (
+                node.best_reward, edge.visit_count, edge.total_action_value, edge.mean_action_value,
+                edge.action_prob,
+                edge.reward))
+            node = edge.node
 
     def simulate(self):
         is_leaf_node = False
@@ -363,5 +376,5 @@ class Edge(object):
         else:
             result = pow(self.visit_count, 1. / temperature) / total_other_edge_visit_count
         print("temperature %d, visit count %f, total visit %f" % (
-        temperature, self.visit_count, total_other_edge_visit_count))
+            temperature, self.visit_count, total_other_edge_visit_count))
         return result
