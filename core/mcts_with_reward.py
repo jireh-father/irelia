@@ -97,7 +97,7 @@ class Mcts(object):
             edge.reward))
         while len(node.edges) > 0:
             edge_idx = np.random.choice(len(node.edges), 1)[0]
-            edge = node[edge_idx]
+            edge = node.edges[edge_idx]
             print("best_reward in node(%f), N : %f, W : %f, Q : %f, P : %f, R : %f" % (
                 node.best_reward, edge.visit_count, edge.total_action_value, edge.mean_action_value,
                 edge.action_prob,
