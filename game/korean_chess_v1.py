@@ -18,7 +18,7 @@ if platform == "linux" or platform == "linux2":
     empty_str = "--"
     empty_str_kor = "------"
 elif platform == "darwin":
-    empty_str = "--"
+    empty_str = "-"
     empty_str_kor = "----"
 elif platform == "win32":
     empty_str = "--"

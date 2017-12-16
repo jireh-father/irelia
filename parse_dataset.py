@@ -57,9 +57,10 @@ for n, line in enumerate(f):
         policy_probs[action[0]] = 0.5
         policy_probs[action[1]] = 0.5
         mcts_history.append(policy_probs.tolist())
-        # sys.exit()
     del state_history[-1]
     if info:
         ds.write(info, state_history, mcts_history)
+        # ds.close()
+        # sys.exit()
 print(error)
 ds.close()

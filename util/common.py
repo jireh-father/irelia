@@ -162,8 +162,8 @@ def convert_state_history_to_model_input(state_history, num_state_history=7):
     red_history = []
     if len(state_history) <= num_state_history:
         for i in range(num_state_history - len(state_history) + 1):
-            blue_history.append([[0] * 9 for i in range(10)])
-            red_history.append([[0] * 9 for i in range(10)])
+            blue_history.append([[0] * 9 for _ in range(10)])
+            red_history.append([[0] * 9 for _ in range(10)])
     for state in state_history:
         blue_history.append(state[0])
         red_history.append(state[1])

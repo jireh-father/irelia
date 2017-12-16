@@ -34,7 +34,7 @@ sess = tf.Session(config=config)
 sess.run(tf.global_variables_initializer())
 ds = Dataset(sess)
 FLAGS.dataset_path = "dataset.csv"
-ds.make_dataset([FLAGS.dataset_path], FLAGS.batch_size)
+ds.make_dataset([FLAGS.dataset_path], FLAGS.batch_size, shuffle_buffer_size=0)
 
 ds.init_dataset()
 while True:
@@ -47,28 +47,30 @@ while True:
             state_data = np.transpose(state_data, [2, 0, 1])
             my_color = 'b' if state_data[16][0][0] == 1 else 'r'
             opponent_color = 'r' if my_color == 'b' else 'b'
-            color_matrix = {'b': np.array([[[1] * 9 for i in range(10)]]),
-                            'r': np.array([[[0] * 9 for i in range(10)]])}
+            color_matrix = {'b': np.array([[[1] * 9 for _ in range(10)]]),
+                            'r': np.array([[[0] * 9 for _ in range(10)]])}
             num_history = 8
-            for i in range(num_history):
-                if i % 2 == 0:
+            for j in range(num_history):
+                if j % 2 == 0:
                     color = color_matrix[opponent_color]
                 else:
                     color = color_matrix[my_color]
-                if (state_data[i] == 0).all():
+                if (state_data[j] == 0).all():
                     print("empty!!!")
                     continue
-                current_state = np.append(state_data[i:i + 1], state_data[i + num_history:i + num_history + 1],
+                current_state = np.append(state_data[j:j + 1], state_data[j + num_history:j + num_history + 1],
                                           axis=0) * 7
                 current_state = np.append(current_state, color, axis=0)
+                print(current_state)
+                print("start!")
                 env.print_env(state=current_state)
             legal_actions = env.get_all_actions(current_state)
             if legal_actions:
                 legal_action_probs = filter_action_probs(policy_data, legal_actions, env)
                 actions = list(zip(legal_actions, legal_action_probs))
                 actions = sorted(actions, key=lambda x: x[1], reverse=True)
-                for action in actions:
-                    print(action)
+                # for action in actions:
+                #     print(action)
             else:
                 print("no actions to do")
             print("value", value_data, my_color)
