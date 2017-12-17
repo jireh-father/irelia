@@ -222,9 +222,7 @@ class Mcts(object):
 
         if not legal_actions:
             return self.loser_reward
-
         legal_action_probs = self.model.filter_action_probs(action_probs, legal_actions, self.env)
-
         if self.root_node is self.current_node:
             # add noise to prior probabilities
             # if (legal_action_probs == 0).all():
@@ -236,7 +234,6 @@ class Mcts(object):
             legal_action_probs = ((1 - 0.25) * legal_action_probs + (noise_probs * 0.25))
 
             legal_action_probs = legal_action_probs / legal_action_probs.sum()
-
         self.current_node.edges = []
         best_reward = 0
         for i, action_prob in enumerate(legal_action_probs):

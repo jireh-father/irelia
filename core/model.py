@@ -80,7 +80,7 @@ class Model(object):
         policy_network = tf.reshape(policy_network, [-1, num_classes * 2], name="policy_reshape")
         policy_network = tf.layers.dense(inputs=policy_network, units=num_classes, name="policy_dense")
         tf.summary.image(tensor=tf.reshape(policy_network, [-1, 10, 9, 1]), max_outputs=100, name="policy")
-        self.policy_network = policy_network
+        self.policy_network = tf.nn.softmax(policy_network)
         self.value_network = value_network
 
         weights = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES)
@@ -93,7 +93,8 @@ class Model(object):
         # self.cost = tf.reduce_mean(tf.pow(self.value_label - value_network, 2)) - tf.reduce_mean(
         #     self.policy_label * tf.log(policy_network)) + (0.5 * l2_regularizer)
         value_loss = tf.reduce_mean(tf.pow(self.value_label - tf.reshape(value_network, [-1]), 2))
-        policy_loss = -tf.reduce_mean(tf.nn.softmax(self.policy_label) * tf.log(tf.nn.softmax(policy_network)))
+        # policy_loss = -tf.reduce_mean(tf.nn.softmax(self.policy_label) * tf.log(self.policy_network))
+        policy_loss = -tf.reduce_mean(self.policy_label * tf.log(self.policy_network))
         self.cost = value_loss + policy_loss + regularizer
 
         tf.summary.scalar('value_loss', value_loss)
