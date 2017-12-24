@@ -94,9 +94,9 @@ class Model(object):
         #     self.policy_label * tf.log(policy_network)) + (0.5 * l2_regularizer)
         value_loss = tf.reduce_mean(tf.pow(self.value_label - tf.reshape(value_network, [-1]), 2))
         # policy_loss = -tf.reduce_mean(tf.nn.softmax(self.policy_label) * tf.log(self.policy_network))
-        policy_loss = -tf.reduce_mean(self.policy_label * tf.log(self.policy_network))
+        # policy_loss = -tf.reduce_mean(tf.transpose(self.policy_label) * tf.log(self.policy_network))
+        policy_loss = -tf.reduce_mean(tf.reduce_sum(self.policy_label * tf.log(self.policy_network), axis=1))
         self.cost = value_loss + policy_loss + regularizer
-
         tf.summary.scalar('value_loss', value_loss)
         tf.summary.scalar('policy_loss', policy_loss)
         tf.summary.scalar('total_loss', self.cost)
