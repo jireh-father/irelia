@@ -1,4 +1,4 @@
 #!/bin/sh
-nohup python -u /home/irelia/train.py --max_simulation=500 --max_step=90 --episode_interval_to_train=30 --num_model_layers=20 --exploration_step=30 --epoch=10 --c_puct=0.1 --save_dir=/home/irelia/checkpoint0.1 > log0.1 &
-nohup python -u /home/irelia/train.py --max_simulation=500 --max_step=90 --episode_interval_to_train=30 --num_model_layers=20 --exploration_step=30 --epoch=10 --c_puct=0.01 --save_dir=/home/irelia/checkpoint0.01 > log0.01 &
-nohup python -u /home/irelia/train.py --max_simulation=500 --max_step=90 --episode_interval_to_train=30 --num_model_layers=20 --exploration_step=30 --epoch=10 --c_puct=0.001 --save_dir=/home/irelia/checkpoint0.001 > log0.001 &
+nohup python -u /home/irelia/self_play_with_reward_and_train.py --max_simulation=500 --save_dir=/home/irelia/checkpoint2 --print_mcts_search=False --print_mcts_tree=False --c_puct=2 --reward_ratio=30 --epoch=30 > l2 &
+nohup python -u /home/irelia/self_play_with_reward_and_train.py --max_simulation=500 --save_dir=/home/irelia/checkpoint1 --print_mcts_search=False --print_mcts_tree=False --c_puct=1 --reward_ratio=30 --epoch=30 > l1 &
+nohup python -u /home/irelia/self_play_with_reward_and_train.py --max_simulation=500 --save_dir=/home/irelia/checkpoint3 --print_mcts_search=False --print_mcts_tree=False --c_puct=3 --reward_ratio=30 --epoch=30 > l3 &
