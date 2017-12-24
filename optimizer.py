@@ -26,7 +26,6 @@ sess.run(tf.global_variables_initializer())
 saver = tf.train.Saver()
 
 ds = Dataset(sess)
-
 while True:
     if FLAGS.dataset_dir:
         dataset_dir = FLAGS.dataset_dir
@@ -46,8 +45,10 @@ while True:
 
     for epoch in range(FLAGS.epoch):
         print("epoch %d" % epoch)
+
         ds.make_dataset(files, FLAGS.batch_size, shuffle_buffer_size=FLAGS.shuffle_buffer_size)
         optimizer.train_model_epoch(model, ds, FLAGS.batch_size, writer)
+
         ds.close_dataset()
         if (epoch == 0 and common.num_checkpoint_epochs == 1) or (
                         epoch > 0 and epoch % common.num_checkpoint_epochs == 0):
