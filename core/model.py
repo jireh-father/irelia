@@ -171,7 +171,7 @@ class Model(object):
         legal_action_probs = []
         for legal_action in legal_actions:
             legal_action = env.encode_action(legal_action)
-            legal_action_probs.append(action_probs[legal_action[0]] + action_probs[legal_action[0]])
+            legal_action_probs.append(action_probs[legal_action[0]] + action_probs[legal_action[1]])
 
         legal_action_probs = np.array(legal_action_probs)
         if (legal_action_probs == 0).all():
