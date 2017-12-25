@@ -60,6 +60,7 @@ for n, line in enumerate(f):
     del state_history[-1]
     if info:
         ds.write(info, state_history, mcts_history)
+    break
         # ds.close()
         # sys.exit()
 print(error)

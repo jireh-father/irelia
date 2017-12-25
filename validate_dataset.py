@@ -51,6 +51,8 @@ while True:
                             'r': np.array([[[0] * 9 for _ in range(10)]])}
             num_history = 8
             for j in range(num_history):
+                if j < 7:
+                    continue
                 if j % 2 == 0:
                     color = color_matrix[opponent_color]
                 else:
@@ -61,8 +63,9 @@ while True:
                 current_state = np.append(state_data[j:j + 1], state_data[j + num_history:j + num_history + 1],
                                           axis=0) * 7
                 current_state = np.append(current_state, color, axis=0)
-                print(current_state)
+                # print(current_state)
                 print("start!")
+
                 env.print_env(state=current_state)
             legal_actions = env.get_all_actions(current_state)
             if legal_actions:
