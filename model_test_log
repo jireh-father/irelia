@@ -1,0 +1,85 @@
+# feature scaling test
+## 200 epoch
+- 0.1~0.7
+695867
+696315
+696075
+696223
+697029
+
+- 1~7 / 7
+706036
+701323
+70208
+70278
+702206
+
+- 0.4~1.0
+695979
+695641
+696154
+696012
+69607
+
+- 0.143,0.286...1.0
+697671
+69853
+696594
+69821
+697419
+
+- 0.70 ~ 1.0
+69548
+695531
+695265
+696716
+695664
+
+- 0.94 ~ 1.0
+694733
+695198
+695045
+694799
+695368
+
+- 0.97 ~ 1.0
+695183
+694621
+695185
+695387
+694911
+
+- 0.994 ~ 1.0
+694767
+695181
+695593
+694912
+694932
+
+# use or notuse bias
+- 0.4 ~ 1.0
+695435
+696293
+696253
+696684
+695328
+
+
+# test list
+feature scaling test -> effect middle, more good
+use or notuse bias -> no effect
+bm -> 0.7
+matrix output vs vector output -> vector is more more better
+value and policy network test -> similar~ more bad little
+last conv relu -> no effect
+reshape fc num_classes *2 -> effect little, more good
+no fc -> effect big, more shit
+fc 2layers -> effect litte, more bat
+regulizer -> similar , no overfit
+many layers
+resnet layers
+many state
+many values
+value decay
+with color channel
+with real one game data
