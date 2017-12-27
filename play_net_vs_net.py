@@ -12,7 +12,7 @@ common.make_dirs(os.path.join(FLAGS.save_dir, "dataset_ready"))
 
 env = Game.make("KoreanChess-v1",
                 {"use_check": False, "limit_step": FLAGS.max_step, "use_color_print": FLAGS.use_color_print,
-                 "interval": 1, "position_type": [2, 2]})
+                 "interval": 1, "position_type": [0, 2]})
 
 config = tf.ConfigProto()
 config.gpu_options.allow_growth = True
