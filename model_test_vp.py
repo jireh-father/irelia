@@ -111,7 +111,7 @@ for weight in weights:
 regularizer *= weight_decay
 
 value_loss = tf.reduce_mean(tf.square(value_label - tf.reshape(value_network, [-1])))
-
+# value_loss = tf.reduce_mean(tf.square(value_label - value_network))
 # policy_loss = -tf.reduce_mean(tf.nn.softmax(self.policy_label) * tf.log(self.policy_network))
 # policy_loss = -tf.reduce_mean(tf.transpose(self.policy_label) * tf.log(self.policy_network))
 policy_loss = -tf.reduce_mean(tf.reduce_sum(policy_label * tf.log(policy_network), axis=1))
@@ -144,7 +144,7 @@ SA = 0.6
 SANG = 0.5
 JJOL = 0.4
 
-state = np.array([[
+state = np.array([[[
     [-CAR, -MA, -SANG, -SA, 0, -SA, -MA, -SANG, -CAR],
     [0, 0, 0, 0, -KING, 0, 0, 0, 0],
     [0, -PHO, 0, 0, 0, 0, 0, -PHO, 0],
@@ -155,25 +155,62 @@ state = np.array([[
     [0, PHO, 0, 0, 0, 0, 0, PHO, 0],
     [0, 0, 0, 0, KING, 0, 0, 0, 0],
     [CAR, SANG, MA, SA, 0, SA, SANG, MA, CAR],
-]])
+]],
+    [[
+        [-CAR, -MA, -SANG, -SA, 0, -SA, -MA, -SANG, -CAR],
+        [0, 0, 0, 0, -KING, 0, 0, 0, 0],
+        [0, -PHO, 0, 0, 0, 0, 0, -PHO, 0],
+        [-JJOL, 0, -JJOL, 0, -JJOL, 0, -JJOL, 0, -JJOL],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [JJOL, 0, JJOL, 0, JJOL, 0, JJOL, 0, JJOL],
+        [0, PHO, 0, 0, 0, 0, 0, PHO, 0],
+        [0, 0, 0, 0, KING, 0, 0, 0, 0],
+        [CAR, SANG, MA, SA, 0, SA, SANG, MA, CAR],
+    ]],
+    [[
+        [-CAR, -MA, -SANG, -SA, 0, -SA, -MA, -SANG, -CAR],
+        [0, 0, 0, 0, -KING, 0, 0, 0, 0],
+        [0, -PHO, 0, 0, 0, 0, 0, -PHO, 0],
+        [-JJOL, 0, -JJOL, 0, -JJOL, 0, -JJOL, 0, -JJOL],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [JJOL, 0, JJOL, 0, JJOL, 0, JJOL, 0, JJOL],
+        [0, PHO, 0, 0, 0, 0, 0, PHO, 0],
+        [0, 0, 0, 0, KING, 0, 0, 0, 0],
+        [CAR, SANG, MA, SA, 0, SA, SANG, MA, CAR],
+    ]]
+])
 policy = np.array([0.] * 90)
 policy[35] = 0.5
 policy[34] = 0.5
-state = np.array([np.transpose(state, [1, 2, 0])])
-policy = np.array([policy])
-value = np.array([1])
+policy2 = np.array([0.] * 90)
+policy2[27] = 0.5
+policy2[28] = 0.5
+policy3 = np.array([0.] * 90)
+policy3[27] = 0.5
+policy3[36] = 0.5
+# state = np.array([np.transpose(state, [1, 2, 0])])
+state = np.array(np.transpose(state, [0, 2, 3, 1]))
+policy = np.array([policy, policy2, policy3])
+value = np.array([1., -1., 1.])
 # policy = np.array([np.transpose(np.reshape(policy, [1,10,9]), [1,2,0])])
 
 for i in range(epoch):
     print(i)
-    _, cost_result, policy_result, value_result = sess.run([train_op, cost, policy_network, value_network],
-                                                           feed_dict={inputs: state, policy_label: policy,
-                                                                      value_label: value})
+    _, cost_result, policy_result, value_result, value_loss_result, policy_loss_result = sess.run(
+        [train_op, cost, policy_network, value_network, value_loss, policy_loss],
+        feed_dict={inputs: state, policy_label: policy,
+                   value_label: value})
 
     print(policy_result)
     # policy_result = np.transpose(policy_result[0], [2, 0, 1])
     # policy_result = np.reshape(policy_result, [90])
     print(policy_result.shape)
     print(policy_result[0][35], policy_result[0][34])
+    print(policy_result[0][27], policy_result[0][28])
+    print(policy_result[0][27], policy_result[0][36])
     print(value_result)
     print(cost_result)
+    print(value_loss_result)
+    print(policy_loss_result)

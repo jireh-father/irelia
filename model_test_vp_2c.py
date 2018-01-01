@@ -48,7 +48,7 @@ config = tf.ConfigProto()
 config.gpu_options.allow_growth = True
 sess = tf.Session(config=config)
 
-input_shape = [10, 9, 1]
+input_shape = [10, 9, 2]
 num_layers = 1
 num_classes = 10 * 9
 weight_decay = 0.01
@@ -60,6 +60,7 @@ epoch = 200
 inputs = tf.placeholder(tf.float32, [None, input_shape[0], input_shape[1], input_shape[2]],
                         "inputs")
 policy_label = tf.placeholder(tf.float32, [None, num_classes], "policy_label")
+value_label = tf.placeholder(tf.float32, [None], "value_label")
 # policy_label = tf.placeholder(tf.float32, [None, input_shape[0], input_shape[1], input_shape[2]], "policy_label")
 
 net = tf.layers.conv2d(
@@ -75,22 +76,48 @@ net = tf.layers.conv2d(
 
 net = tf.nn.relu(net)
 
-net = tf.layers.conv2d(
-    inputs=net, filters=2, kernel_size=1, strides=1,
-    padding='SAME', use_bias=use_bias,
-    kernel_initializer=tf.variance_scaling_initializer())
 # net = tf.layers.conv2d(
 #     inputs=net, filters=1, kernel_size=1, strides=1,
 #     padding='SAME', use_bias=use_bias,
 #     kernel_initializer=tf.variance_scaling_initializer())
 
 # net = tf.nn.relu(net)
+value_network = tf.layers.conv2d(
+    inputs=net, filters=1, kernel_size=1, strides=1,
+    padding='SAME', use_bias=use_bias,
+    kernel_initializer=tf.variance_scaling_initializer())
+value_network = tf.reshape(value_network, [-1, num_classes], name="value_reshape")
+value_network = tf.layers.dense(inputs=value_network, units=64, name="value_dense1")
 
-policy_network = tf.reshape(net, [-1, num_classes * 2])
-policy_network = tf.layers.dense(inputs=policy_network, units=num_classes)
+value_network = tf.nn.relu(value_network, name="value_relu")
+
+value_network = tf.layers.dense(inputs=value_network, units=1, name="value_dense2")
+
+value_network = tf.nn.tanh(value_network, name="value_tanh")
+# value_net_inputs = tf.reshape(value_net_inputs, [-1], name="value_scalar_reshape")
+
+policy_network = tf.layers.conv2d(
+    inputs=net, filters=2, kernel_size=1, strides=1,
+    padding='SAME', use_bias=use_bias,
+    kernel_initializer=tf.variance_scaling_initializer())
+policy_network = tf.reshape(policy_network, [-1, num_classes * 2], name="policy_reshape")
+policy_network = tf.layers.dense(inputs=policy_network, units=num_classes, name="policy_dense")
 policy_network = tf.nn.softmax(policy_network)
-# policy_network = tf.nn.softmax(net, dim=1)
-cost = -tf.reduce_mean(tf.reduce_sum(policy_label * tf.log(policy_network), axis=1))
+
+weights = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES)
+regularizer = 0
+for weight in weights:
+    regularizer += tf.nn.l2_loss(weight)
+regularizer *= weight_decay
+
+value_loss = tf.reduce_mean(tf.square(value_label - tf.reshape(value_network, [-1])))
+# value_loss = tf.reduce_mean(tf.square(value_label - value_network))
+# policy_loss = -tf.reduce_mean(tf.nn.softmax(self.policy_label) * tf.log(self.policy_network))
+# policy_loss = -tf.reduce_mean(tf.transpose(self.policy_label) * tf.log(self.policy_network))
+policy_loss = -tf.reduce_mean(tf.reduce_sum(policy_label * tf.log(policy_network), axis=1))
+cost = value_loss + policy_loss + regularizer
+# cost = value_loss + policy_loss
+
 conf = {"optimizer": "sgd"}
 conf['adadelta_rho'] = 0.95
 conf['adagrad_initial_accumulator_value'] = 0.1
@@ -118,28 +145,73 @@ SANG = 0.5
 JJOL = 0.4
 
 state = np.array([[[
-    [-CAR, -MA, -SANG, -SA, 0, -SA, -MA, -SANG, -CAR],
-    [0, 0, 0, 0, -KING, 0, 0, 0, 0],
-    [0, -PHO, 0, 0, 0, 0, 0, -PHO, 0],
-    [-JJOL, 0, -JJOL, 0, -JJOL, 0, -JJOL, 0, -JJOL],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0, 0],
     [JJOL, 0, JJOL, 0, JJOL, 0, JJOL, 0, JJOL],
     [0, PHO, 0, 0, 0, 0, 0, PHO, 0],
     [0, 0, 0, 0, KING, 0, 0, 0, 0],
     [CAR, SANG, MA, SA, 0, SA, SANG, MA, CAR],
+],[
+    [-CAR, -MA, -SANG, -SA, 0, -SA, -MA, -SANG, -CAR],
+    [0, 0, 0, 0, -KING, 0, 0, 0, 0],
+    [0, -PHO, 0, 0, 0, 0, 0, -PHO, 0],
+    [-JJOL, 0, -JJOL, 0, -JJOL, 0, -JJOL, 0, -JJOL],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0],
 ]],
     [[
-        [-CAR, -MA, -SANG, -SA, 0, -SA, -MA, -SANG, -CAR],
-        [0, 0, 0, 0, -KING, 0, 0, 0, 0],
-        [0, -PHO, 0, 0, 0, 0, 0, -PHO, 0],
-        [-JJOL, 0, -JJOL, 0, -JJOL, 0, -JJOL, 0, -JJOL],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0, 0, 0, 0],
         [JJOL, 0, JJOL, 0, JJOL, 0, JJOL, 0, JJOL],
         [0, PHO, 0, 0, 0, 0, 0, PHO, 0],
         [0, 0, 0, 0, KING, 0, 0, 0, 0],
         [CAR, SANG, MA, SA, 0, SA, SANG, MA, CAR],
+    ], [
+        [-CAR, -MA, -SANG, -SA, 0, -SA, -MA, -SANG, -CAR],
+        [0, 0, 0, 0, -KING, 0, 0, 0, 0],
+        [0, -PHO, 0, 0, 0, 0, 0, -PHO, 0],
+        [-JJOL, 0, -JJOL, 0, -JJOL, 0, -JJOL, 0, -JJOL],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0],
+    ]],
+    [[
+        [0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [JJOL, 0, JJOL, 0, JJOL, 0, JJOL, 0, JJOL],
+        [0, PHO, 0, 0, 0, 0, 0, PHO, 0],
+        [0, 0, 0, 0, KING, 0, 0, 0, 0],
+        [CAR, SANG, MA, SA, 0, SA, SANG, MA, CAR],
+    ], [
+        [-CAR, -MA, -SANG, -SA, 0, -SA, -MA, -SANG, -CAR],
+        [0, 0, 0, 0, -KING, 0, 0, 0, 0],
+        [0, -PHO, 0, 0, 0, 0, 0, -PHO, 0],
+        [-JJOL, 0, -JJOL, 0, -JJOL, 0, -JJOL, 0, -JJOL],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0],
     ]]
 ])
 policy = np.array([0.] * 90)
@@ -148,20 +220,30 @@ policy[34] = 0.5
 policy2 = np.array([0.] * 90)
 policy2[27] = 0.5
 policy2[28] = 0.5
+policy3 = np.array([0.] * 90)
+policy3[27] = 0.5
+policy3[36] = 0.5
 # state = np.array([np.transpose(state, [1, 2, 0])])
 state = np.array(np.transpose(state, [0, 2, 3, 1]))
-policy = np.array([policy, policy2])
+policy = np.array([policy, policy2, policy3])
+value = np.array([1., -1., 1.])
 # policy = np.array([np.transpose(np.reshape(policy, [1,10,9]), [1,2,0])])
 
 for i in range(epoch):
     print(i)
-    _, cost_result, policy_result = sess.run([train_op, cost, policy_network],
-                                             feed_dict={inputs: state, policy_label: policy})
+    _, cost_result, policy_result, value_result, value_loss_result, policy_loss_result = sess.run(
+        [train_op, cost, policy_network, value_network, value_loss, policy_loss],
+        feed_dict={inputs: state, policy_label: policy,
+                   value_label: value})
 
     print(policy_result)
     # policy_result = np.transpose(policy_result[0], [2, 0, 1])
     # policy_result = np.reshape(policy_result, [90])
     print(policy_result.shape)
     print(policy_result[0][35], policy_result[0][34])
-    print(policy_result[0][27], policy_result[0][28])
+    print(policy_result[1][27], policy_result[1][28])
+    print(policy_result[2][27], policy_result[2][36])
+    print(value_result)
     print(cost_result)
+    print(value_loss_result)
+    print(policy_loss_result)
