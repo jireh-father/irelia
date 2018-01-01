@@ -21,6 +21,7 @@ class Dataset(object):
         self.dataset = None
         self.dataset_iterator = None
         self.num_samples = 0
+        self.get_next = None
 
     def open(self, file_path, mode="w"):
         if sys.version_info[0] == 3:
@@ -80,6 +81,7 @@ class Dataset(object):
 
         self.dataset_iterator = dataset.batch(batch_size).make_initializable_iterator()
         self.num_samples = Dataset.get_number_of_items(filenames)
+        self.get_next = self.dataset_iterator.get_next()
 
     @staticmethod
     def get_number_of_items(datset_files):
@@ -98,7 +100,7 @@ class Dataset(object):
         self.dataset_iterator = None
 
     def batch(self):
-        value_data, state_data, policy_data = self.sess.run(self.dataset_iterator.get_next())
+        value_data, state_data, policy_data = self.sess.run(self.get_next)
         state_data = np.array(list(map(lambda x: np.array(json.loads(x.decode("utf-8"))), state_data)))
         policy_data = np.array(list(map(lambda x: np.array(json.loads(x.decode("utf-8"))), policy_data)))
         value_data = np.array(list(map(lambda x: float(x.decode("utf-8")), value_data)))
