@@ -77,7 +77,7 @@ class Model(object):
 
         policy_network = self.conv2d_fixed_padding(inputs=network, filters=2, kernel_size=1, strides=1,
                                                    name="policy_conv")
-        policy_network = tf.reshape(policy_network, [-1, num_classes * 3], name="policy_reshape")
+        policy_network = tf.reshape(policy_network, [-1, num_classes * 2], name="policy_reshape")
         policy_network = tf.layers.dense(inputs=policy_network, units=num_classes*2, name="policy_dense")
         tf.summary.image(tensor=tf.reshape(policy_network, [-1, 10, 9, 1]), max_outputs=100, name="policy")
         self.policy_network = tf.nn.softmax(policy_network)
