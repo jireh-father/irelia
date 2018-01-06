@@ -51,13 +51,13 @@ for n, line in enumerate(f):
         if info is False:
             break
         state_history.append(env.decode_state(state, turn).tolist())
-        policy_probs = np.array([.0] * 180)
-        # policy_probs = np.array([.0] * 90)
+        # policy_probs = np.array([.0] * 180)
+        policy_probs = np.array([.0] * 90)
 
         action = env.encode_action(action)
         policy_probs[action[0]] = 0.5
-        # policy_probs[action[1]] = 0.5
-        policy_probs[action[1] + 90] = 0.5
+        policy_probs[action[1]] = 0.5
+        # policy_probs[action[1] + 90] = 0.5
         mcts_history.append(policy_probs.tolist())
         # break
     del state_history[-1]

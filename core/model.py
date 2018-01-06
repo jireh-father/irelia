@@ -96,7 +96,10 @@ class Model(object):
 
         # policy_loss = -tf.reduce_mean(tf.nn.softmax(self.policy_label) * tf.log(self.policy_network))
         # policy_loss = -tf.reduce_mean(tf.transpose(self.policy_label) * tf.log(self.policy_network))
-        policy_loss = -tf.reduce_mean(tf.reduce_sum(self.policy_label * tf.log(self.policy_network), axis=1))
+
+        policy_loss = tf.reduce_mean(
+            tf.nn.sigmoid_cross_entropy_with_logits(labels=self.policy_label, logits=policy_network))
+        # policy_loss = -tf.reduce_mean(tf.reduce_sum(self.policy_label * tf.log(self.policy_network), axis=1))
         self.cost = value_loss + policy_loss + regularizer
         tf.summary.scalar('value_loss', value_loss)
         tf.summary.scalar('policy_loss', policy_loss)

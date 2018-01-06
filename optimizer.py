@@ -2,7 +2,7 @@ from core import optimizer
 from util import common
 import tensorflow as tf
 import os
-from core.model_double_policy import Model
+from core.model import Model
 from util.dataset import Dataset
 import glob
 import time
