@@ -55,8 +55,10 @@ for n, line in enumerate(f):
         policy_probs = np.array([.0] * 90)
 
         action = env.encode_action(action)
-        policy_probs[action[0]] = 0.5
-        policy_probs[action[1]] = 0.5
+        # policy_probs[action[0]] = 0.5
+        # policy_probs[action[1]] = 0.5
+        policy_probs[action[0]] = 1.
+        policy_probs[action[1]] = 1.
         # policy_probs[action[1] + 90] = 0.5
         mcts_history.append(policy_probs.tolist())
         # break
