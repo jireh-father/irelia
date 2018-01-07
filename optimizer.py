@@ -3,7 +3,7 @@ from util import common
 import tensorflow as tf
 import os
 from core.model_two_policy import Model
-from util.dataset import Dataset
+from util.dataset2 import Dataset
 import glob
 import time
 from util.common import log
