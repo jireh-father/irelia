@@ -64,7 +64,7 @@ class Dataset(object):
 
     def make_dataset(self, filenames, batch_size, shuffle_buffer_size=100, num_dataset_parallel=4):
         def decode_line(line):
-            items = tf.decode_csv(line, [[""], [""], [""], [""]], field_delim=",")
+            items = tf.decode_csv(line, [[""], [""], [""]], field_delim=",")
             return items
 
         if len(filenames) > 1:
