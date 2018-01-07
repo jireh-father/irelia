@@ -23,17 +23,18 @@ nn =0
 for n, line in enumerate(f):
 
     print(n)
-    if position[red_position] == 2 and position[blue_position] == 0:
-        nn += 1
-    if nn == 10:
-        break
+
     data = json.loads(line)
     actions = data["records"]
     winner = data["winner"]
     red_position = data["red_position_type"]
     blue_position = data["blue_position_type"]
-    print(position[red_position], position[blue_position])
-    sys.exit()
+    if position[red_position] == 2 and position[blue_position] == 0:
+        nn += 1
+    else:
+        continue
+    # if nn == 10:
+    #     break
     if red_position not in position or blue_position not in position:
         sys.exit("invalid position!!")
 
