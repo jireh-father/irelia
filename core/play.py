@@ -87,11 +87,12 @@ def self_play_only_net(env, model, max_step):
         common.log("step: %d" % step)
         actions = env.get_all_actions()
         converted_state = common.convert_state_history_to_model_input(state_history[-8:])
-        policy, value = model.inference(converted_state)
+        policy, policy2, value = model.inference(converted_state)
         print("value %f" % value)
         print("policy", policy)
+        print("policy2", policy2)
 
-        action_probs = model.filter_action_probs(policy, actions, env)
+        action_probs = model.filter_action_probs(policy, policy2, actions, env)
         print("action probs!", action_probs)
 
         if len(actions) != len(action_probs):

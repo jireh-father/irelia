@@ -5,7 +5,7 @@ from game.game import Game
 from game import korean_chess_util
 import tensorflow as tf
 import numpy as np
-from util.dataset import Dataset
+from util.dataset2 import Dataset
 import os
 
 FLAGS = tf.app.flags.FLAGS
@@ -45,6 +45,7 @@ for n, line in enumerate(f):
     state, _ = env.encode_state(first_state)
     state_history = [first_state.tolist()]
     mcts_history = []
+    mcts_history2 = []
     for i, action in enumerate(actions):
         action["from_x"] = action["x"]
         action["from_y"] = action["y"]
@@ -60,20 +61,22 @@ for n, line in enumerate(f):
         if info is False:
             break
         state_history.append(env.decode_state(state, turn).tolist())
-        policy_probs = np.array([.0] * 180)
+        policy_probs = np.array([.0] * 90)
+        policy_probs2 = np.array([.0] * 90)
         # policy_probs = np.array([.0] * 90)
 
         action = env.encode_action(action)
         # policy_probs[action[0]] = 0.5
         # policy_probs[action[1]] = 0.5
         policy_probs[action[0]] = 1.
-        policy_probs[action[1] + 90] = 1.
+        policy_probs2[action[1]] = 1.
         # policy_probs[action[1] + 90] = 0.5
         mcts_history.append(policy_probs.tolist())
+        mcts_history2.append(policy_probs2.tolist())
         # break
     del state_history[-1]
     if info:
-        ds.write(info, state_history, mcts_history)
+        ds.write(info, state_history, mcts_history, mcts_history2)
     # break
         # ds.close()
         # sys.exit()

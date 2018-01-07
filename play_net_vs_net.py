@@ -2,7 +2,7 @@ from core import play
 import tensorflow as tf
 from util import common
 import os
-from core.model import Model
+from core.model_two_policy import Model
 from game.game import Game
 
 FLAGS = tf.app.flags.FLAGS

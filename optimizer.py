@@ -1,8 +1,8 @@
-from core import optimizer
+from core import optimizer2 as optimizer
 from util import common
 import tensorflow as tf
 import os
-from core.model import Model
+from core.model_two_policy import Model
 from util.dataset import Dataset
 import glob
 import time

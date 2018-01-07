@@ -35,7 +35,7 @@ class Dataset(object):
             self.file.close()
             self.csv_writer = None
 
-    def write(self, info, state_history, mcts_history, num_state_history=7):
+    def write(self, info, state_history, mcts_history, mcts_history2, num_state_history=7):
         if self.csv_writer is None:
             return False
 
@@ -60,11 +60,12 @@ class Dataset(object):
             history = state_history[start_idx:end_idx]
             new_state_history = common.convert_state_history_to_model_input(history, num_state_history)
             new_state_history = new_state_history.tolist()
-            self.csv_writer.writerow([value, json.dumps(new_state_history), json.dumps(mcts_history[i])])
+            self.csv_writer.writerow(
+                [value, json.dumps(new_state_history), json.dumps(mcts_history[i]), json.dumps(mcts_history2[i])])
 
     def make_dataset(self, filenames, batch_size, shuffle_buffer_size=100, num_dataset_parallel=4):
         def decode_line(line):
-            items = tf.decode_csv(line, [[""], [""], [""], [""]], field_delim=",")
+            items = tf.decode_csv(line, [[""], [""], [""]], field_delim=",")
             return items
 
         if len(filenames) > 1:
@@ -100,11 +101,12 @@ class Dataset(object):
         self.dataset_iterator = None
 
     def batch(self):
-        value_data, state_data, policy_data = self.sess.run(self.get_next)
+        value_data, state_data, policy_data, policy_data2 = self.sess.run(self.get_next)
         state_data = np.array(list(map(lambda x: np.array(json.loads(x.decode("utf-8"))), state_data)))
         policy_data = np.array(list(map(lambda x: np.array(json.loads(x.decode("utf-8"))), policy_data)))
+        policy_data2 = np.array(list(map(lambda x: np.array(json.loads(x.decode("utf-8"))), policy_data2)))
         value_data = np.array(list(map(lambda x: float(x.decode("utf-8")), value_data)))
-        return state_data, policy_data, value_data
+        return state_data, policy_data, policy_data2, value_data
 
     def init_dataset(self):
         self.sess.run(self.dataset_iterator.initializer)
