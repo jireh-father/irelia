@@ -80,7 +80,8 @@ class Model(object):
         policy_network = tf.reshape(policy_network, [-1, num_classes * 2], name="policy_reshape")
         policy_network = tf.layers.dense(inputs=policy_network, units=num_classes, name="policy_dense")
         tf.summary.image(tensor=tf.reshape(policy_network, [-1, 10, 9, 1]), max_outputs=100, name="policy")
-        self.policy_network = tf.nn.softmax(policy_network)
+        # self.policy_network = tf.nn.softmax(policy_network)
+        self.policy_network = tf.nn.sigmoid(policy_network)
         self.value_network = value_network
 
         weights = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES)
