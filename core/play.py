@@ -92,6 +92,7 @@ def self_play_only_net(env, model, max_step):
         print("policy", policy)
 
         action_probs = model.filter_action_probs(policy, actions, env)
+        print("action probs!", action_probs)
 
         if len(actions) != len(action_probs):
             print(len(actions), len(action_probs))
