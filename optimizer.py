@@ -25,8 +25,8 @@ writer = tf.summary.FileWriter(FLAGS.save_dir + '/summary', sess.graph)
 sess.run(tf.global_variables_initializer())
 saver = tf.train.Saver()
 FLAGS.dataset_dir = "./"
-FLAGS.num_model_layers = 1
-FLAGS.batch_size = 32
+FLAGS.num_model_layers = 20
+FLAGS.batch_size = 31
 ds = Dataset(sess)
 while True:
     if FLAGS.dataset_dir:

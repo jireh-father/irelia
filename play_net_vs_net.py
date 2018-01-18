@@ -14,8 +14,8 @@ env = Game.make("KoreanChess-v1",
                 {"use_check": False, "limit_step": FLAGS.max_step, "use_color_print": FLAGS.use_color_print,
                  "interval": 0, "position_type": [0, 2]})
 
-FLAGS.num_model_layers = 2
-FLAGS.restore_model_path = "./checkpoint/new_model_20180115005211.ckpt"
+FLAGS.num_model_layers = 20
+FLAGS.restore_model_path = "./checkpoint/new_model_20180118232921.ckpt"
 
 config = tf.ConfigProto()
 config.gpu_options.allow_growth = True

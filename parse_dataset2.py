@@ -23,7 +23,8 @@ nn = 0
 for n, line in enumerate(f):
 
     print(n)
-
+    if n == 1:
+        break
     data = json.loads(line)
     actions = data["records"]
     winner = data["winner"]
