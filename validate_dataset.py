@@ -1,15 +1,15 @@
-from util.dataset import Dataset
+from util.dataset2 import Dataset
 import tensorflow as tf
 from util import common
 import numpy as np
 from game.game import Game
 
 
-def filter_action_probs(action_probs, legal_actions, env):
+def filter_action_probs(action_probs, action_probs2, legal_actions, env):
     legal_action_probs = []
     for legal_action in legal_actions:
         legal_action = env.encode_action(legal_action)
-        legal_action_probs.append(action_probs[legal_action[0]] + action_probs[legal_action[0]])
+        legal_action_probs.append(action_probs[legal_action[0]] + action_probs2[legal_action[1]])
 
     legal_action_probs = np.array(legal_action_probs)
     if (legal_action_probs == 0).all():
@@ -39,10 +39,11 @@ ds.make_dataset([FLAGS.dataset_path], FLAGS.batch_size, shuffle_buffer_size=0)
 ds.init_dataset()
 while True:
     try:
-        train_batch_state, train_batch_policy, train_batch_value = ds.batch()
+        train_batch_state, train_batch_policy, train_batch_policy2, train_batch_value = ds.batch()
         for i in range(len(train_batch_state)):
             state_data = train_batch_state[i]
             policy_data = train_batch_policy[i]
+            policy_data2 = train_batch_policy2[i]
             value_data = train_batch_value[i]
             state_data = np.transpose(state_data, [2, 0, 1])
             my_color = 'b' if state_data[16][0][0] == 1 else 'r'
@@ -63,13 +64,14 @@ while True:
                 current_state = np.append(state_data[j:j + 1], state_data[j + num_history:j + num_history + 1],
                                           axis=0) * 7
                 current_state = np.append(current_state, color, axis=0)
-                print(current_state)
+                # print(current_state)
                 print("start!")
 
-                env.print_env(state=current_state)
+                # env.print_env(state=current_state)
+            env.print_env(state=current_state)
             legal_actions = env.get_all_actions(current_state)
             if legal_actions:
-                legal_action_probs = filter_action_probs(policy_data, legal_actions, env)
+                legal_action_probs = filter_action_probs(policy_data, policy_data2, legal_actions, env)
                 actions = list(zip(legal_actions, legal_action_probs))
                 actions = sorted(actions, key=lambda x: x[1], reverse=True)
                 # for action in actions:
@@ -77,6 +79,6 @@ while True:
             else:
                 print("no actions to do")
             print("value", value_data, my_color)
-        break
+        # break
     except tf.errors.OutOfRangeError:
         break

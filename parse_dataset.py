@@ -19,7 +19,8 @@ ds = Dataset()
 # ds.open(os.path.join(FLAGS.dataset_dir, "dataset.csv"))
 ds.open("dataset.csv")
 error = 0
-nn =0
+nn = 0
+su = {}
 for n, line in enumerate(f):
 
     print(n)
@@ -29,7 +30,9 @@ for n, line in enumerate(f):
     winner = data["winner"]
     red_position = data["red_position_type"]
     blue_position = data["blue_position_type"]
+    s = False
     if position[red_position] == 2 and position[blue_position] == 0:
+        s = True
         nn += 1
     else:
         continue
@@ -46,6 +49,13 @@ for n, line in enumerate(f):
     state_history = [first_state.tolist()]
     mcts_history = []
     for i, action in enumerate(actions):
+        # if s:
+        #     key = "%s_%s_%s_%s" % (action["x"], action["y"], action["to_x"], action["to_y"])
+        #     if key not in su:
+        #         su[key] = 1
+        #     else:
+        #         su[key] += 1
+        #     break
         action["from_x"] = action["x"]
         action["from_y"] = action["y"]
         if i % 2 == 1:
@@ -75,7 +85,11 @@ for n, line in enumerate(f):
     if info:
         ds.write(info, state_history, mcts_history)
     # break
-        # ds.close()
-        # sys.exit()
+    # ds.close()
+    # sys.exit()
 print(error)
 ds.close()
+
+print(su)
+import json
+print(json.dumps(su))

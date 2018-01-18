@@ -8,16 +8,14 @@ _BATCH_NORM_EPSILON = 1e-5
 
 
 class Model(object):
-    def __init__(self, sess, input_shape=[10, 9, 17], num_layers=20, num_classes=10 * 9, weight_decay=0.01,
+    def __init__(self, sess, input_shape=[10, 9, 3], num_layers=20, num_classes=10 * 9, weight_decay=0.01,
                  momentum=0.9, use_cache=False, conf=None):
         self.sess = sess
         self.is_training = tf.placeholder(tf.bool, shape=(), name="is_training")
         self.inputs = None
         self.policy_network = None
-        self.policy_network2 = None
         self.value_network = None
         self.policy_label = None
-        self.policy_label2 = None
         self.value_label = None
         self.learning_rate = tf.placeholder(tf.float32, shape=(), name="learning_rate")
         self.global_step = tf.Variable(0, trainable=False)
@@ -37,17 +35,16 @@ class Model(object):
         # if self.use_cache and cache_key in self.inference_cache:
         #     return self.inference_cache[cache_key][0], self.inference_cache[cache_key][1]
         input_state = state[np.newaxis, :]
-        policy, policy2, value = self.sess.run([self.policy_network, self.policy_network2, self.value_network],
-                                               feed_dict={self.inputs: input_state, self.is_training: False})
+        policy, value = self.sess.run([self.policy_network, self.value_network],
+                                      feed_dict={self.inputs: input_state, self.is_training: False})
         # if self.use_cache:
         #     self.inference_cache[cache_key] = [policy[0], value[0]]
-        return policy[0], policy2[0], value[0]
+        return policy[0], value[0]
 
-    def train(self, state, policy, policy2, value, num_samples):
+    def train(self, state, policy, value, num_samples):
         return self.sess.run([self.train_op, self.cost, self.merged],
                              feed_dict={self.inputs: state, self.is_training: True, self.policy_label: policy,
-                                        self.policy_label2: policy2, self.value_label: value,
-                                        self.num_samples: num_samples})
+                                        self.value_label: value, self.num_samples: num_samples})
 
     def eval(self, state, policy, value):
         return self.sess.run([self.cost],
@@ -58,7 +55,6 @@ class Model(object):
         self.inputs = tf.placeholder(tf.float32, [None, input_shape[0], input_shape[1], input_shape[2]],
                                      "inputs")
         self.policy_label = tf.placeholder(tf.float32, [None, num_classes], "policy_label")
-        self.policy_label2 = tf.placeholder(tf.float32, [None, num_classes], "policy_label2")
         self.value_label = tf.placeholder(tf.float32, [None], "value_label")
         inputs = self.inputs
 
@@ -84,17 +80,8 @@ class Model(object):
         policy_network = tf.reshape(policy_network, [-1, num_classes * 2], name="policy_reshape")
         policy_network = tf.layers.dense(inputs=policy_network, units=num_classes, name="policy_dense")
         tf.summary.image(tensor=tf.reshape(policy_network, [-1, 10, 9, 1]), max_outputs=100, name="policy")
-
-        policy_network2 = self.conv2d_fixed_padding(inputs=network, filters=2, kernel_size=1, strides=1,
-                                                    name="policy_conv2")
-
-        policy_network2 = tf.reshape(policy_network2, [-1, num_classes * 2], name="policy_reshape2")
-        policy_network2 = tf.layers.dense(inputs=policy_network2, units=num_classes, name="policy_dense2")
-        tf.summary.image(tensor=tf.reshape(policy_network2, [-1, 10, 9, 1]), max_outputs=100, name="policy2")
         # self.policy_network = tf.nn.softmax(policy_network)
-        self.policy_network = tf.nn.softmax(policy_network)
-        self.policy_network2 = tf.nn.softmax(policy_network2)
-        # self.policy_network = tf.nn.sigmoid(policy_network)
+        self.policy_network = tf.nn.sigmoid(policy_network)
         self.value_network = value_network
 
         weights = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES)
@@ -111,19 +98,12 @@ class Model(object):
         # policy_loss = -tf.reduce_mean(tf.nn.softmax(self.policy_label) * tf.log(self.policy_network))
         # policy_loss = -tf.reduce_mean(tf.transpose(self.policy_label) * tf.log(self.policy_network))
 
-        # policy_loss = tf.reduce_mean(
-        #     tf.nn.sigmoid_cross_entropy_with_logits(labels=self.policy_label, logits=policy_network))
         policy_loss = tf.reduce_mean(
-            tf.nn.softmax_cross_entropy_with_logits(labels=self.policy_label, logits=policy_network))
-        policy_loss2 = tf.reduce_mean(
-            tf.nn.softmax_cross_entropy_with_logits(labels=self.policy_label2, logits=policy_network2))
+            tf.nn.sigmoid_cross_entropy_with_logits(labels=self.policy_label, logits=policy_network))
         # policy_loss = -tf.reduce_mean(tf.reduce_sum(self.policy_label * tf.log(self.policy_network), axis=1))
-        # self.cost = value_loss + policy_loss + regularizer
-        # self.cost = value_loss + policy_loss + policy_loss2 + regularizer
-        self.cost = value_loss + policy_loss + policy_loss2
+        self.cost = value_loss + policy_loss + regularizer
         tf.summary.scalar('value_loss', value_loss)
         tf.summary.scalar('policy_loss', policy_loss)
-        tf.summary.scalar('policy_loss2', policy_loss2)
         tf.summary.scalar('total_loss', self.cost)
         tf.summary.scalar('regularizer', regularizer)
         # value_loss = tf.losses.mean_squared_error(self.value_label, value_network)
@@ -191,11 +171,11 @@ class Model(object):
 
         return inputs
 
-    def filter_action_probs(self, action_probs, action_probs2, legal_actions, env):
+    def filter_action_probs(self, action_probs, legal_actions, env):
         legal_action_probs = []
         for legal_action in legal_actions:
             legal_action = env.encode_action(legal_action)
-            legal_action_probs.append(action_probs[legal_action[0]] + action_probs2[legal_action[1]])
+            legal_action_probs.append(action_probs[legal_action[0]] + action_probs[legal_action[1]])
 
         legal_action_probs = np.array(legal_action_probs)
         if (legal_action_probs == 0).all():

@@ -24,8 +24,9 @@ model = Model(sess, weight_decay=FLAGS.weight_decay, momentum=FLAGS.momentum, nu
 writer = tf.summary.FileWriter(FLAGS.save_dir + '/summary', sess.graph)
 sess.run(tf.global_variables_initializer())
 saver = tf.train.Saver()
-# FLAGS.dataset_dir = "./"
-# FLAGS.num_model_layers = 1
+FLAGS.dataset_dir = "./"
+FLAGS.num_model_layers = 1
+FLAGS.batch_size = 32
 ds = Dataset(sess)
 while True:
     if FLAGS.dataset_dir:
@@ -52,7 +53,7 @@ while True:
 
         ds.close_dataset()
         if (epoch == 0 and common.num_checkpoint_epochs == 1) or (
-                        epoch > 0 and epoch % common.num_checkpoint_epochs == 0):
+          epoch > 0 and epoch % common.num_checkpoint_epochs == 0):
             now = common.now_date_str_nums()
             saver.save(sess, os.path.join(FLAGS.save_dir, "new_model_%s.ckpt" % now))
             log("save model")

@@ -19,7 +19,7 @@ ds = Dataset()
 # ds.open(os.path.join(FLAGS.dataset_dir, "dataset.csv"))
 ds.open("dataset.csv")
 error = 0
-nn =0
+nn = 0
 for n, line in enumerate(f):
 
     print(n)
@@ -33,8 +33,9 @@ for n, line in enumerate(f):
         nn += 1
     else:
         continue
-    # if nn == 10:
-    #     break
+    if nn == 2:
+        break
+    print("real", nn)
     if red_position not in position or blue_position not in position:
         sys.exit("invalid position!!")
 
@@ -78,7 +79,7 @@ for n, line in enumerate(f):
     if info:
         ds.write(info, state_history, mcts_history, mcts_history2)
     # break
-        # ds.close()
-        # sys.exit()
+    # ds.close()
+    # sys.exit()
 print(error)
 ds.close()
