@@ -2,6 +2,15 @@
 under construction...
 
 
+# review site(Version 1, not alpha go zero)
+It is a review site that recorded a match between learned AIs with dataset, and it is the first version that use Q-table learning(dynamic state list).
+
+
+It is not an algorithm of alpha go zero.
+
+
+http://115.68.23.80:81/web/review.html
+
 
 
 # Prerequisite
@@ -75,11 +84,3 @@ python play_net_vs_net.py --save_dir="the model dir you trained" --model_file_na
 
 
 
-# review site
-It is a review site that recorded a match between learned AIs with dataset, and it is the first version that use Q-table learning(dynamic state list).
-
-
-It is not an algorithm of alpha high zero.
-
-
-http://irelia.hovits.com/web/review.html
